@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 
-const customersByArea = {
+const baseCustomersByArea = {
   Brekkan: [
     { id: 1, name: "Haukur", price: 10000, pricing: "fixed" },
     { id: 2, name: "Örn", price: 10000, pricing: "fixed" },
@@ -30,7 +30,9 @@ const customersByArea = {
   Toyota: [{ id: 19, name: "Toyota", price: 2000, pricing: "hourly" }],
 };
 
-const STORAGE_KEY = "gardslattur-bjarka-calendar-v1";
+const AREA_ORDER = ["Brekkan", "Giljahverfi", "Miðbær", "Glerárhverfi", "Baldursnes", "Toyota"];
+const STORAGE_KEY = "gardslattur-bjarka-calendar-v2";
+const CUSTOMER_STORAGE_KEY = "gardslattur-bjarka-customers-v1";
 const MONTHS = [
   "Janúar",
   "Febrúar",
@@ -232,6 +234,14 @@ export default function App() {
       return starterLogs;
     }
   });
+  const [customCustomers, setCustomCustomers] = useState(() => {
+    try {
+      const saved = localStorage.getItem(CUSTOMER_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [expandedArea, setExpandedArea] = useState(null);
@@ -240,6 +250,18 @@ export default function App() {
   const [dayTimerStart, setDayTimerStart] = useState(null);
   const [dayTimerRunning, setDayTimerRunning] = useState(false);
   const [timerNow, setTimerNow] = useState(Date.now());
+
+  const customersByArea = useMemo(() => {
+    const result = AREA_ORDER.reduce((acc, area) => {
+      acc[area] = [...(baseCustomersByArea[area] || [])];
+      return acc;
+    }, {});
+    for (const customer of customCustomers) {
+      if (!result[customer.area]) result[customer.area] = [];
+      result[customer.area].push(customer);
+    }
+    return result;
+  }, [customCustomers]);
 
   const [entry, setEntry] = useState({
     area: "Brekkan",
@@ -259,11 +281,24 @@ export default function App() {
     paid: false,
   });
 
+  const [newCustomerForm, setNewCustomerForm] = useState({
+    name: "",
+    area: "Brekkan",
+    pricing: "fixed",
+    price: "",
+  });
+
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
     } catch {}
   }, [logs]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(customCustomers));
+    } catch {}
+  }, [customCustomers]);
 
   useEffect(() => {
     if (!dayTimerRunning) return;
@@ -339,9 +374,25 @@ export default function App() {
       ...prev,
       startTime: "12:00",
       endTime: "13:00",
-      earned: picked?.pricing === "hourly" ? String(picked.price) : String(picked?.price || ""),
+      earned:
+        picked?.pricing === "hourly"
+          ? String(Math.round((60 / 60) * (picked?.price || 0)))
+          : String(picked?.price || ""),
       paid: false,
     }));
+  };
+
+  const addCustomer = () => {
+    if (!newCustomerForm.name || !newCustomerForm.price) return;
+    const newCustomer = {
+      id: Date.now(),
+      name: newCustomerForm.name,
+      area: newCustomerForm.area,
+      pricing: newCustomerForm.pricing,
+      price: Number(newCustomerForm.price),
+    };
+    setCustomCustomers((prev) => [...prev, newCustomer]);
+    setNewCustomerForm({ name: "", area: "Brekkan", pricing: "fixed", price: "" });
   };
 
   const togglePaid = (id) => {
@@ -409,10 +460,10 @@ export default function App() {
         };
       })
     );
-  }, [logs]);
+  }, [logs, customersByArea]);
 
   const clientsByArea = useMemo(() => {
-    return Object.keys(customersByArea).map((area) => {
+    return AREA_ORDER.map((area) => {
       const clients = clientCards.filter((client) => client.area === area);
       return {
         area,
@@ -436,11 +487,7 @@ export default function App() {
     setTimerNow(Date.now());
     setDayTimerRunning(true);
   };
-
-  const stopDayTimer = () => {
-    setDayTimerRunning(false);
-  };
-
+  const stopDayTimer = () => setDayTimerRunning(false);
   const resetDayTimer = () => {
     setDayTimerRunning(false);
     setDayTimerStart(null);
@@ -469,18 +516,14 @@ export default function App() {
     monthOptions.push({ value: getMonthKey(d), label: `${MONTHS[m]} 2026` });
   }
 
-  const areaSummary = Object.entries(customersByArea).map(([area, customers]) => ({
-    area,
-    planned: customers.filter((c) => c.pricing !== "hourly").reduce((sum, c) => sum + c.price, 0),
-    earned: logs.filter((l) => l.area === area).reduce((sum, l) => sum + l.earned, 0),
-  }));
-
-  const moreTiles = [
-    { title: "Bæta við kúnna", icon: "➕" },
-    { title: "Toyota", icon: "🚗" },
-    { title: "Settings", icon: "⚙️" },
-    { title: "Um appið", icon: "ℹ️" },
-  ];
+  const areaSummary = AREA_ORDER.map((area) => {
+    const customers = customersByArea[area] || [];
+    return {
+      area,
+      planned: customers.filter((c) => c.pricing !== "hourly").reduce((sum, c) => sum + c.price, 0),
+      earned: logs.filter((l) => l.area === area).reduce((sum, l) => sum + l.earned, 0),
+    };
+  });
 
   return (
     <div style={{ minHeight: "100vh", background: "linear-gradient(180deg,#f8fafc 0%, #eef2ff 100%)", padding: 16, paddingBottom: 110, fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", color: "#111827" }}>
@@ -619,170 +662,60 @@ export default function App() {
 
         {screen === "Skrá" && (
           <div style={{ display: "grid", gap: 16 }}>
-            <div
-              style={cardStyle({
-                background:
-                  "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.95))",
-                boxShadow: "0 18px 40px rgba(29,78,216,0.10)",
-              })}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginBottom: 14,
-                }}
-              >
+            <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.95))", boxShadow: "0 18px 40px rgba(29,78,216,0.10)" })}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
                 <div>
-                  <div
-                    style={{
-                      fontSize: 30,
-                      fontWeight: 900,
-                      letterSpacing: "-0.04em",
-                      lineHeight: 1,
-                    }}
-                  >
-                    Skrá færslu
-                  </div>
-                  <div style={{ color: "#64748b", marginTop: 6 }}>
-                    Settu inn dag, frá og til tíma og upphæð á snyrtilegan hátt.
-                  </div>
+                  <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>Skrá færslu</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>Settu inn dag, frá og til tíma og upphæð á snyrtilegan hátt.</div>
                 </div>
-                <div
-                  style={{
-                    padding: "8px 12px",
-                    borderRadius: 999,
-                    background: "rgba(29,78,216,0.08)",
-                    color: "#1d4ed8",
-                    fontWeight: 800,
-                  }}
-                >
-                  Quick add
-                </div>
+                <div style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(29,78,216,0.08)", color: "#1d4ed8", fontWeight: 800 }}>Quick add</div>
               </div>
 
               <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
-                  <select
-                    style={inputStyle()}
-                    value={entry.area}
-                    onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}
-                  >
-                    {Object.keys(customersByArea).map((area) => (
-                      <option key={area} value={area}>
-                        {area}
-                      </option>
-                    ))}
+                  <select style={inputStyle()} value={entry.area} onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}>
+                    {AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}
                   </select>
-                  <select
-                    style={inputStyle()}
-                    value={entry.customer}
-                    onChange={(e) => setCustomerAndAutoPrice(e.target.value)}
-                  >
-                    {availableCustomers.map((customer) => (
-                      <option key={customer.id} value={customer.name}>
-                        {customer.name}
-                      </option>
-                    ))}
+                  <select style={inputStyle()} value={entry.customer} onChange={(e) => setCustomerAndAutoPrice(e.target.value)}>
+                    {availableCustomers.map((customer) => <option key={customer.id} value={customer.name}>{customer.name}</option>)}
                   </select>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
                   <div>
                     <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div>
-                    <input
-                      style={inputStyle()}
-                      type="date"
-                      value={entry.date}
-                      onChange={(e) => setEntry({ ...entry, date: e.target.value })}
-                    />
+                    <input style={inputStyle()} type="date" value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
                   </div>
                   <div>
                     <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Frá</div>
-                    <input
-                      style={inputStyle()}
-                      type="time"
-                      value={entry.startTime}
-                      onChange={(e) => setEntry({ ...entry, startTime: e.target.value })}
-                    />
+                    <input style={inputStyle()} type="time" value={entry.startTime} onChange={(e) => setEntry({ ...entry, startTime: e.target.value })} />
                   </div>
                   <div>
                     <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Til</div>
-                    <input
-                      style={inputStyle()}
-                      type="time"
-                      value={entry.endTime}
-                      onChange={(e) => setEntry({ ...entry, endTime: e.target.value })}
-                    />
+                    <input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} />
                   </div>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
                   <div>
                     <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div>
-                    <input
-                      style={inputStyle()}
-                      type="number"
-                      value={entry.earned}
-                      onChange={(e) => setEntry({ ...entry, earned: e.target.value })}
-                      placeholder="Upphæð"
-                    />
+                    <input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" />
                   </div>
                   <div>
                     <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Heildartími</div>
-                    <div
-                      style={{
-                        ...inputStyle(),
-                        display: "flex",
-                        alignItems: "center",
-                        fontWeight: 900,
-                        fontSize: 24,
-                        background: "#f8fafc",
-                      }}
-                    >
-                      {minsToText(currentMinutes)}
-                    </div>
+                    <div style={{ ...inputStyle(), display: "flex", alignItems: "center", fontWeight: 900, fontSize: 24, background: "#f8fafc" }}>{minsToText(currentMinutes)}</div>
                   </div>
                 </div>
 
-                <label
-                  style={{
-                    ...inputStyle(),
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 10,
-                    fontWeight: 700,
-                    minHeight: 62,
-                  }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={entry.paid}
-                    onChange={(e) => setEntry({ ...entry, paid: e.target.checked })}
-                  />
+                <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700, minHeight: 62 }}>
+                  <input type="checkbox" checked={entry.paid} onChange={(e) => setEntry({ ...entry, paid: e.target.checked })} />
                   Greitt
                 </label>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginTop: 14,
-                }}
-              >
-                <div style={{ color: "#64748b", maxWidth: 520 }}>
-                  Toyota tímakaup fær auto verð. Þú getur samt alltaf yfirskrifað upphæðina.
-                </div>
-                <button style={buttonStyle(true)} onClick={addLog}>
-                  Bæta við færslu
-                </button>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+                <div style={{ color: "#64748b", maxWidth: 520 }}>Toyota tímakaup fær auto verð. Þú getur samt alltaf yfirskrifað upphæðina.</div>
+                <button style={buttonStyle(true)} onClick={addLog}>Bæta við færslu</button>
               </div>
             </div>
           </div>
@@ -794,17 +727,7 @@ export default function App() {
               const isOpen = expandedArea === group.area;
               return (
                 <div key={group.area} style={cardStyle({ padding: 0, overflow: "hidden" })}>
-                  <button
-                    onClick={() => setExpandedArea(isOpen ? null : group.area)}
-                    style={{
-                      width: "100%",
-                      border: "none",
-                      background: "transparent",
-                      padding: 18,
-                      cursor: "pointer",
-                      textAlign: "left",
-                    }}
-                  >
+                  <button onClick={() => setExpandedArea(isOpen ? null : group.area)} style={{ width: "100%", border: "none", background: "transparent", padding: 18, cursor: "pointer", textAlign: "left" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
                       <div>
                         <div style={{ fontSize: 28, fontWeight: 900 }}>{group.area}</div>
@@ -819,15 +742,7 @@ export default function App() {
                   {isOpen && (
                     <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
                       {group.clients.map((client) => (
-                        <button
-                          key={client.name}
-                          onClick={() => setSelectedClient(client.name)}
-                          style={{
-                            ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }),
-                            textAlign: "left",
-                            cursor: "pointer",
-                          }}
-                        >
+                        <button key={client.name} onClick={() => setSelectedClient(client.name)} style={{ ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }), textAlign: "left", cursor: "pointer" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                             <div>
                               <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
@@ -866,34 +781,18 @@ export default function App() {
 
             {selectedClientCard && (
               <div style={{ display: "grid", gap: 16 }}>
-                <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>
-                  ← Til baka
-                </button>
+                <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>← Til baka</button>
                 <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
                   <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                     <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
-                    <div style={{ opacity: 0.9, marginTop: 6 }}>
-                      {selectedClientCard.area} • {selectedClientCard.logs.length} slættir
-                    </div>
+                    <div style={{ opacity: 0.9, marginTop: 6 }}>{selectedClientCard.area} • {selectedClientCard.logs.length} slættir</div>
                   </div>
                   <div style={{ padding: 14, display: "grid", gap: 12 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
-                        <div style={{ fontWeight: 900 }}>{selectedClientCard.pricing === "hourly" ? `Tímakaup ${kr(selectedClientCard.price)}/klst` : `Fast verð ${kr(selectedClientCard.price)}`}</div>
-                      </div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
-                        <div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div>
-                      </div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
-                        <div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div>
-                      </div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div>
-                        <div style={{ fontWeight: 900 }}>{selectedClientCard.totalMinutes > 0 ? `${kr(selectedClientCard.calculatedHourly)}/klst` : "0 kr./klst"}</div>
-                      </div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{selectedClientCard.pricing === "hourly" ? `Tímakaup ${kr(selectedClientCard.price)}/klst` : `Fast verð ${kr(selectedClientCard.price)}`}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div><div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div><div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div><div style={{ fontWeight: 900 }}>{selectedClientCard.totalMinutes > 0 ? `${kr(selectedClientCard.calculatedHourly)}/klst` : "0 kr./klst"}</div></div>
                     </div>
 
                     {selectedClientCard.logs.map((log) => (
@@ -903,9 +802,7 @@ export default function App() {
                             <div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div>
                             <div style={{ color: "#64748b", marginTop: 4 }}>{log.startTime} – {log.endTime}</div>
                           </div>
-                          <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>
-                            {log.paid ? "Greitt" : "Ógreitt"}
-                          </div>
+                          <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>{log.paid ? "Greitt" : "Ógreitt"}</div>
                         </div>
 
                         {editingLogId === log.id ? (
@@ -950,47 +847,21 @@ export default function App() {
         {screen === "Tölur" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Greitt</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
-              </div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Greitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div></div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
-                  {logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}
-                </div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
-                  {logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}
-                </div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
-                  {allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}
-                </div>
-              </div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div></div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div></div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div></div>
             </div>
 
             <div style={cardStyle()}>
-              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Áætlað fyrir sumarið</div>
+              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Áætlað per sláttuhring</div>
+              <div style={{ color: "#64748b", marginBottom: 12 }}>Þetta er það sem einn heill sláttuhringur ætti að gefa ef allir fastir kúnnar eru slegnir einu sinni.</div>
               <div style={{ display: "grid", gap: 10 }}>
                 {Object.values(customersByArea)
                   .flat()
@@ -1002,7 +873,7 @@ export default function App() {
                     </div>
                   ))}
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12, fontWeight: 900 }}>
-                  <span>Samtals áætlað</span>
+                  <span>Samtals per hringur</span>
                   <span>{kr(Object.values(customersByArea).flat().filter((c) => c.pricing !== "hourly").reduce((sum, c) => sum + c.price, 0))}</span>
                 </div>
               </div>
@@ -1012,40 +883,26 @@ export default function App() {
               <div style={cardStyle()}>
                 <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Bestu kúnnar</div>
                 <div style={{ display: "grid", gap: 10 }}>
-                  {[...clientCards]
-                    .filter((client) => client.totalMinutes > 0)
-                    .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
-                    .slice(0, 5)
-                    .map((client, index) => (
-                      <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#dcfce7" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                        <div style={{ fontSize: 20 }}>{index === 0 ? "🔥" : "⭐"}</div>
-                        <div>
-                          <div style={{ fontWeight: 900 }}>{client.name}</div>
-                          <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
-                        </div>
-                        <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
-                      </div>
-                    ))}
+                  {[...clientCards].filter((client) => client.totalMinutes > 0).sort((a, b) => b.calculatedHourly - a.calculatedHourly).slice(0, 5).map((client, index) => (
+                    <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#dcfce7" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontSize: 20 }}>{index === 0 ? "🔥" : "⭐"}</div>
+                      <div><div style={{ fontWeight: 900 }}>{client.name}</div><div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div></div>
+                      <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div style={cardStyle()}>
                 <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hægustu kúnnar</div>
                 <div style={{ display: "grid", gap: 10 }}>
-                  {[...clientCards]
-                    .filter((client) => client.totalMinutes > 0)
-                    .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
-                    .slice(0, 5)
-                    .map((client, index) => (
-                      <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#fee2e2" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                        <div style={{ fontSize: 20 }}>{index === 0 ? "⚠️" : "•"}</div>
-                        <div>
-                          <div style={{ fontWeight: 900 }}>{client.name}</div>
-                          <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
-                        </div>
-                        <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
-                      </div>
-                    ))}
+                  {[...clientCards].filter((client) => client.totalMinutes > 0).sort((a, b) => a.calculatedHourly - b.calculatedHourly).slice(0, 5).map((client, index) => (
+                    <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#fee2e2" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontSize: 20 }}>{index === 0 ? "⚠️" : "•"}</div>
+                      <div><div style={{ fontWeight: 900 }}>{client.name}</div><div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div></div>
+                      <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1072,21 +929,30 @@ export default function App() {
 
         {screen === "Meira" && (
           <div style={{ display: "grid", gap: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
-              {moreTiles.map((tile) => (
-                <div key={tile.title} style={cardStyle({ minHeight: 120, display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: 10 })}>
-                  <div style={{ fontSize: 30 }}>{tile.icon}</div>
-                  <div style={{ fontSize: 18, fontWeight: 800, textAlign: "center" }}>{tile.title}</div>
-                </div>
-              ))}
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+                <input style={inputStyle()} placeholder="Nafn" value={newCustomerForm.name} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })} />
+                <select style={inputStyle()} value={newCustomerForm.area} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}>
+                  {AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}
+                </select>
+                <select style={inputStyle()} value={newCustomerForm.pricing} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}>
+                  <option value="fixed">Fast verð</option>
+                  <option value="hourly">Tímakaup</option>
+                </select>
+                <input style={inputStyle()} type="number" placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"} value={newCustomerForm.price} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+                <div style={{ color: "#64748b" }}>Þetta vistar nýjan kúnna í appinu og hann birtist í Skrá og Viðskiptavinir.</div>
+                <button style={buttonStyle(true)} onClick={addCustomer}>Bæta við kúnna</button>
+              </div>
             </div>
 
             <div style={cardStyle({ background: "linear-gradient(180deg,#eef2ff,#e0e7ff)" })}>
               <div style={{ display: "grid", gap: 18 }}>
-                <div style={{ fontSize: 24, fontWeight: 900 }}>My account</div>
-                <div style={{ fontSize: 24, fontWeight: 900 }}>Company</div>
                 <div style={{ fontSize: 24, fontWeight: 900 }}>Settings</div>
-                <div style={{ fontSize: 24, fontWeight: 900 }}>Subscriptions</div>
+                <div style={{ fontSize: 24, fontWeight: 900 }}>Toyota</div>
+                <div style={{ fontSize: 24, fontWeight: 900 }}>Um appið</div>
               </div>
             </div>
           </div>
@@ -1109,3 +975,4 @@ export default function App() {
     </div>
   );
 }
+
