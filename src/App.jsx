@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 
 const customersByArea = {
   Brekkan: [
@@ -108,6 +108,8 @@ const starterLogs = [
   },
 ];
 
+const STORAGE_KEY = "gardslattur-bjarka-logs-v1";
+
 function kr(n) {
   return `${Number(n || 0).toLocaleString("is-IS")} kr.`;
 }
@@ -214,9 +216,17 @@ function buildCalendar(year, monthIndex) {
 
 export default function App() {
   const [activeTab, setActiveTab] = useState("Dagskrá");
-  const [logs, setLogs] = useState(starterLogs);
+  const [logs, setLogs] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      return saved ? JSON.parse(saved) : starterLogs;
+    } catch {
+      return starterLogs;
+    }
+  });
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedCustomerName, setSelectedCustomerName] = useState(null);
+  const [editingLogId, setEditingLogId] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(
     getMonthKey(new Date(2026, 4, 1))
   );
@@ -230,7 +240,20 @@ export default function App() {
     paid: false,
   });
 
+  const [editForm, setEditForm] = useState({
+    date: "",
+    minutes: "",
+    earned: "",
+    paid: false,
+  });
+
   const availableCustomers = customersByArea[entry.area] || [];
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
+    } catch {}
+  }, [logs]);
   const selectedCustomer = availableCustomers.find(
     (c) => c.name === entry.customer
   );
@@ -296,6 +319,43 @@ export default function App() {
 
   const deleteLog = (id) => {
     setLogs((prev) => prev.filter((log) => log.id !== id));
+    if (editingLogId === id) {
+      setEditingLogId(null);
+    }
+  };
+
+  const startEditLog = (log) => {
+    setEditingLogId(log.id);
+    setEditForm({
+      date: log.date,
+      minutes: String(log.minutes),
+      earned: String(log.earned),
+      paid: log.paid,
+    });
+  };
+
+  const saveEditLog = () => {
+    if (!editingLogId || !editForm.date || !editForm.minutes || !editForm.earned) {
+      return;
+    }
+    setLogs((prev) =>
+      prev.map((log) =>
+        log.id === editingLogId
+          ? {
+              ...log,
+              date: editForm.date,
+              minutes: Number(editForm.minutes),
+              earned: Number(editForm.earned),
+              paid: editForm.paid,
+            }
+          : log
+      )
+    );
+    setEditingLogId(null);
+  };
+
+  const cancelEditLog = () => {
+    setEditingLogId(null);
   };
 
   const allTotal = logs.reduce((sum, log) => sum + log.earned, 0);
@@ -787,92 +847,141 @@ export default function App() {
                             </div>
                           </div>
 
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns:
-                                "repeat(auto-fit,minmax(120px,1fr))",
-                              gap: 10,
-                              marginBottom: 12,
-                            }}
-                          >
-                            <div
-                              style={{
-                                background: "#fff",
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 18,
-                                padding: 12,
-                              }}
-                            >
-                              <div style={{ color: "#64748b", fontSize: 13 }}>
-                                Hversu lengi
+                          {editingLogId === log.id ? (
+                            <div style={{ display: "grid", gap: 10 }}>
+                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+                                <input
+                                  style={inputStyle()}
+                                  type="date"
+                                  value={editForm.date}
+                                  onChange={(e) => setEditForm({ ...editForm, date: e.target.value })}
+                                />
+                                <input
+                                  style={inputStyle()}
+                                  type="number"
+                                  value={editForm.minutes}
+                                  onChange={(e) => setEditForm({ ...editForm, minutes: e.target.value })}
+                                  placeholder="Mínútur"
+                                />
+                                <input
+                                  style={inputStyle()}
+                                  type="number"
+                                  value={editForm.earned}
+                                  onChange={(e) => setEditForm({ ...editForm, earned: e.target.value })}
+                                  placeholder="Upphæð"
+                                />
+                                <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700 }}>
+                                  <input
+                                    type="checkbox"
+                                    checked={editForm.paid}
+                                    onChange={(e) => setEditForm({ ...editForm, paid: e.target.checked })}
+                                  />
+                                  Greitt
+                                </label>
                               </div>
-                              <div
-                                style={{
-                                  marginTop: 4,
-                                  fontWeight: 900,
-                                  fontSize: 20,
-                                }}
-                              >
-                                {minsToText(log.minutes)}
-                              </div>
-                            </div>
-
-                            <div
-                              style={{
-                                background: "#fff",
-                                border: "1px solid #e2e8f0",
-                                borderRadius: 18,
-                                padding: 12,
-                              }}
-                            >
-                              <div style={{ color: "#64748b", fontSize: 13 }}>
-                                Græddi
-                              </div>
-                              <div
-                                style={{
-                                  marginTop: 4,
-                                  fontWeight: 900,
-                                  fontSize: 20,
-                                }}
-                              >
-                                {kr(log.earned)}
+                              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                                <button style={buttonStyle(true)} onClick={saveEditLog}>Vista breytingar</button>
+                                <button style={buttonStyle(false)} onClick={cancelEditLog}>Hætta við</button>
                               </div>
                             </div>
-                          </div>
+                          ) : (
+                            <>
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns:
+                                    "repeat(auto-fit,minmax(120px,1fr))",
+                                  gap: 10,
+                                  marginBottom: 12,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    background: "#fff",
+                                    border: "1px solid #e2e8f0",
+                                    borderRadius: 18,
+                                    padding: 12,
+                                  }}
+                                >
+                                  <div style={{ color: "#64748b", fontSize: 13 }}>
+                                    Hversu lengi
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontWeight: 900,
+                                      fontSize: 20,
+                                    }}
+                                  >
+                                    {minsToText(log.minutes)}
+                                  </div>
+                                </div>
 
-                          <div
-                            style={{
-                              display: "flex",
-                              justifyContent: "space-between",
-                              gap: 10,
-                              flexWrap: "wrap",
-                              alignItems: "center",
-                            }}
-                          >
-                            <label
-                              style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 10,
-                                fontWeight: 700,
-                                color: "#334155",
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={log.paid}
-                                onChange={() => togglePaid(log.id)}
-                              />
-                              Breyta í greitt
-                            </label>
-                            <button
-                              style={buttonStyle(false)}
-                              onClick={() => deleteLog(log.id)}
-                            >
-                              Eyða
-                            </button>
-                          </div>
+                                <div
+                                  style={{
+                                    background: "#fff",
+                                    border: "1px solid #e2e8f0",
+                                    borderRadius: 18,
+                                    padding: 12,
+                                  }}
+                                >
+                                  <div style={{ color: "#64748b", fontSize: 13 }}>
+                                    Græddi
+                                  </div>
+                                  <div
+                                    style={{
+                                      marginTop: 4,
+                                      fontWeight: 900,
+                                      fontSize: 20,
+                                    }}
+                                  >
+                                    {kr(log.earned)}
+                                  </div>
+                                </div>
+                              </div>
+
+                              <div
+                                style={{
+                                  display: "flex",
+                                  justifyContent: "space-between",
+                                  gap: 10,
+                                  flexWrap: "wrap",
+                                  alignItems: "center",
+                                }}
+                              >
+                                <label
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 10,
+                                    fontWeight: 700,
+                                    color: "#334155",
+                                  }}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={log.paid}
+                                    onChange={() => togglePaid(log.id)}
+                                  />
+                                  Breyta í greitt
+                                </label>
+                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                  <button
+                                    style={buttonStyle(false)}
+                                    onClick={() => startEditLog(log)}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    style={buttonStyle(false)}
+                                    onClick={() => deleteLog(log.id)}
+                                  >
+                                    Eyða
+                                  </button>
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       ))
                     )}
@@ -1195,12 +1304,20 @@ export default function App() {
                           />
                           Breyta í greitt
                         </label>
-                        <button
-                          style={buttonStyle(false)}
-                          onClick={() => deleteLog(log.id)}
-                        >
-                          Eyða
-                        </button>
+                        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                            <button
+                              style={buttonStyle(false)}
+                              onClick={() => startEditLog(log)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              style={buttonStyle(false)}
+                              onClick={() => deleteLog(log.id)}
+                            >
+                              Eyða
+                            </button>
+                          </div>
                       </div>
                     </div>
                   ))}
