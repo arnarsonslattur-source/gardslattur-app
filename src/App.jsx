@@ -58,6 +58,17 @@ const monthNames = [
 
 const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
+const areaColors = {
+  Brekkan: { bg: "#dbeafe", text: "#1d4ed8" },
+  Giljahverfi: { bg: "#dcfce7", text: "#166534" },
+  Miðbær: { bg: "#fef3c7", text: "#b45309" },
+  Glerárhverfi: { bg: "#ede9fe", text: "#6d28d9" },
+  Baldursnes: { bg: "#fee2e2", text: "#b91c1c" },
+  Toyota: { bg: "#cffafe", text: "#0f766e" },
+  Dagskrá: { bg: "#e0e7ff", text: "#4338ca" },
+  Heildartölur: { bg: "#f1f5f9", text: "#334155" },
+};
+
 const starterLogs = [
   {
     id: 1,
@@ -120,11 +131,12 @@ function formatLongDate(dateStr) {
 
 function cardStyle(extra = {}) {
   return {
-    background: "rgba(255,255,255,0.95)",
-    border: "1px solid rgba(226,232,240,0.9)",
-    borderRadius: 24,
+    background: "rgba(255,255,255,0.9)",
+    border: "1px solid rgba(255,255,255,0.85)",
+    borderRadius: 28,
     padding: 16,
-    boxShadow: "0 10px 30px rgba(15,23,42,0.07)",
+    boxShadow: "0 16px 40px rgba(15,23,42,0.08)",
+    backdropFilter: "blur(10px)",
     ...extra,
   };
 }
@@ -158,27 +170,25 @@ function buttonStyle(primary = false) {
   };
 }
 
-function tabStyle(active) {
+function tabStyle(active, tab) {
+  const palette = areaColors[tab] || { bg: "#f8fafc", text: "#334155" };
   return {
     borderRadius: 999,
     padding: "12px 16px",
-    border: active ? "none" : "1px solid #dbe2ea",
+    border: active ? "none" : "1px solid rgba(255,255,255,0.8)",
     background: active
       ? "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)"
-      : "rgba(255,255,255,0.92)",
-    color: active ? "#fff" : "#0f172a",
-    fontWeight: 700,
+      : palette.bg,
+    color: active ? "#fff" : palette.text,
+    fontWeight: 800,
     whiteSpace: "nowrap",
     cursor: "pointer",
-    boxShadow: active ? "0 10px 20px rgba(29,78,216,0.18)" : "none",
+    boxShadow: active ? "0 12px 24px rgba(29,78,216,0.18)" : "none",
   };
 }
 
 function getMonthKey(date) {
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(
-    2,
-    "0"
-  )}`;
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
 
 function buildCalendar(year, monthIndex) {
@@ -194,10 +204,7 @@ function buildCalendar(year, monthIndex) {
     const d = new Date(year, monthIndex, day);
     cells.push({
       day,
-      dateStr: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
-        2,
-        "0"
-      )}-${String(day).padStart(2, "0")}`,
+      dateStr: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
     });
   }
 
@@ -357,51 +364,70 @@ export default function App() {
       style={{
         minHeight: "100vh",
         background:
-          "linear-gradient(180deg,#dbeafe 0%, #eef2ff 25%, #f8fafc 55%, #eff6ff 100%)",
+          "radial-gradient(circle at top left, #c7d2fe 0%, #dbeafe 24%, #eef2ff 48%, #f8fafc 72%, #eff6ff 100%)",
         padding: 12,
         paddingBottom: 90,
         fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
         color: "#111827",
       }}
     >
-      <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-        <div style={{ marginBottom: 14, paddingTop: 6 }}>
+      <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+        <div style={{ marginBottom: 16, paddingTop: 6 }}>
           <div
             style={{
-              fontSize: 34,
-              fontWeight: 900,
-              letterSpacing: "-0.04em",
-              color: "#0f172a",
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 12,
             }}
           >
-            Garðsláttur Bjarka
-          </div>
-          <div style={{ marginTop: 4, color: "#475569", fontSize: 17 }}>
-            Takkar efst, auto verð og mánuðardagatal
+            <div>
+              <div
+                style={{
+                  fontSize: 34,
+                  fontWeight: 900,
+                  letterSpacing: "-0.05em",
+                  color: "#0f172a",
+                  lineHeight: 1,
+                }}
+              >
+                Garðsláttur Bjarka
+              </div>
+              <div style={{ marginTop: 8, color: "#475569", fontSize: 16 }}>
+                Flottara mobile app fyrir slætti, kúnna og dagskrá
+              </div>
+            </div>
+            <div
+              style={{
+                borderRadius: 22,
+                padding: "10px 12px",
+                background: "rgba(255,255,255,0.7)",
+                border: "1px solid rgba(255,255,255,0.85)",
+                fontWeight: 800,
+                color: "#1d4ed8",
+              }}
+            >
+              2026
+            </div>
           </div>
         </div>
 
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit,minmax(170px,1fr))",
+            gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))",
             gap: 12,
             marginBottom: 16,
           }}
         >
           {[
-            ["Heildartekjur", kr(allTotal), "#dbeafe"],
-            ["Ógreitt", kr(unpaidTotal), "#fee2e2"],
-            ["Greitt", kr(paidTotal), "#dcfce7"],
-            ["Heildartími", minsToText(allMinutes), "#ede9fe"],
-          ].map(([label, value, color]) => (
-            <div
-              key={label}
-              style={cardStyle({
-                background: `linear-gradient(180deg, rgba(255,255,255,0.96), ${color})`,
-              })}
-            >
-              <div style={{ color: "#64748b", fontSize: 14, marginBottom: 6 }}>
+            ["Heildartekjur", kr(allTotal), "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)"],
+            ["Ógreitt", kr(unpaidTotal), "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)"],
+            ["Greitt", kr(paidTotal), "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)"],
+            ["Heildartími", minsToText(allMinutes), "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)"],
+          ].map(([label, value, bg]) => (
+            <div key={label} style={cardStyle({ background: bg })}>
+              <div style={{ color: "#475569", fontSize: 13, marginBottom: 6 }}>
                 {label}
               </div>
               <div style={{ fontSize: 22, fontWeight: 900, lineHeight: 1.1 }}>
@@ -415,14 +441,15 @@ export default function App() {
           style={cardStyle({
             marginBottom: 16,
             overflowX: "auto",
-            background: "rgba(255,255,255,0.88)",
+            background: "rgba(255,255,255,0.78)",
+            padding: 12,
           })}
         >
           <div style={{ display: "flex", gap: 8, minWidth: "max-content" }}>
             {topTabs.map((tab) => (
               <button
                 key={tab}
-                style={tabStyle(activeTab === tab)}
+                style={tabStyle(activeTab === tab, tab)}
                 onClick={() => {
                   setActiveTab(tab);
                   setSelectedCustomerName(null);
@@ -436,9 +463,10 @@ export default function App() {
 
         <div
           style={cardStyle({
-            marginBottom: 16,
+            marginBottom: 18,
             background:
-              "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.98))",
+              "linear-gradient(180deg, rgba(255,255,255,0.95), rgba(239,246,255,0.92))",
+            boxShadow: "0 18px 40px rgba(29,78,216,0.12)",
           })}
         >
           <div
@@ -456,14 +484,26 @@ export default function App() {
                 style={{
                   fontSize: 30,
                   fontWeight: 900,
-                  letterSpacing: "-0.04em",
+                  letterSpacing: "-0.05em",
+                  lineHeight: 1,
                 }}
               >
                 Skrá nýja færslu
               </div>
-              <div style={{ color: "#64748b", marginTop: 3 }}>
+              <div style={{ color: "#64748b", marginTop: 4 }}>
                 Verð fyllist sjálfkrafa en þú getur alltaf breytt því
               </div>
+            </div>
+            <div
+              style={{
+                padding: "8px 12px",
+                borderRadius: 999,
+                background: "rgba(29,78,216,0.08)",
+                color: "#1d4ed8",
+                fontWeight: 800,
+              }}
+            >
+              Quick add
             </div>
           </div>
 
@@ -606,7 +646,7 @@ export default function App() {
                       onClick={() => setSelectedCustomerName(customer.name)}
                       style={{
                         display: "grid",
-                        gridTemplateColumns: "1.5fr 1fr .8fr 1fr 1fr",
+                        gridTemplateColumns: "1.35fr .9fr .7fr .9fr .9fr",
                         gap: 10,
                         alignItems: "center",
                         background: isSelected
@@ -615,13 +655,29 @@ export default function App() {
                         border: isSelected
                           ? "2px solid #1d4ed8"
                           : "1px solid #e2e8f0",
-                        borderRadius: 20,
-                        padding: 12,
+                        borderRadius: 22,
+                        padding: 14,
                         cursor: "pointer",
                         textAlign: "left",
+                        boxShadow: isSelected
+                          ? "0 14px 28px rgba(29,78,216,0.12)"
+                          : "none",
                       }}
                     >
-                      <div style={{ fontWeight: 800 }}>{customer.name}</div>
+                      <div>
+                        <div style={{ fontWeight: 900, fontSize: 18 }}>
+                          {customer.name}
+                        </div>
+                        <div
+                          style={{
+                            color: "#64748b",
+                            fontSize: 13,
+                            marginTop: 4,
+                          }}
+                        >
+                          Ýttu til að sjá alla slætti
+                        </div>
+                      </div>
                       <div>
                         {customer.hourly
                           ? `${kr(customer.price)}/klst`
@@ -692,7 +748,8 @@ export default function App() {
                         <div
                           key={log.id}
                           style={{
-                            background: "linear-gradient(180deg,#ffffff,#f8fafc)",
+                            background:
+                              "linear-gradient(180deg,#ffffff,#f8fafc)",
                             border: "1px solid #e2e8f0",
                             borderRadius: 22,
                             padding: 14,
@@ -891,9 +948,9 @@ export default function App() {
                       <div
                         key={i}
                         style={{
-                          minHeight: 110,
-                          borderRadius: 18,
-                          background: "rgba(255,255,255,0.4)",
+                          minHeight: 112,
+                          borderRadius: 20,
+                          background: "rgba(255,255,255,0.45)",
                         }}
                       />
                     );
@@ -915,8 +972,8 @@ export default function App() {
                       key={cell.dateStr}
                       onClick={() => setSelectedDay(cell.dateStr)}
                       style={{
-                        minHeight: 110,
-                        borderRadius: 18,
+                        minHeight: 112,
+                        borderRadius: 20,
                         border:
                           selectedDay === cell.dateStr
                             ? "2px solid #1d4ed8"
@@ -925,6 +982,10 @@ export default function App() {
                         textAlign: "left",
                         padding: 10,
                         cursor: "pointer",
+                        boxShadow:
+                          selectedDay === cell.dateStr
+                            ? "0 12px 22px rgba(29,78,216,0.14)"
+                            : "none",
                       }}
                     >
                       <div
@@ -1156,10 +1217,7 @@ export default function App() {
               <table style={{ width: "100%", borderCollapse: "collapse" }}>
                 <thead>
                   <tr
-                    style={{
-                      textAlign: "left",
-                      borderBottom: "1px solid #e5e7eb",
-                    }}
+                    style={{ textAlign: "left", borderBottom: "1px solid #e5e7eb" }}
                   >
                     <th style={{ padding: "10px 8px" }}>Nafn</th>
                     <th style={{ padding: "10px 8px" }}>
@@ -1230,12 +1288,7 @@ export default function App() {
                   <span>Heildartími</span>
                   <strong>{minsToText(allMinutes)}</strong>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>Ógreitt</span>
                   <strong>{kr(unpaidTotal)}</strong>
                 </div>
@@ -1267,12 +1320,7 @@ export default function App() {
                   <span>Eftir að fá</span>
                   <strong>{kr(unpaidTotal)}</strong>
                 </div>
-                <div
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                  }}
-                >
+                <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <span>Möguleg lokastaða</span>
                   <strong>{kr(paidTotal + unpaidTotal)}</strong>
                 </div>
