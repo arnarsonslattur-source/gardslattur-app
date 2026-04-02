@@ -59,7 +59,6 @@ function formatDate(dateStr) {
     day: "numeric",
     month: "long",
   });
-});
 }
 
 function cardStyle(extra = {}) {
