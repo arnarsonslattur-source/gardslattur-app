@@ -236,6 +236,9 @@ export default function App() {
   const [selectedClient, setSelectedClient] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date(2026, 3, 1)));
   const [editingLogId, setEditingLogId] = useState(null);
+  const [dayTimerStart, setDayTimerStart] = useState(null);
+  const [dayTimerRunning, setDayTimerRunning] = useState(false);
+  const [timerNow, setTimerNow] = useState(Date.now());
 
   const [entry, setEntry] = useState({
     area: "Brekkan",
@@ -260,6 +263,14 @@ export default function App() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
     } catch {}
   }, [logs]);
+
+  useEffect(() => {
+    if (!dayTimerRunning) return;
+    const interval = setInterval(() => {
+      setTimerNow(Date.now());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [dayTimerRunning]);
 
   const availableCustomers = customersByArea[entry.area] || [];
   const selectedCustomer = availableCustomers.find((c) => c.name === entry.customer);
@@ -400,7 +411,24 @@ export default function App() {
   const todayDate = useMemo(() => {
     return logs.length ? [...logs].sort((a, b) => b.date.localeCompare(a.date))[0].date : "2026-04-12";
   }, [logs]);
-  const myDayLogs = logs.filter((log) => log.date === todayDate);
+  const myDayLogs = logs.filter((log) => log.date === todayDate).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const dayTimerMinutes = dayTimerStart ? Math.max(0, Math.floor((timerNow - dayTimerStart) / 60000)) : 0;
+
+  const startDayTimer = () => {
+    setDayTimerStart(Date.now());
+    setTimerNow(Date.now());
+    setDayTimerRunning(true);
+  };
+
+  const stopDayTimer = () => {
+    setDayTimerRunning(false);
+  };
+
+  const resetDayTimer = () => {
+    setDayTimerRunning(false);
+    setDayTimerStart(null);
+    setTimerNow(Date.now());
+  };
 
   const logsByDate = useMemo(() => {
     const map = {};
@@ -512,12 +540,35 @@ export default function App() {
 
         {screen === "Í dag" && (
           <div style={{ display: "grid", gap: 16 }}>
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 28, fontWeight: 900 }}>Í dag</div>
-              <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
+            <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(219,234,254,0.95))" })}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 900 }}>Í dag</div>
+                  <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
+                </div>
+                <div style={{ fontWeight: 900, fontSize: 18, color: "#1d4ed8" }}>
+                  {dayTimerRunning ? "Dagur í gangi" : dayTimerStart ? "Pása" : "Ekki byrjað"}
+                </div>
+              </div>
+
+              <div style={{ background: "#0f172a", color: "#fff", borderRadius: 24, padding: 18, marginTop: 14 }}>
+                <div style={{ fontSize: 14, opacity: 0.8 }}>Dagstimer</div>
+                <div style={{ fontSize: 34, fontWeight: 900, marginTop: 6 }}>{minsToText(dayTimerMinutes)}</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+                  {!dayTimerStart ? (
+                    <button style={buttonStyle(true)} onClick={startDayTimer}>Byrja dag</button>
+                  ) : dayTimerRunning ? (
+                    <button style={buttonStyle(true)} onClick={stopDayTimer}>Stoppa dag</button>
+                  ) : (
+                    <button style={buttonStyle(true)} onClick={() => setDayTimerRunning(true)}>Halda áfram</button>
+                  )}
+                  {dayTimerStart && <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>}
+                </div>
+              </div>
+
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
                 <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{kr(myDayLogs.reduce((s, l) => s + l.earned, 0))}</div></div>
-                <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Tími í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div></div>
+                <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Sláttutími</div><div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div></div>
                 <div style={{ background: "#dcfce7", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Slættir í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{myDayLogs.length}</div></div>
               </div>
             </div>
@@ -525,7 +576,7 @@ export default function App() {
             <div style={{ display: "grid", gap: 10 }}>
               {myDayLogs.map((log) => (
                 <div key={log.id} style={cardStyle()}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                     <div>
                       <div style={{ fontSize: 22, fontWeight: 900 }}>{log.customer}</div>
                       <div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div>
@@ -536,10 +587,15 @@ export default function App() {
                     <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Frá</div><div style={{ fontWeight: 900 }}>{log.startTime}</div></div>
                     <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Til</div><div style={{ fontWeight: 900 }}>{log.endTime}</div></div>
                     <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div></div>
-                    <div style={{ background: log.paid ? "#dcfce7" : "#fee2e2", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Staða</div><div style={{ fontWeight: 900 }}>{log.paid ? "Greitt" : "Ógreitt"}</div></div>
                   </div>
                 </div>
               ))}
+              {myDayLogs.length === 0 && (
+                <div style={cardStyle()}>
+                  <div style={{ fontWeight: 800 }}>Engar færslur í dag enn.</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>Farðu í Skrá og bættu við slætti til að sjá timeline hér.</div>
+                </div>
+              )}
             </div>
           </div>
         )}
