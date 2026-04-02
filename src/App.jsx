@@ -480,7 +480,9 @@ export default function App() {
 
   const clientsByArea = useMemo(() => {
     return AREA_ORDER.map((area) => {
-      const clients = clientCards.filter((client) => client.area === area);
+      const clients = clientCards
+        .filter((client) => client.area === area)
+        .sort((a, b) => a.price - b.price);
       return {
         area,
         clients,
@@ -758,13 +760,18 @@ export default function App() {
 
                   {isOpen && (
                     <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
-                      {group.clients.map((client) => (
-                        <button key={client.name} onClick={() => setSelectedClient(client.name)} style={{ ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }), textAlign: "left", cursor: "pointer" }}>
+                      {group.clients.map((client, index) => (
+                        <div key={client.name} style={{ display: "grid", gap: 10 }}>
+                          {index > 0 && <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #cbd5e1, transparent)", margin: "2px 6px" }} />}
+                          <button key={client.name} onClick={() => setSelectedClient(client.name)} style={{ ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }), textAlign: "left", cursor: "pointer" }}>
                           <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                             <div>
                               <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
                               <div style={{ color: "#64748b", marginTop: 4 }}>
                                 {client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}
+                              </div>
+                              <div style={{ color: "#94a3b8", fontSize: 12, marginTop: 4 }}>
+                                Raðað eftir verði • lægst efst, hæst neðst
                               </div>
                             </div>
                             <div style={{ color: "#1d4ed8", fontWeight: 800 }}>Open</div>
@@ -789,6 +796,7 @@ export default function App() {
                             </div>
                           </div>
                         </button>
+                        </div>
                       ))}
                     </div>
                   )}
@@ -878,13 +886,15 @@ export default function App() {
 
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Áætlað per sláttuhring</div>
+              <div style={{ color: "#64748b", marginBottom: 12 }}>Lægsta verð er efst og hæsta verð neðst.</div>
               <div style={{ color: "#64748b", marginBottom: 12 }}>Þetta er það sem einn heill sláttuhringur ætti að gefa ef allir fastir kúnnar eru slegnir einu sinni.</div>
               <div style={{ display: "grid", gap: 10 }}>
                 {Object.values(customersByArea)
                   .flat()
                   .filter((c) => c.pricing !== "hourly")
-                  .map((c) => (
-                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                  .sort((a, b) => a.price - b.price)
+                  .map((c, index, arr) => (
+                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, background: index === arr.length - 1 ? "#eef2ff" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
                       <span>{c.name}</span>
                       <strong>{kr(c.price)}</strong>
                     </div>
@@ -1026,9 +1036,10 @@ export default function App() {
 
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna kúnnum</div>
+              <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu alla custom kúnna sem þú hefur sjálfur bætt við.</div>
               <div style={{ display: "grid", gap: 10 }}>
                 {customCustomers.length === 0 && (
-                  <div style={{ color: "#64748b" }}>Engir custom kúnnar enn.</div>
+                  <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>
                 )}
                 {customCustomers.map((c) => (
                   <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10, alignItems: "center", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
