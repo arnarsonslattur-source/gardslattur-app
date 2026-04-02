@@ -949,35 +949,122 @@ export default function App() {
 
         {screen === "Tölur" && (
           <div style={{ display: "grid", gap: 16 }}>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div><div style={{ fontSize: 28, fontWeight: 900 }}>{kr(allTotal)}</div></div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div><div style={{ fontSize: 28, fontWeight: 900 }}>{kr(unpaidTotal)}</div></div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Greitt</div><div style={{ fontSize: 28, fontWeight: 900 }}>{kr(paidTotal)}</div></div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div><div style={{ fontSize: 28, fontWeight: 900 }}>{minsToText(allMinutes)}</div></div>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
+              </div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Greitt</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
+              </div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
+              </div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+              <div style={cardStyle()}>
+                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div>
+                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+                  {logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}
+                </div>
+              </div>
+              <div style={cardStyle()}>
+                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div>
+                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+                  {logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}
+                </div>
+              </div>
+              <div style={cardStyle()}>
+                <div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div>
+                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+                  {allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}
+                </div>
+              </div>
             </div>
 
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Áætlað fyrir sumarið</div>
               <div style={{ display: "grid", gap: 10 }}>
-                {Object.values(customersByArea).flat().filter((c) => c.pricing !== "hourly").map((c) => (
-                  <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                    <span>{c.name}</span>
-                    <strong>{kr(c.price)}</strong>
-                  </div>
-                ))}
+                {Object.values(customersByArea)
+                  .flat()
+                  .filter((c) => c.pricing !== "hourly")
+                  .map((c) => (
+                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <span>{c.name}</span>
+                      <strong>{kr(c.price)}</strong>
+                    </div>
+                  ))}
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12, fontWeight: 900 }}>
+                  <span>Samtals áætlað</span>
+                  <span>{kr(Object.values(customersByArea).flat().filter((c) => c.pricing !== "hourly").reduce((sum, c) => sum + c.price, 0))}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12 }}>
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Bestu kúnnar</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {[...clientCards]
+                    .filter((client) => client.totalMinutes > 0)
+                    .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
+                    .slice(0, 5)
+                    .map((client, index) => (
+                      <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#dcfce7" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                        <div style={{ fontSize: 20 }}>{index === 0 ? "🔥" : "⭐"}</div>
+                        <div>
+                          <div style={{ fontWeight: 900 }}>{client.name}</div>
+                          <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
+                        </div>
+                        <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                      </div>
+                    ))}
+                </div>
+              </div>
+
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hægustu kúnnar</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {[...clientCards]
+                    .filter((client) => client.totalMinutes > 0)
+                    .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
+                    .slice(0, 5)
+                    .map((client, index) => (
+                      <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#fee2e2" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                        <div style={{ fontSize: 20 }}>{index === 0 ? "⚠️" : "•"}</div>
+                        <div>
+                          <div style={{ fontWeight: 900 }}>{client.name}</div>
+                          <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
+                        </div>
+                        <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                      </div>
+                    ))}
+                </div>
               </div>
             </div>
 
             <div style={cardStyle()}>
-              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Yfirlit eftir hverfum</div>
+              <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hverfi</div>
               <div style={{ display: "grid", gap: 10 }}>
-                {areaSummary.map((row) => (
-                  <div key={row.area} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                    <div style={{ fontWeight: 800 }}>{row.area}</div>
-                    <div>Áætlað: {kr(row.planned)}</div>
-                    <div>Komið inn: {kr(row.earned)}</div>
-                  </div>
-                ))}
+                {areaSummary.map((row) => {
+                  const areaMinutes = logs.filter((l) => l.area === row.area).reduce((sum, l) => sum + l.minutes, 0);
+                  const areaHourly = areaMinutes > 0 ? Math.round(row.earned / (areaMinutes / 60)) : 0;
+                  return (
+                    <div key={row.area} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontWeight: 800 }}>{row.area}</div>
+                      <div>Tekjur: {kr(row.earned)}</div>
+                      <div>Tími: {minsToText(areaMinutes)}</div>
+                      <div>Tímakaup: {areaMinutes > 0 ? `${kr(areaHourly)}/klst` : "0 kr./klst"}</div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -1022,4 +1109,3 @@ export default function App() {
     </div>
   );
 }
-
