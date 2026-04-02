@@ -33,6 +33,7 @@ const baseCustomersByArea = {
 const AREA_ORDER = ["Brekkan", "Giljahverfi", "Miðbær", "Glerárhverfi", "Baldursnes", "Toyota"];
 const STORAGE_KEY = "gardslattur-bjarka-calendar-v2";
 const CUSTOMER_STORAGE_KEY = "gardslattur-bjarka-customers-v1";
+const PLAN_STORAGE_KEY = "gardslattur-bjarka-plan-v1";
 const MONTHS = [
   "Janúar",
   "Febrúar",
@@ -247,6 +248,15 @@ export default function App() {
   const [expandedArea, setExpandedArea] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date(2026, 3, 1)));
   const [editingLogId, setEditingLogId] = useState(null);
+  const [selectedPlanDay, setSelectedPlanDay] = useState(null);
+  const [planEntries, setPlanEntries] = useState(() => {
+    try {
+      const saved = localStorage.getItem(PLAN_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
   const [dayTimerStart, setDayTimerStart] = useState(null);
   const [dayTimerRunning, setDayTimerRunning] = useState(false);
   const [timerNow, setTimerNow] = useState(Date.now());
@@ -299,6 +309,12 @@ export default function App() {
       localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(customCustomers));
     } catch {}
   }, [customCustomers]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(planEntries));
+    } catch {}
+  }, [planEntries]);
 
   useEffect(() => {
     if (!dayTimerRunning) return;
@@ -509,6 +525,7 @@ export default function App() {
   }, [selectedMonth]);
   const monthCells = useMemo(() => buildCalendar(monthDate.getFullYear(), monthDate.getMonth()), [monthDate]);
   const selectedDayLogs = selectedDay ? logsByDate[selectedDay] || [] : [];
+  const selectedPlanText = selectedPlanDay ? planEntries[selectedPlanDay] || "" : "";
 
   const monthOptions = [];
   for (let m = 0; m < 12; m++) {
@@ -929,6 +946,7 @@ export default function App() {
 
         {screen === "Meira" && (
           <div style={{ display: "grid", gap: 16 }}>
+
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
@@ -943,18 +961,97 @@ export default function App() {
                 <input style={inputStyle()} type="number" placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"} value={newCustomerForm.price} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })} />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-                <div style={{ color: "#64748b" }}>Þetta vistar nýjan kúnna í appinu og hann birtist í Skrá og Viðskiptavinir.</div>
+                <div style={{ color: "#64748b" }}>Bætir nýjum kúnna í appið.</div>
                 <button style={buttonStyle(true)} onClick={addCustomer}>Bæta við kúnna</button>
               </div>
             </div>
 
-            <div style={cardStyle({ background: "linear-gradient(180deg,#eef2ff,#e0e7ff)" })}>
-              <div style={{ display: "grid", gap: 18 }}>
-                <div style={{ fontSize: 24, fontWeight: 900 }}>Settings</div>
-                <div style={{ fontSize: 24, fontWeight: 900 }}>Toyota</div>
-                <div style={{ fontSize: 24, fontWeight: 900 }}>Um appið</div>
+            <div style={cardStyle()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 900 }}>Mánaðarplan</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>Ýttu á dag og skrifaðu plan fyrir þann dag.</div>
+                </div>
+                <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedPlanDay(null); }}>
+                  {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
+                {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
+                {monthCells.map((cell, i) => {
+                  if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
+                  const hasPlan = !!planEntries[cell.dateStr];
+                  return (
+                    <button
+                      key={cell.dateStr}
+                      onClick={() => setSelectedPlanDay(cell.dateStr)}
+                      style={{
+                        minHeight: 86,
+                        borderRadius: 18,
+                        border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea",
+                        background: hasPlan ? "#dbeafe" : "#fff",
+                        textAlign: "left",
+                        padding: 10,
+                        cursor: "pointer",
+                        boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none",
+                      }}
+                    >
+                      <div style={{ fontWeight: 900, fontSize: 22 }}>{cell.day}</div>
+                      {hasPlan && <div style={{ marginTop: 6, fontSize: 12, color: "#1d4ed8", fontWeight: 800, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>Plan skráð</div>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 14, color: "#64748b", marginBottom: 8 }}>
+                  {selectedPlanDay ? `Plan fyrir ${formatLongDate(selectedPlanDay)}` : "Veldu dag í dagatalinu"}
+                </div>
+                <textarea
+                  style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
+                  placeholder="T.d. Brekkan um morguninn, Giljahverfi eftir hádegi..."
+                  value={selectedPlanText}
+                  onChange={(e) => {
+                    if (!selectedPlanDay) return;
+                    setPlanEntries((prev) => ({ ...prev, [selectedPlanDay]: e.target.value }));
+                  }}
+                  disabled={!selectedPlanDay}
+                />
               </div>
             </div>
+
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna kúnnum</div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {customCustomers.length === 0 && (
+                  <div style={{ color: "#64748b" }}>Engir custom kúnnar enn.</div>
+                )}
+                {customCustomers.map((c) => (
+                  <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10, alignItems: "center", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                    <div>
+                      <div style={{ fontWeight: 900 }}>{c.name}</div>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>{c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}</div>
+                    </div>
+                    <button style={buttonStyle(false)} onClick={() => {
+                      const newName = prompt("Nýtt nafn", c.name);
+                      const newPrice = prompt("Nýtt verð", c.price);
+                      if (!newName || !newPrice) return;
+                      setCustomCustomers(prev => prev.map(x => x.id === c.id ? { ...x, name: newName, price: Number(newPrice) } : x));
+                    }}>Edit</button>
+                    <button style={buttonStyle(false)} onClick={() => {
+                      if (confirm("Ertu viss að þú viljir eyða þessum kúnna?")) {
+                        setCustomCustomers(prev => prev.filter(x => x.id !== c.id));
+                      }
+                    }}>Eyða</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         )}
       </div>
@@ -975,4 +1072,3 @@ export default function App() {
     </div>
   );
 }
-
