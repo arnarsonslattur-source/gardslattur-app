@@ -46,7 +46,7 @@ const MONTHS = [
   "Desember",
 ];
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const NAV_ITEMS = ["Calendar", "My day", "Clients", "Stats", "More"];
+const NAV_ITEMS = ["Dagatal", "Í dag", "Skrá", "Viðskiptavinir", "Tölur", "Meira"];
 
 const starterLogs = [
   {
@@ -207,13 +207,15 @@ function buttonStyle(primary = false) {
 
 function iconForNav(name) {
   switch (name) {
-    case "Calendar":
+    case "Dagatal":
       return "📅";
-    case "My day":
+    case "Í dag":
       return "⏰";
-    case "Clients":
+    case "Skrá":
+      return "➕";
+    case "Viðskiptavinir":
       return "👤";
-    case "Stats":
+    case "Tölur":
       return "📊";
     default:
       return "⋯";
@@ -221,7 +223,7 @@ function iconForNav(name) {
 }
 
 export default function App() {
-  const [screen, setScreen] = useState("Calendar");
+  const [screen, setScreen] = useState("Í dag");
   const [logs, setLogs] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -441,12 +443,12 @@ export default function App() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
             <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1 }}>Garðsláttur Bjarka</div>
-            <div style={{ color: "#64748b", marginTop: 6 }}>{screen}</div>
+            <div style={{ color: "#64748b", marginTop: 6 }}>Snirtilegt mobile app fyrir slætti</div>
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#1d4ed8" }}>2026</div>
         </div>
 
-        {screen === "Calendar" && (
+        {screen === "Dagatal" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={cardStyle()}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
@@ -508,36 +510,15 @@ export default function App() {
           </div>
         )}
 
-        {screen === "My day" && (
+        {screen === "Í dag" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={cardStyle()}>
-              <div style={{ fontSize: 28, fontWeight: 900 }}>My day</div>
+              <div style={{ fontSize: 28, fontWeight: 900 }}>Í dag</div>
               <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
                 <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{kr(myDayLogs.reduce((s, l) => s + l.earned, 0))}</div></div>
                 <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Tími í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div></div>
                 <div style={{ background: "#dcfce7", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Slættir í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{myDayLogs.length}</div></div>
-              </div>
-            </div>
-
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Skrá nýja færslu</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10 }}>
-                <select style={inputStyle()} value={entry.area} onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}>
-                  {Object.keys(customersByArea).map((area) => <option key={area} value={area}>{area}</option>)}
-                </select>
-                <select style={inputStyle()} value={entry.customer} onChange={(e) => setCustomerAndAutoPrice(e.target.value)}>
-                  {availableCustomers.map((customer) => <option key={customer.id} value={customer.name}>{customer.name}</option>)}
-                </select>
-                <input style={inputStyle()} type="date" value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
-                <input style={inputStyle()} type="time" value={entry.startTime} onChange={(e) => setEntry({ ...entry, startTime: e.target.value })} />
-                <input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} />
-                <input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" />
-                <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700 }}><input type="checkbox" checked={entry.paid} onChange={(e) => setEntry({ ...entry, paid: e.target.checked })} /> Greitt</label>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginTop: 12 }}>
-                <div style={{ color: "#64748b" }}>Tími reiknast út frá frá/til. Toyota tímakaup fær auto verð.</div>
-                <button style={buttonStyle(true)} onClick={addLog}>Bæta við</button>
               </div>
             </div>
 
@@ -563,7 +544,50 @@ export default function App() {
           </div>
         )}
 
-        {screen === "Clients" && (
+        {screen === "Skrá" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(239,246,255,0.94))" })}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>Skrá færslu</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>Settu inn frá og til tíma. Þetta er clean screen bara fyrir skráningu.</div>
+                </div>
+                <div style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(29,78,216,0.08)", color: "#1d4ed8", fontWeight: 800 }}>Quick add</div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+                <select style={inputStyle()} value={entry.area} onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}>
+                  {Object.keys(customersByArea).map((area) => <option key={area} value={area}>{area}</option>)}
+                </select>
+                <select style={inputStyle()} value={entry.customer} onChange={(e) => setCustomerAndAutoPrice(e.target.value)}>
+                  {availableCustomers.map((customer) => <option key={customer.id} value={customer.name}>{customer.name}</option>)}
+                </select>
+                <input style={inputStyle()} type="date" value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
+                <input style={inputStyle()} type="time" value={entry.startTime} onChange={(e) => setEntry({ ...entry, startTime: e.target.value })} />
+                <input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} />
+                <input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12, marginTop: 12 }}>
+                <div style={{ background: "#f8fafc", borderRadius: 20, padding: 14 }}>
+                  <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
+                  <div style={{ fontWeight: 900, fontSize: 24, marginTop: 4 }}>{minsToText(currentMinutes)}</div>
+                </div>
+                <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700, minHeight: 82 }}>
+                  <input type="checkbox" checked={entry.paid} onChange={(e) => setEntry({ ...entry, paid: e.target.checked })} />
+                  Greitt
+                </label>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+                <div style={{ color: "#64748b" }}>Toyota tímakaup fær auto verð. Þú getur samt alltaf yfirskrifað upphæðina.</div>
+                <button style={buttonStyle(true)} onClick={addLog}>Bæta við færslu</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {screen === "Viðskiptavinir" && (
           <div style={{ display: "grid", gap: 16 }}>
             {!selectedClient && clientCards.map((client) => (
               <button key={client.name} onClick={() => setSelectedClient(client.name)} style={{ ...cardStyle(), textAlign: "left", cursor: "pointer" }}>
@@ -640,7 +664,7 @@ export default function App() {
           </div>
         )}
 
-        {screen === "Stats" && (
+        {screen === "Tölur" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))", gap: 12 }}>
               <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div><div style={{ fontSize: 28, fontWeight: 900 }}>{kr(allTotal)}</div></div>
@@ -676,7 +700,7 @@ export default function App() {
           </div>
         )}
 
-        {screen === "More" && (
+        {screen === "Meira" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
               {moreTiles.map((tile) => (
@@ -700,7 +724,7 @@ export default function App() {
       </div>
 
       <div style={{ position: "fixed", left: 16, right: 16, bottom: 16, maxWidth: 900, margin: "0 auto", background: "rgba(255,255,255,0.95)", border: "1px solid rgba(255,255,255,0.9)", borderRadius: 32, padding: 8, boxShadow: "0 18px 40px rgba(15,23,42,0.16)", backdropFilter: "blur(12px)" }}>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 6 }}>
           {NAV_ITEMS.map((item) => {
             const active = screen === item;
             return (
