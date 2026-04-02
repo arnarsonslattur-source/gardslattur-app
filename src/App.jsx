@@ -571,15 +571,62 @@ export default function App() {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
                 {monthCells.map((cell, i) => {
-                  if (!cell) return <div key={i} style={{ minHeight: 104, borderRadius: 20, background: "rgba(226,232,240,0.45)" }} />;
-                  const dayLogs = logsByDate[cell.dateStr] || [];
-                  const total = dayLogs.reduce((sum, log) => sum + log.earned, 0);
-                  const bg = dayLogs.length === 0 ? "#fff" : dayLogs.every((log) => log.paid) ? "#dcfce7" : "#dbeafe";
+                  if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
+                  const hasPlan = !!planEntries[cell.dateStr];
+                  const previewLines = hasPlan
+                    ? String(planEntries[cell.dateStr])
+                        .split("
+")
+                        .map((line) => line.trim())
+                        .filter(Boolean)
+                        .slice(0, 3)
+                    : [];
                   return (
-                    <button key={cell.dateStr} onClick={() => setSelectedDay(cell.dateStr)} style={{ minHeight: 104, borderRadius: 20, border: selectedDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea", background: bg, textAlign: "left", padding: 10, cursor: "pointer" }}>
-                      <div style={{ fontWeight: 900, fontSize: 24 }}>{cell.day}</div>
-                      {dayLogs.slice(0, 2).map((log) => <div key={log.id} style={{ fontSize: 12, color: "#334155", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{log.customer}</div>)}
-                      {dayLogs.length > 0 && <div style={{ marginTop: 6, fontSize: 12, fontWeight: 800 }}>{kr(total)}</div>}
+                    <button
+                      key={cell.dateStr}
+                      onClick={() => setSelectedPlanDay(cell.dateStr)}
+                      style={{
+                        minHeight: 86,
+                        borderRadius: 18,
+                        border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea",
+                        background: hasPlan ? "#dbeafe" : "#fff",
+                        textAlign: "left",
+                        padding: 10,
+                        cursor: "pointer",
+                        boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div style={{ fontWeight: 900, fontSize: 22, color: "#1d4ed8" }}>{cell.day}</div>
+                      {hasPlan ? (
+                        <div style={{ marginTop: 6, display: "grid", gap: 2 }}>
+                          {previewLines.map((line, idx) => (
+                            <div
+                              key={idx}
+                              style={{
+                                fontSize: 11,
+                                lineHeight: 1.15,
+                                color: "#1e3a8a",
+                                fontWeight: 700,
+                                overflow: "hidden",
+                                textOverflow: "ellipsis",
+                                whiteSpace: "nowrap",
+                              }}
+                            >
+                              {line}
+                            </div>
+                          ))}
+                          {String(planEntries[cell.dateStr]).split("
+").filter((line) => line.trim()).length > 3 && (
+                            <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 800 }}>...</div>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}> </div>
+                      )}
                     </button>
                   );
                 })}
@@ -1083,3 +1130,4 @@ export default function App() {
     </div>
   );
 }
+
