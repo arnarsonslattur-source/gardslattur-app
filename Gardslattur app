@@ -1,0 +1,404 @@
+import React, { useMemo, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Home, Users, CalendarDays, Wallet, Plus, Search, Clock3, Trash2 } from "lucide-react";
+
+const initialCustomers = [
+  { id: 1, name: "Halla", area: "Giljahverfi", price: 5000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 2, name: "Frikki", area: "Giljahverfi", price: 5000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 3, name: "Stebbi", area: "Giljahverfi", price: 5000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 4, name: "Mamma", area: "Giljahverfi", price: 5000, frequency: "Áskrift", paid: true, visits: 0 },
+  { id: 5, name: "Símon", area: "Glerárhverfi", price: 6000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 6, name: "Harpa", area: "Miðbær", price: 8000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 7, name: "Sólveig", area: "Miðbær", price: 10000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 8, name: "Óli", area: "Glerárhverfi", price: 10000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 9, name: "Haukur", area: "Brekkan", price: 10000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 10, name: "Örn", area: "Brekkan", price: 10000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 11, name: "Lyngholt 19", area: "Glerárhverfi", price: 10000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 12, name: "Ottó", area: "Brekkan", price: 12000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 13, name: "Þórður", area: "Baldursnes", price: 12000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 14, name: "Jonni", area: "Brekkan", price: 14000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 15, name: "Júlia", area: "Giljahverfi", price: 20000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 16, name: "Dóri", area: "Giljahverfi", price: 20000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 17, name: "Stekkjartún", area: "Brekkan", price: 28000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 18, name: "Kaldbakur", area: "Miðbær", price: 40000, frequency: "Áskrift", paid: false, visits: 0 },
+  { id: 19, name: "Toyota", area: "Toyota", price: 2000, frequency: "Tímavinna", paid: false, visits: 0 },
+];
+
+const areaOptions = ["Öll hverfi", "Brekkan", "Giljahverfi", "Miðbær", "Glerárhverfi", "Baldursnes", "Toyota", "Áskriftir"];
+const monthOptions = ["Maí", "Júní", "Júlí", "Ágúst", "Sep og okt"];
+
+export default function GardslatturBjarkaApp() {
+  const [customers, setCustomers] = useState(initialCustomers);
+  const [search, setSearch] = useState("");
+  const [selectedArea, setSelectedArea] = useState("Öll hverfi");
+  const [selectedMonth, setSelectedMonth] = useState("Maí");
+  const [newCustomer, setNewCustomer] = useState({
+    name: "",
+    area: "Brekkan",
+    price: "",
+    frequency: "Áskrift",
+  });
+
+  const [toyotaEntries, setToyotaEntries] = useState([]);
+  const [toyotaForm, setToyotaForm] = useState({ date: "", hours: "", note: "" });
+
+  const toyotaCustomer = customers.find((c) => c.name === "Toyota");
+  const toyotaRate = toyotaCustomer?.price || 0;
+
+  const filteredCustomers = useMemo(() => {
+    return customers.filter((customer) => {
+      const matchesArea =
+        selectedArea === "Öll hverfi" ||
+        customer.area === selectedArea ||
+        (selectedArea === "Áskriftir" && customer.frequency === "Áskrift");
+      const matchesSearch = customer.name.toLowerCase().includes(search.toLowerCase());
+      return matchesArea && matchesSearch;
+    });
+  }, [customers, search, selectedArea]);
+
+  const toyotaHours = toyotaEntries.reduce((sum, entry) => sum + Number(entry.hours), 0);
+  const toyotaRevenue = toyotaEntries.reduce((sum, entry) => sum + Number(entry.hours) * toyotaRate, 0);
+  const subscriptionRevenue = customers
+    .filter((customer) => customer.frequency !== "Tímavinna")
+    .reduce((sum, customer) => sum + customer.price * customer.visits, 0);
+  const totalRevenue = subscriptionRevenue + toyotaRevenue;
+  const totalUnpaid = customers.filter((customer) => !customer.paid).reduce((sum, customer) => sum + customer.price, 0);
+  const totalPaid = customers.filter((customer) => customer.paid).reduce((sum, customer) => sum + customer.price, 0);
+
+  const byArea = useMemo(() => {
+    return areaOptions
+      .filter((area) => area !== "Öll hverfi" && area !== "Áskriftir")
+      .map((area) => ({
+        area,
+        count: customers.filter((customer) => customer.area === area).length,
+        revenue:
+          area === "Toyota"
+            ? toyotaRevenue
+            : customers.filter((customer) => customer.area === area).reduce((sum, customer) => sum + customer.price, 0),
+      }))
+      .filter((item) => item.count > 0 || item.area === "Toyota");
+  }, [customers, toyotaRevenue]);
+
+  const addCustomer = () => {
+    if (!newCustomer.name || !newCustomer.price) return;
+    setCustomers((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        name: newCustomer.name,
+        area: newCustomer.area,
+        price: Number(newCustomer.price),
+        frequency: newCustomer.frequency,
+        paid: false,
+        visits: 0,
+      },
+    ]);
+    setNewCustomer({ name: "", area: "Brekkan", price: "", frequency: "Áskrift" });
+  };
+
+  const addVisit = (id) => {
+    setCustomers((prev) => prev.map((customer) => (customer.id === id ? { ...customer, visits: customer.visits + 1 } : customer)));
+  };
+
+  const togglePaid = (id) => {
+    setCustomers((prev) => prev.map((customer) => (customer.id === id ? { ...customer, paid: !customer.paid } : customer)));
+  };
+
+  const addToyotaEntry = () => {
+    if (!toyotaForm.date || !toyotaForm.hours) return;
+    setToyotaEntries((prev) => [
+      {
+        id: Date.now(),
+        date: toyotaForm.date,
+        hours: Number(toyotaForm.hours),
+        note: toyotaForm.note || "Toyota vinna",
+      },
+      ...prev,
+    ]);
+    setToyotaForm({ date: "", hours: "", note: "" });
+  };
+
+  const deleteToyotaEntry = (id) => {
+    setToyotaEntries((prev) => prev.filter((entry) => entry.id !== id));
+  };
+
+  const priceLabel = (customer) => {
+    if (customer.frequency === "Tímavinna") return `${customer.price.toLocaleString("is-IS")} kr./klst`;
+    return `${customer.price.toLocaleString("is-IS")} kr.`;
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 p-3 pb-24 md:p-8">
+      <div className="mx-auto max-w-md space-y-4 md:max-w-7xl md:space-y-6">
+        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight md:text-3xl">Garðsláttur Bjarka</h1>
+            <p className="text-sm text-slate-600 md:text-base">Bókhald, viðskiptavinir og hverfaskipting á einum stað</p>
+          </div>
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button className="w-full rounded-2xl md:w-auto">
+                <Plus className="mr-2 h-4 w-4" /> Bæta við viðskiptavini
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="rounded-2xl">
+              <DialogHeader>
+                <DialogTitle>Nýr viðskiptavinur</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-2">
+                <div>
+                  <Label>Nafn</Label>
+                  <Input value={newCustomer.name} onChange={(e) => setNewCustomer({ ...newCustomer, name: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Hverfi</Label>
+                  <Select value={newCustomer.area} onValueChange={(value) => setNewCustomer({ ...newCustomer, area: value })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {areaOptions.filter((area) => area !== "Öll hverfi").map((area) => (
+                        <SelectItem key={area} value={area}>{area}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Verð</Label>
+                  <Input type="number" value={newCustomer.price} onChange={(e) => setNewCustomer({ ...newCustomer, price: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Tíðni</Label>
+                  <Select value={newCustomer.frequency} onValueChange={(value) => setNewCustomer({ ...newCustomer, frequency: value })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Áskrift">Áskrift</SelectItem>
+                      <SelectItem value="Tímavinna">Tímavinna</SelectItem>
+                      <SelectItem value="Eftir þörfum">Eftir þörfum</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={addCustomer} className="rounded-2xl">Vista</Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Users className="h-4 w-4" /> Kúnnar</CardTitle></CardHeader>
+            <CardContent><div className="text-2xl font-bold md:text-3xl">{customers.length}</div></CardContent>
+          </Card>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Wallet className="h-4 w-4" /> Tekjur</CardTitle></CardHeader>
+            <CardContent><div className="text-2xl font-bold md:text-3xl">{totalRevenue.toLocaleString("is-IS")} kr.</div></CardContent>
+          </Card>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><CalendarDays className="h-4 w-4" /> Ógreitt</CardTitle></CardHeader>
+            <CardContent><div className="text-2xl font-bold md:text-3xl">{totalUnpaid.toLocaleString("is-IS")} kr.</div></CardContent>
+          </Card>
+          <Card className="rounded-2xl shadow-sm">
+            <CardHeader className="pb-2"><CardTitle className="flex items-center gap-2 text-base"><Clock3 className="h-4 w-4" /> Toyota</CardTitle></CardHeader>
+            <CardContent><div className="text-2xl font-bold md:text-3xl">{toyotaHours} klst</div></CardContent>
+          </Card>
+        </div>
+
+        <Tabs defaultValue="customers" className="space-y-4">
+          <TabsList className="grid h-auto w-full grid-cols-4 rounded-2xl">
+            <TabsTrigger value="customers" className="text-xs md:text-sm">Kúnnar</TabsTrigger>
+            <TabsTrigger value="areas" className="text-xs md:text-sm">Hverfi</TabsTrigger>
+            <TabsTrigger value="months" className="text-xs md:text-sm">Mánuðir</TabsTrigger>
+            <TabsTrigger value="toyota" className="text-xs md:text-sm">Toyota</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="customers">
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader>
+                <CardTitle>Viðskiptavinaskrá</CardTitle>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div className="relative md:col-span-2">
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                    <Input className="pl-9" placeholder="Leita að nafni..." value={search} onChange={(e) => setSearch(e.target.value)} />
+                  </div>
+                  <Select value={selectedArea} onValueChange={setSelectedArea}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {areaOptions.map((area) => <SelectItem key={area} value={area}>{area}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="overflow-x-auto rounded-2xl border bg-white">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Nafn</TableHead>
+                        <TableHead>Hverfi</TableHead>
+                        <TableHead>Verð</TableHead>
+                        <TableHead>Slættir</TableHead>
+                        <TableHead>Greitt</TableHead>
+                        <TableHead>Aðgerð</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCustomers.map((customer) => (
+                        <TableRow key={customer.id}>
+                          <TableCell className="font-medium">{customer.name}</TableCell>
+                          <TableCell><Badge variant="secondary">{customer.area}</Badge></TableCell>
+                          <TableCell>{priceLabel(customer)}</TableCell>
+                          <TableCell>{customer.frequency === "Tímavinna" ? "—" : customer.visits}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Checkbox checked={customer.paid} onCheckedChange={() => togglePaid(customer.id)} />
+                              <span>{customer.paid ? "Já" : "Nei"}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {customer.frequency === "Tímavinna" ? (
+                              <span className="text-sm text-slate-500">Skráð í Toyota flipa</span>
+                            ) : (
+                              <Button variant="outline" size="sm" className="min-w-24 rounded-xl" onClick={() => addVisit(customer.id)}>
+                                Skrá slátt
+                              </Button>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="areas">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {byArea.map((item) => (
+                <Card key={item.area} className="rounded-2xl shadow-sm">
+                  <CardHeader>
+                    <CardTitle className="text-lg">{item.area}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm">
+                    <div className="flex justify-between"><span>Kúnnar</span><strong>{item.count}</strong></div>
+                    <div className="flex justify-between"><span>Virði</span><strong>{item.revenue.toLocaleString("is-IS")} kr.</strong></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="months">
+            <Card className="rounded-2xl shadow-sm">
+              <CardHeader>
+                <CardTitle>Mánuðayfirlit</CardTitle>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                  <SelectTrigger className="max-w-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {monthOptions.map((month) => <SelectItem key={month} value={month}>{month}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                  {areaOptions.filter((area) => area !== "Öll hverfi" && area !== "Áskriftir" && area !== "Toyota").map((area) => {
+                    const areaCustomers = customers.filter((customer) => customer.area === area);
+                    return (
+                      <Card key={area} className="rounded-2xl border bg-white">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">{area}</CardTitle>
+                          <p className="text-sm text-slate-500">{selectedMonth}</p>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm">
+                          {areaCustomers.length === 0 ? (
+                            <p className="text-slate-400">Engir kúnnar hér enn.</p>
+                          ) : (
+                            areaCustomers.map((customer) => (
+                              <div key={customer.id} className="flex items-center justify-between rounded-xl border p-2">
+                                <span>{customer.name}</span>
+                                <span className="font-medium">{customer.price.toLocaleString("is-IS")} kr.</span>
+                              </div>
+                            ))
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="toyota">
+            <div className="space-y-4">
+              <Card className="rounded-2xl shadow-sm">
+                <CardHeader>
+                  <CardTitle>Toyota tímaskráning</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid gap-3 md:grid-cols-3">
+                    <div>
+                      <Label>Dagsetning</Label>
+                      <Input type="date" value={toyotaForm.date} onChange={(e) => setToyotaForm({ ...toyotaForm, date: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Klukkustundir</Label>
+                      <Input type="number" step="0.5" placeholder="t.d. 2.5" value={toyotaForm.hours} onChange={(e) => setToyotaForm({ ...toyotaForm, hours: e.target.value })} />
+                    </div>
+                    <div>
+                      <Label>Athugasemd</Label>
+                      <Input placeholder="t.d. sláttur og frágangur" value={toyotaForm.note} onChange={(e) => setToyotaForm({ ...toyotaForm, note: e.target.value })} />
+                    </div>
+                  </div>
+                  <Button onClick={addToyotaEntry} className="w-full rounded-2xl md:w-auto">Bæta við Toyota færslu</Button>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Card className="rounded-2xl shadow-sm">
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Toyota klst</CardTitle></CardHeader>
+                  <CardContent><div className="text-2xl font-bold">{toyotaHours}</div></CardContent>
+                </Card>
+                <Card className="rounded-2xl shadow-sm">
+                  <CardHeader className="pb-2"><CardTitle className="text-base">Toyota tekjur</CardTitle></CardHeader>
+                  <CardContent><div className="text-2xl font-bold">{toyotaRevenue.toLocaleString("is-IS")} kr.</div></CardContent>
+                </Card>
+              </div>
+
+              <Card className="rounded-2xl shadow-sm">
+                <CardHeader>
+                  <CardTitle>Færslur</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {toyotaEntries.length === 0 ? (
+                    <p className="text-sm text-slate-500">Engar Toyota færslur komnar enn.</p>
+                  ) : (
+                    toyotaEntries.map((entry) => (
+                      <div key={entry.id} className="flex items-start justify-between gap-3 rounded-2xl border bg-white p-3">
+                        <div>
+                          <div className="font-medium">{entry.date}</div>
+                          <div className="text-sm text-slate-600">{entry.hours} klst • {(entry.hours * toyotaRate).toLocaleString("is-IS")} kr.</div>
+                          <div className="text-sm text-slate-500">{entry.note}</div>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => deleteToyotaEntry(entry.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+}
