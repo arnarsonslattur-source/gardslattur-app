@@ -234,6 +234,7 @@ export default function App() {
   });
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
+  const [expandedArea, setExpandedArea] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date(2026, 3, 1)));
   const [editingLogId, setEditingLogId] = useState(null);
   const [dayTimerStart, setDayTimerStart] = useState(null);
@@ -394,17 +395,33 @@ export default function App() {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
       list.map((customer) => {
         const customerLogs = logs.filter((log) => log.customer === customer.name);
+        const totalEarned = customerLogs.reduce((sum, log) => sum + log.earned, 0);
+        const totalMinutes = customerLogs.reduce((sum, log) => sum + log.minutes, 0);
+        const calculatedHourly = totalMinutes > 0 ? Math.round(totalEarned / (totalMinutes / 60)) : 0;
         return {
           ...customer,
           area,
           count: customerLogs.length,
-          totalEarned: customerLogs.reduce((sum, log) => sum + log.earned, 0),
-          totalMinutes: customerLogs.reduce((sum, log) => sum + log.minutes, 0),
+          totalEarned,
+          totalMinutes,
+          calculatedHourly,
           logs: customerLogs.sort((a, b) => b.date.localeCompare(a.date)),
         };
       })
     );
   }, [logs]);
+
+  const clientsByArea = useMemo(() => {
+    return Object.keys(customersByArea).map((area) => {
+      const clients = clientCards.filter((client) => client.area === area);
+      return {
+        area,
+        clients,
+        totalEarned: clients.reduce((sum, client) => sum + client.totalEarned, 0),
+        totalMinutes: clients.reduce((sum, client) => sum + client.totalMinutes, 0),
+      };
+    });
+  }, [clientCards]);
 
   const selectedClientCard = clientCards.find((c) => c.name === selectedClient);
 
@@ -773,32 +790,112 @@ export default function App() {
 
         {screen === "Viðskiptavinir" && (
           <div style={{ display: "grid", gap: 16 }}>
-            {!selectedClient && clientCards.map((client) => (
-              <button key={client.name} onClick={() => setSelectedClient(client.name)} style={{ ...cardStyle(), textAlign: "left", cursor: "pointer" }}>
-                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                  <div>
-                    <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
-                    <div style={{ color: "#64748b", marginTop: 4 }}>{client.area}</div>
-                  </div>
-                  <div style={{ color: "#1d4ed8", fontWeight: 800 }}>Open</div>
+            {!selectedClient && clientsByArea.map((group) => {
+              const isOpen = expandedArea === group.area;
+              return (
+                <div key={group.area} style={cardStyle({ padding: 0, overflow: "hidden" })}>
+                  <button
+                    onClick={() => setExpandedArea(isOpen ? null : group.area)}
+                    style={{
+                      width: "100%",
+                      border: "none",
+                      background: "transparent",
+                      padding: 18,
+                      cursor: "pointer",
+                      textAlign: "left",
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                      <div>
+                        <div style={{ fontSize: 28, fontWeight: 900 }}>{group.area}</div>
+                        <div style={{ color: "#64748b", marginTop: 6 }}>
+                          {group.clients.length} kúnnar • {kr(group.totalEarned)} • {minsToText(group.totalMinutes)}
+                        </div>
+                      </div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: "#1d4ed8" }}>{isOpen ? "−" : "+"}</div>
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
+                      {group.clients.map((client) => (
+                        <button
+                          key={client.name}
+                          onClick={() => setSelectedClient(client.name)}
+                          style={{
+                            ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }),
+                            textAlign: "left",
+                            cursor: "pointer",
+                          }}
+                        >
+                          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                            <div>
+                              <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
+                              <div style={{ color: "#64748b", marginTop: 4 }}>
+                                {client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}
+                              </div>
+                            </div>
+                            <div style={{ color: "#1d4ed8", fontWeight: 800 }}>Open</div>
+                          </div>
+
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
+                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                              <div style={{ color: "#64748b", fontSize: 13 }}>Slættir</div>
+                              <div style={{ fontWeight: 900 }}>{client.count}</div>
+                            </div>
+                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                              <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
+                              <div style={{ fontWeight: 900 }}>{minsToText(client.totalMinutes)}</div>
+                            </div>
+                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                              <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
+                              <div style={{ fontWeight: 900 }}>{kr(client.totalEarned)}</div>
+                            </div>
+                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                              <div style={{ color: "#64748b", fontSize: 13 }}>Tímakaup</div>
+                              <div style={{ fontWeight: 900 }}>{client.totalMinutes > 0 ? `${kr(client.calculatedHourly)}/klst` : "0 kr./klst"}</div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
-                  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Slættir</div><div style={{ fontWeight: 900 }}>{client.count}</div></div>
-                  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div><div style={{ fontWeight: 900 }}>{minsToText(client.totalMinutes)}</div></div>
-                  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartekjur</div><div style={{ fontWeight: 900 }}>{kr(client.totalEarned)}</div></div>
-                </div>
-              </button>
-            ))}
+              );
+            })}
 
             {selectedClientCard && (
               <div style={{ display: "grid", gap: 16 }}>
-                <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>← Til baka</button>
+                <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>
+                  ← Til baka
+                </button>
                 <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
                   <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                     <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
-                    <div style={{ opacity: 0.9, marginTop: 6 }}>{selectedClientCard.area} • {selectedClientCard.logs.length} slættir</div>
+                    <div style={{ opacity: 0.9, marginTop: 6 }}>
+                      {selectedClientCard.area} • {selectedClientCard.logs.length} slættir
+                    </div>
                   </div>
-                  <div style={{ padding: 14, display: "grid", gap: 10 }}>
+                  <div style={{ padding: 14, display: "grid", gap: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                        <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
+                        <div style={{ fontWeight: 900 }}>{selectedClientCard.pricing === "hourly" ? `Tímakaup ${kr(selectedClientCard.price)}/klst` : `Fast verð ${kr(selectedClientCard.price)}`}</div>
+                      </div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                        <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
+                        <div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div>
+                      </div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                        <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
+                        <div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div>
+                      </div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                        <div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div>
+                        <div style={{ fontWeight: 900 }}>{selectedClientCard.totalMinutes > 0 ? `${kr(selectedClientCard.calculatedHourly)}/klst` : "0 kr./klst"}</div>
+                      </div>
+                    </div>
+
                     {selectedClientCard.logs.map((log) => (
                       <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
@@ -806,7 +903,9 @@ export default function App() {
                             <div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div>
                             <div style={{ color: "#64748b", marginTop: 4 }}>{log.startTime} – {log.endTime}</div>
                           </div>
-                          <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>{log.paid ? "Greitt" : "Ógreitt"}</div>
+                          <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>
+                            {log.paid ? "Greitt" : "Ógreitt"}
+                          </div>
                         </div>
 
                         {editingLogId === log.id ? (
@@ -923,3 +1022,4 @@ export default function App() {
     </div>
   );
 }
+
