@@ -151,6 +151,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState("Dagskrá");
   const [logs, setLogs] = useState(starterLogs);
   const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedCustomerName, setSelectedCustomerName] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date(2026, 4, 1)));
   const [entry, setEntry] = useState({
     area: "Brekkan",
@@ -229,6 +230,11 @@ export default function App() {
   }, [logs]);
 
   const currentAreaCustomers = activeTab in customersByArea ? customersByArea[activeTab] : [];
+  const selectedCustomerLogs = selectedCustomerName
+    ? logs
+        .filter((log) => log.customer === selectedCustomerName)
+        .sort((a, b) => b.date.localeCompare(a.date))
+    : [];
 
   const monthDate = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
@@ -319,7 +325,101 @@ export default function App() {
         </div>
 
         {activeTab in customersByArea && (
-          <div style={cardStyle()}>
+          <div style={{ display: "grid", gap: 16 }}>
+            <div style={cardStyle()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+                <h2 style={{ margin: 0, fontSize: 28 }}>{activeTab}</h2>
+                <div style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(15,23,42,0.06)", color: "#334155", fontWeight: 700 }}>{currentAreaCustomers.length} kúnnar</div>
+              </div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {currentAreaCustomers.map((customer) => {
+                  const customerLogs = logs.filter((log) => log.customer === customer.name);
+                  const totalEarned = customerLogs.reduce((sum, log) => sum + log.earned, 0);
+                  const totalMinutes = customerLogs.reduce((sum, log) => sum + log.minutes, 0);
+                  const isSelected = selectedCustomerName === customer.name;
+                  return (
+                    <button
+                      key={customer.id}
+                      onClick={() => setSelectedCustomerName(customer.name)}
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1.5fr 1fr .8fr 1fr 1fr",
+                        gap: 10,
+                        alignItems: "center",
+                        background: isSelected ? "linear-gradient(135deg,#dbeafe 0%, #eff6ff 100%)" : "linear-gradient(180deg,#ffffff,#f8fafc)",
+                        border: isSelected ? "2px solid #1d4ed8" : "1px solid #e2e8f0",
+                        borderRadius: 20,
+                        padding: 12,
+                        cursor: "pointer",
+                        textAlign: "left",
+                      }}>
+                      <div style={{ fontWeight: 800 }}>{customer.name}</div>
+                      <div>{customer.hourly ? `${kr(customer.price)}/klst` : kr(customer.price)}</div>
+                      <div>{customerLogs.length}</div>
+                      <div>{kr(totalEarned)}</div>
+                      <div>{minsToText(totalMinutes)}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {selectedCustomerName && currentAreaCustomers.some((c) => c.name === selectedCustomerName) && (
+              <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
+                <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18, display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                  <div>
+                    <div style={{ fontSize: 30, fontWeight: 900, lineHeight: 1 }}>{selectedCustomerName}</div>
+                    <div style={{ opacity: 0.9, marginTop: 6 }}>Allir slættir og allar færslur hjá þessum kúnna</div>
+                  </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontSize: 13, opacity: 0.85 }}>Samtals</div>
+                    <div style={{ fontSize: 28, fontWeight: 900 }}>{kr(selectedCustomerLogs.reduce((s, l) => s + l.earned, 0))}</div>
+                    <div style={{ marginTop: 4, opacity: 0.9 }}>{minsToText(selectedCustomerLogs.reduce((s, l) => s + l.minutes, 0))}</div>
+                  </div>
+                </div>
+
+                <div style={{ padding: 14, display: "grid", gap: 10 }}>
+                  {selectedCustomerLogs.length === 0 ? (
+                    <div style={{ color: "#64748b" }}>Engar skráðar færslur hjá {selectedCustomerName} enn.</div>
+                  ) : (
+                    selectedCustomerLogs.map((log) => (
+                      <div key={log.id} style={{ background: "linear-gradient(180deg,#ffffff,#f8fafc)", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+                          <div>
+                            <div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div>
+                            <div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div>
+                          </div>
+                          <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>
+                            {log.paid ? "Greitt" : "Ógreitt"}
+                          </div>
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginBottom: 12 }}>
+                          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                            <div style={{ color: "#64748b", fontSize: 13 }}>Hversu lengi</div>
+                            <div style={{ marginTop: 4, fontWeight: 900, fontSize: 20 }}>{minsToText(log.minutes)}</div>
+                          </div>
+                          <div style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                            <div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div>
+                            <div style={{ marginTop: 4, fontWeight: 900, fontSize: 20 }}>{kr(log.earned)}</div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                          <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}>
+                            <input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} />
+                            Breyta í greitt
+                          </label>
+                          <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        )}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
               <h2 style={{ margin: 0, fontSize: 28 }}>{activeTab}</h2>
               <div style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(15,23,42,0.06)", color: "#334155", fontWeight: 700 }}>{currentAreaCustomers.length} kúnnar</div>
