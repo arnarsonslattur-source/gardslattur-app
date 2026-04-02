@@ -602,42 +602,170 @@ export default function App() {
 
         {screen === "Skrá" && (
           <div style={{ display: "grid", gap: 16 }}>
-            <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(239,246,255,0.94))" })}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+            <div
+              style={cardStyle({
+                background:
+                  "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.95))",
+                boxShadow: "0 18px 40px rgba(29,78,216,0.10)",
+              })}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 14,
+                }}
+              >
                 <div>
-                  <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>Skrá færslu</div>
-                  <div style={{ color: "#64748b", marginTop: 6 }}>Settu inn frá og til tíma. Þetta er clean screen bara fyrir skráningu.</div>
+                  <div
+                    style={{
+                      fontSize: 30,
+                      fontWeight: 900,
+                      letterSpacing: "-0.04em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    Skrá færslu
+                  </div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>
+                    Settu inn dag, frá og til tíma og upphæð á snyrtilegan hátt.
+                  </div>
                 </div>
-                <div style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(29,78,216,0.08)", color: "#1d4ed8", fontWeight: 800 }}>Quick add</div>
+                <div
+                  style={{
+                    padding: "8px 12px",
+                    borderRadius: 999,
+                    background: "rgba(29,78,216,0.08)",
+                    color: "#1d4ed8",
+                    fontWeight: 800,
+                  }}
+                >
+                  Quick add
+                </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
-                <select style={inputStyle()} value={entry.area} onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}>
-                  {Object.keys(customersByArea).map((area) => <option key={area} value={area}>{area}</option>)}
-                </select>
-                <select style={inputStyle()} value={entry.customer} onChange={(e) => setCustomerAndAutoPrice(e.target.value)}>
-                  {availableCustomers.map((customer) => <option key={customer.id} value={customer.name}>{customer.name}</option>)}
-                </select>
-                <input style={inputStyle()} type="date" value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
-                <input style={inputStyle()} type="time" value={entry.startTime} onChange={(e) => setEntry({ ...entry, startTime: e.target.value })} />
-                <input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} />
-                <input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" />
-              </div>
-
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(160px,1fr))", gap: 12, marginTop: 12 }}>
-                <div style={{ background: "#f8fafc", borderRadius: 20, padding: 14 }}>
-                  <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
-                  <div style={{ fontWeight: 900, fontSize: 24, marginTop: 4 }}>{minsToText(currentMinutes)}</div>
+              <div style={{ display: "grid", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+                  <select
+                    style={inputStyle()}
+                    value={entry.area}
+                    onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}
+                  >
+                    {Object.keys(customersByArea).map((area) => (
+                      <option key={area} value={area}>
+                        {area}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    style={inputStyle()}
+                    value={entry.customer}
+                    onChange={(e) => setCustomerAndAutoPrice(e.target.value)}
+                  >
+                    {availableCustomers.map((customer) => (
+                      <option key={customer.id} value={customer.name}>
+                        {customer.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
-                <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700, minHeight: 82 }}>
-                  <input type="checkbox" checked={entry.paid} onChange={(e) => setEntry({ ...entry, paid: e.target.checked })} />
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div>
+                    <input
+                      style={inputStyle()}
+                      type="date"
+                      value={entry.date}
+                      onChange={(e) => setEntry({ ...entry, date: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Frá</div>
+                    <input
+                      style={inputStyle()}
+                      type="time"
+                      value={entry.startTime}
+                      onChange={(e) => setEntry({ ...entry, startTime: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Til</div>
+                    <input
+                      style={inputStyle()}
+                      type="time"
+                      value={entry.endTime}
+                      onChange={(e) => setEntry({ ...entry, endTime: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div>
+                    <input
+                      style={inputStyle()}
+                      type="number"
+                      value={entry.earned}
+                      onChange={(e) => setEntry({ ...entry, earned: e.target.value })}
+                      placeholder="Upphæð"
+                    />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Heildartími</div>
+                    <div
+                      style={{
+                        ...inputStyle(),
+                        display: "flex",
+                        alignItems: "center",
+                        fontWeight: 900,
+                        fontSize: 24,
+                        background: "#f8fafc",
+                      }}
+                    >
+                      {minsToText(currentMinutes)}
+                    </div>
+                  </div>
+                </div>
+
+                <label
+                  style={{
+                    ...inputStyle(),
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 10,
+                    fontWeight: 700,
+                    minHeight: 62,
+                  }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={entry.paid}
+                    onChange={(e) => setEntry({ ...entry, paid: e.target.checked })}
+                  />
                   Greitt
                 </label>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-                <div style={{ color: "#64748b" }}>Toyota tímakaup fær auto verð. Þú getur samt alltaf yfirskrifað upphæðina.</div>
-                <button style={buttonStyle(true)} onClick={addLog}>Bæta við færslu</button>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginTop: 14,
+                }}
+              >
+                <div style={{ color: "#64748b", maxWidth: 520 }}>
+                  Toyota tímakaup fær auto verð. Þú getur samt alltaf yfirskrifað upphæðina.
+                </div>
+                <button style={buttonStyle(true)} onClick={addLog}>
+                  Bæta við færslu
+                </button>
               </div>
             </div>
           </div>
