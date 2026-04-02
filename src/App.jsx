@@ -30,10 +30,19 @@ const baseCustomersByArea = {
   Toyota: [{ id: 19, name: "Toyota", price: 2000, pricing: "hourly" }],
 };
 
-const AREA_ORDER = ["Brekkan", "Giljahverfi", "Miðbær", "Glerárhverfi", "Baldursnes", "Toyota"];
-const STORAGE_KEY = "gardslattur-bjarka-calendar-v2";
-const CUSTOMER_STORAGE_KEY = "gardslattur-bjarka-customers-v1";
-const PLAN_STORAGE_KEY = "gardslattur-bjarka-plan-v1";
+const AREA_ORDER = [
+  "Brekkan",
+  "Giljahverfi",
+  "Miðbær",
+  "Glerárhverfi",
+  "Baldursnes",
+  "Toyota",
+];
+
+const STORAGE_KEY = "gardslattur-bjarka-logs-v3";
+const CUSTOMER_STORAGE_KEY = "gardslattur-bjarka-customers-v2";
+const PLAN_STORAGE_KEY = "gardslattur-bjarka-plan-v2";
+
 const MONTHS = [
   "Janúar",
   "Febrúar",
@@ -48,6 +57,7 @@ const MONTHS = [
   "Nóvember",
   "Desember",
 ];
+
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const NAV_ITEMS = ["Dagatal", "Í dag", "Skrá", "Viðskiptavinir", "Tölur", "Meira"];
 
@@ -143,7 +153,7 @@ function minsToText(mins) {
 function formatLongDate(dateStr) {
   if (!dateStr) return "";
   const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("en-GB", { day: "numeric", month: "long" });
+  return d.toLocaleDateString("is-IS", { day: "numeric", month: "long" });
 }
 
 function getMonthKey(date) {
@@ -156,6 +166,7 @@ function buildCalendar(year, monthIndex) {
   const startDay = first.getDay();
   const totalDays = last.getDate();
   const cells = [];
+
   for (let i = 0; i < startDay; i++) cells.push(null);
   for (let day = 1; day <= totalDays; day++) {
     const d = new Date(year, monthIndex, day);
@@ -235,6 +246,7 @@ export default function App() {
       return starterLogs;
     }
   });
+
   const [customCustomers, setCustomCustomers] = useState(() => {
     try {
       const saved = localStorage.getItem(CUSTOMER_STORAGE_KEY);
@@ -243,6 +255,7 @@ export default function App() {
       return [];
     }
   });
+
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [expandedArea, setExpandedArea] = useState(null);
@@ -318,9 +331,7 @@ export default function App() {
 
   useEffect(() => {
     if (!dayTimerRunning) return;
-    const interval = setInterval(() => {
-      setTimerNow(Date.now());
-    }, 1000);
+    const interval = setInterval(() => setTimerNow(Date.now()), 1000);
     return () => clearInterval(interval);
   }, [dayTimerRunning]);
 
@@ -335,7 +346,7 @@ export default function App() {
         earned: String(Math.round((currentMinutes / 60) * selectedCustomer.price)),
       }));
     }
-  }, [entry.startTime, entry.endTime, entry.customer, entry.area]);
+  }, [entry.startTime, entry.endTime, entry.customer, entry.area, selectedCustomer, currentMinutes]);
 
   const setAreaAndDefaultCustomer = (area) => {
     const firstCustomer = (customersByArea[area] || [])[0];
@@ -365,11 +376,11 @@ export default function App() {
   };
 
   const addLog = () => {
-    if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) {
-      return;
-    }
+    if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
+
     const mins = minutesBetween(entry.startTime, entry.endTime);
     const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
+
     setLogs((prev) => [
       {
         id: Date.now(),
@@ -386,13 +397,14 @@ export default function App() {
       },
       ...prev,
     ]);
+
     setEntry((prev) => ({
       ...prev,
       startTime: "12:00",
       endTime: "13:00",
       earned:
         picked?.pricing === "hourly"
-          ? String(Math.round((60 / 60) * (picked?.price || 0)))
+          ? String(Math.round(picked?.price || 0))
           : String(picked?.price || ""),
       paid: false,
     }));
@@ -409,6 +421,26 @@ export default function App() {
     };
     setCustomCustomers((prev) => [...prev, newCustomer]);
     setNewCustomerForm({ name: "", area: "Brekkan", pricing: "fixed", price: "" });
+  };
+
+  const updateCustomCustomer = (customerId) => {
+    const customer = customCustomers.find((c) => c.id === customerId);
+    if (!customer) return;
+    const newName = prompt("Nýtt nafn", customer.name);
+    const newPrice = prompt("Nýtt verð", String(customer.price));
+    if (!newName || !newPrice) return;
+    setCustomCustomers((prev) =>
+      prev.map((c) =>
+        c.id === customerId ? { ...c, name: newName, price: Number(newPrice) } : c
+      )
+    );
+  };
+
+  const deleteCustomCustomer = (customerId) => {
+    const customer = customCustomers.find((c) => c.id === customerId);
+    if (!customer) return;
+    if (!window.confirm(`Eyða ${customer.name}?`)) return;
+    setCustomCustomers((prev) => prev.filter((c) => c.id !== customerId));
   };
 
   const togglePaid = (id) => {
@@ -472,7 +504,7 @@ export default function App() {
           totalEarned,
           totalMinutes,
           calculatedHourly,
-          logs: customerLogs.sort((a, b) => b.date.localeCompare(a.date)),
+          logs: [...customerLogs].sort((a, b) => b.date.localeCompare(a.date)),
         };
       })
     );
@@ -497,7 +529,11 @@ export default function App() {
   const todayDate = useMemo(() => {
     return logs.length ? [...logs].sort((a, b) => b.date.localeCompare(a.date))[0].date : "2026-04-12";
   }, [logs]);
-  const myDayLogs = logs.filter((log) => log.date === todayDate).sort((a, b) => a.startTime.localeCompare(b.startTime));
+
+  const myDayLogs = logs
+    .filter((log) => log.date === todayDate)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+
   const dayTimerMinutes = dayTimerStart ? Math.max(0, Math.floor((timerNow - dayTimerStart) / 60000)) : 0;
 
   const startDayTimer = () => {
@@ -525,7 +561,12 @@ export default function App() {
     const [year, month] = selectedMonth.split("-").map(Number);
     return new Date(year, month - 1, 1);
   }, [selectedMonth]);
-  const monthCells = useMemo(() => buildCalendar(monthDate.getFullYear(), monthDate.getMonth()), [monthDate]);
+
+  const monthCells = useMemo(
+    () => buildCalendar(monthDate.getFullYear(), monthDate.getMonth()),
+    [monthDate]
+  );
+
   const selectedDayLogs = selectedDay ? logsByDate[selectedDay] || [] : [];
   const selectedPlanText = selectedPlanDay ? planEntries[selectedPlanDay] || "" : "";
 
@@ -539,17 +580,44 @@ export default function App() {
     const customers = customersByArea[area] || [];
     return {
       area,
-      planned: customers.filter((c) => c.pricing !== "hourly").reduce((sum, c) => sum + c.price, 0),
+      planned: customers
+        .filter((c) => c.pricing !== "hourly")
+        .reduce((sum, c) => sum + c.price, 0),
       earned: logs.filter((l) => l.area === area).reduce((sum, l) => sum + l.earned, 0),
     };
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg,#f8fafc 0%, #eef2ff 100%)", padding: 16, paddingBottom: 110, fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif", color: "#111827" }}>
+    <div
+      style={{
+        minHeight: "100vh",
+        background: "linear-gradient(180deg,#f8fafc 0%, #eef2ff 100%)",
+        padding: 16,
+        paddingBottom: 110,
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        color: "#111827",
+      }}
+    >
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            marginBottom: 16,
+          }}
+        >
           <div>
-            <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1 }}>Garðsláttur Bjarka</div>
+            <div
+              style={{
+                fontSize: 34,
+                fontWeight: 900,
+                letterSpacing: "-0.05em",
+                lineHeight: 1,
+              }}
+            >
+              Garðsláttur Bjarka
+            </div>
             <div style={{ color: "#64748b", marginTop: 6 }}>Snirtilegt mobile app fyrir slætti</div>
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#1d4ed8" }}>2026</div>
@@ -558,29 +626,61 @@ export default function App() {
         {screen === "Dagatal" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={cardStyle()}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
-                <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedDay(null); }}>
-                  {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginBottom: 14,
+                }}
+              >
+                <select
+                  style={{ ...inputStyle(), maxWidth: 220 }}
+                  value={selectedMonth}
+                  onChange={(e) => {
+                    setSelectedMonth(e.target.value);
+                    setSelectedDay(null);
+                  }}
+                >
+                  {monthOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
                 </select>
                 <div style={{ color: "#64748b", fontWeight: 700 }}>Ýttu á dag til að sjá detail</div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
-                {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
+                {WEEK_DAYS.map((d) => (
+                  <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>
+                    {d}
+                  </div>
+                ))}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
                 {monthCells.map((cell, i) => {
-                  if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
+                  if (!cell) {
+                    return (
+                      <div
+                        key={i}
+                        style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }}
+                      />
+                    );
+                  }
+
                   const hasPlan = !!planEntries[cell.dateStr];
-                  const previewLines = hasPlan
+                  const allLines = hasPlan
                     ? String(planEntries[cell.dateStr])
-                        .split("
-")
+                        .split("\n")
                         .map((line) => line.trim())
                         .filter(Boolean)
-                        .slice(0, 3)
                     : [];
+                  const previewLines = allLines.slice(0, 3);
+
                   return (
                     <button
                       key={cell.dateStr}
@@ -600,7 +700,8 @@ export default function App() {
                         overflow: "hidden",
                       }}
                     >
-                      <div style={{ fontWeight: 900, fontSize: 22, color: "#1d4ed8" }}>{cell.day}</div>
+                      <div style={{ fontWeight: 900, fontSize: 22, color: hasPlan ? "#1d4ed8" : "#111827" }}>{cell.day}</div>
+
                       {hasPlan ? (
                         <div style={{ marginTop: 6, display: "grid", gap: 2 }}>
                           {previewLines.map((line, idx) => (
@@ -619,8 +720,7 @@ export default function App() {
                               {line}
                             </div>
                           ))}
-                          {String(planEntries[cell.dateStr]).split("
-").filter((line) => line.trim()).length > 3 && (
+                          {allLines.length > 3 && (
                             <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 800 }}>...</div>
                           )}
                         </div>
@@ -649,35 +749,475 @@ export default function App() {
               </div>
             </div>
 
+            {selectedDay && (
+              <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
+                <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
+                  <div style={{ fontSize: 32, fontWeight: 900 }}>{formatLongDate(selectedDay)}</div>
+                  <div style={{ opacity: 0.9, marginTop: 6 }}>
+                    {selectedDayLogs.length} færslur • {minsToText(selectedDayLogs.reduce((s, l) => s + l.minutes, 0))} • {kr(selectedDayLogs.reduce((s, l) => s + l.earned, 0))}
+                  </div>
+                </div>
+                <div style={{ padding: 14, display: "grid", gap: 10 }}>
+                  {selectedDayLogs.length === 0 && <div style={{ color: "#64748b" }}>Engar færslur þennan dag.</div>}
+                  {selectedDayLogs.map((log) => (
+                    <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+                        <div>
+                          <div style={{ fontSize: 20, fontWeight: 900 }}>{log.customer}</div>
+                          <div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div>
+                        </div>
+                        <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>
+                          {log.paid ? "Greitt" : "Ógreitt"}
+                        </div>
+                      </div>
+                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Frá</div><div style={{ fontWeight: 900, fontSize: 20 }}>{log.startTime}</div></div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Til</div><div style={{ fontWeight: 900, fontSize: 20 }}>{log.endTime}</div></div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900, fontSize: 20 }}>{minsToText(log.minutes)}</div></div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div><div style={{ fontWeight: 900, fontSize: 20 }}>{kr(log.earned)}</div></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {screen === "Í dag" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(219,234,254,0.95))" })}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div>
+                  <div style={{ fontSize: 28, fontWeight: 900 }}>Í dag</div>
+                  <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
+                </div>
+                <div style={{ fontWeight: 900, fontSize: 18, color: "#1d4ed8" }}>
+                  {dayTimerRunning ? "Dagur í gangi" : dayTimerStart ? "Pása" : "Ekki byrjað"}
+                </div>
+              </div>
+
+              <div style={{ background: "#0f172a", color: "#fff", borderRadius: 24, padding: 18, marginTop: 14 }}>
+                <div style={{ fontSize: 14, opacity: 0.8 }}>Dagstimer</div>
+                <div style={{ fontSize: 34, fontWeight: 900, marginTop: 6 }}>{minsToText(dayTimerMinutes)}</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+                  {!dayTimerStart ? (
+                    <button style={buttonStyle(true)} onClick={startDayTimer}>Byrja dag</button>
+                  ) : dayTimerRunning ? (
+                    <button style={buttonStyle(true)} onClick={stopDayTimer}>Stoppa dag</button>
+                  ) : (
+                    <button style={buttonStyle(true)} onClick={() => setDayTimerRunning(true)}>Halda áfram</button>
+                  )}
+                  {dayTimerStart && <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>}
+                </div>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
+                <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{kr(myDayLogs.reduce((s, l) => s + l.earned, 0))}</div></div>
+                <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Sláttutími</div><div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div></div>
+                <div style={{ background: "#dcfce7", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Slættir í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{myDayLogs.length}</div></div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              {myDayLogs.length === 0 && (
+                <div style={cardStyle()}>
+                  <div style={{ fontWeight: 800 }}>Engar færslur í dag enn.</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>Farðu í Skrá og bættu við slætti til að sjá timeline hér.</div>
+                </div>
+              )}
+              {myDayLogs.map((log) => (
+                <div key={log.id} style={cardStyle()}>
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                    <div>
+                      <div style={{ fontSize: 22, fontWeight: 900 }}>{log.customer}</div>
+                      <div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div>
+                    </div>
+                    <div style={{ fontWeight: 900, fontSize: 22 }}>{kr(log.earned)}</div>
+                  </div>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Frá</div><div style={{ fontWeight: 900 }}>{log.startTime}</div></div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Til</div><div style={{ fontWeight: 900 }}>{log.endTime}</div></div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {screen === "Skrá" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.95))", boxShadow: "0 18px 40px rgba(29,78,216,0.10)" })}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                <div>
+                  <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>Skrá færslu</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>Settu inn dag, frá og til tíma og upphæð á snyrtilegan hátt.</div>
+                </div>
+                <div style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(29,78,216,0.08)", color: "#1d4ed8", fontWeight: 800 }}>Quick add</div>
+              </div>
+
+              <div style={{ display: "grid", gap: 12 }}>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+                  <select style={inputStyle()} value={entry.area} onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}>
+                    {AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}
+                  </select>
+                  <select style={inputStyle()} value={entry.customer} onChange={(e) => setCustomerAndAutoPrice(e.target.value)}>
+                    {availableCustomers.map((customer) => <option key={customer.id} value={customer.name}>{customer.name}</option>)}
+                  </select>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div>
+                    <input style={inputStyle()} type="date" value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Frá</div>
+                    <input style={inputStyle()} type="time" value={entry.startTime} onChange={(e) => setEntry({ ...entry, startTime: e.target.value })} />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Til</div>
+                    <input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} />
+                  </div>
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div>
+                    <input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Heildartími</div>
+                    <div style={{ ...inputStyle(), display: "flex", alignItems: "center", fontWeight: 900, fontSize: 24, background: "#f8fafc" }}>{minsToText(currentMinutes)}</div>
+                  </div>
+                </div>
+
+                <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700, minHeight: 62 }}>
+                  <input type="checkbox" checked={entry.paid} onChange={(e) => setEntry({ ...entry, paid: e.target.checked })} />
+                  Greitt
+                </label>
+              </div>
+
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+                <div style={{ color: "#64748b", maxWidth: 520 }}>Toyota tímakaup fær auto verð. Þú getur samt alltaf yfirskrifað upphæðina.</div>
+                <button style={buttonStyle(true)} onClick={addLog}>Bæta við færslu</button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {screen === "Viðskiptavinir" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            {!selectedClient && clientsByArea.map((group) => {
+              const isOpen = expandedArea === group.area;
+              return (
+                <div key={group.area} style={cardStyle({ padding: 0, overflow: "hidden" })}>
+                  <button
+                    onClick={() => setExpandedArea(isOpen ? null : group.area)}
+                    style={{ width: "100%", border: "none", background: "transparent", padding: 18, cursor: "pointer", textAlign: "left" }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                      <div>
+                        <div style={{ fontSize: 28, fontWeight: 900 }}>{group.area}</div>
+                        <div style={{ color: "#64748b", marginTop: 6 }}>{group.clients.length} kúnnar • {kr(group.totalEarned)} • {minsToText(group.totalMinutes)}</div>
+                      </div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: "#1d4ed8" }}>{isOpen ? "−" : "+"}</div>
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
+                      {group.clients.map((client, index) => (
+                        <div key={client.name} style={{ display: "grid", gap: 10 }}>
+                          {index > 0 && <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #cbd5e1, transparent)", margin: "2px 6px" }} />}
+                          <button
+                            onClick={() => setSelectedClient(client.name)}
+                            style={{ ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }), textAlign: "left", cursor: "pointer" }}
+                          >
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                              <div>
+                                <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
+                                <div style={{ color: "#64748b", marginTop: 4 }}>{client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}</div>
+                              </div>
+                              <div style={{ color: "#1d4ed8", fontWeight: 800 }}>Open</div>
+                            </div>
+
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Slættir</div><div style={{ fontWeight: 900 }}>{client.count}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div><div style={{ fontWeight: 900 }}>{minsToText(client.totalMinutes)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div><div style={{ fontWeight: 900 }}>{kr(client.totalEarned)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tímakaup</div><div style={{ fontWeight: 900 }}>{client.totalMinutes > 0 ? `${kr(client.calculatedHourly)}/klst` : "0 kr./klst"}</div></div>
+                            </div>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {selectedClientCard && (
+              <div style={{ display: "grid", gap: 16 }}>
+                <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>← Til baka</button>
+                <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
+                  <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
+                    <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
+                    <div style={{ opacity: 0.9, marginTop: 6 }}>{selectedClientCard.area} • {selectedClientCard.logs.length} slættir</div>
+                  </div>
+                  <div style={{ padding: 14, display: "grid", gap: 12 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{selectedClientCard.pricing === "hourly" ? `Tímakaup ${kr(selectedClientCard.price)}/klst` : `Fast verð ${kr(selectedClientCard.price)}`}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div><div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div><div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div><div style={{ fontWeight: 900 }}>{selectedClientCard.totalMinutes > 0 ? `${kr(selectedClientCard.calculatedHourly)}/klst` : "0 kr./klst"}</div></div>
+                    </div>
+
+                    {selectedClientCard.logs.map((log) => (
+                      <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+                          <div>
+                            <div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div>
+                            <div style={{ color: "#64748b", marginTop: 4 }}>{log.startTime} – {log.endTime}</div>
+                          </div>
+                          <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>{log.paid ? "Greitt" : "Ógreitt"}</div>
+                        </div>
+
+                        {editingLogId === log.id ? (
+                          <div style={{ display: "grid", gap: 10 }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+                              <input style={inputStyle()} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} />
+                              <input style={inputStyle()} type="time" value={editForm.startTime} onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })} />
+                              <input style={inputStyle()} type="time" value={editForm.endTime} onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })} />
+                              <input style={inputStyle()} type="number" value={editForm.earned} onChange={(e) => setEditForm({ ...editForm, earned: e.target.value })} />
+                              <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700 }}><input type="checkbox" checked={editForm.paid} onChange={(e) => setEditForm({ ...editForm, paid: e.target.checked })} /> Greitt</label>
+                            </div>
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                              <button style={buttonStyle(true)} onClick={saveEditLog}>Vista breytingar</button>
+                              <button style={buttonStyle(false)} onClick={cancelEdit}>Hætta við</button>
+                            </div>
+                          </div>
+                        ) : (
+                          <>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginBottom: 12 }}>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div><div style={{ fontWeight: 900 }}>{kr(log.earned)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{log.pricing === "hourly" ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}` : "Fast verð"}</div></div>
+                            </div>
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                              <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}><input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} /> Breyta í greitt</label>
+                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                <button style={buttonStyle(false)} onClick={() => startEditLog(log)}>Edit</button>
+                                <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {screen === "Tölur" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Greitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div></div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div></div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div></div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div></div>
+            </div>
+
             <div style={cardStyle()}>
-              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna kúnnum</div>
-              <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu alla custom kúnna sem þú hefur sjálfur bætt við.</div>
+              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Áætlað per sláttuhring</div>
+              <div style={{ color: "#64748b", marginBottom: 12 }}>Lægsta verð er efst og hæsta verð neðst.</div>
               <div style={{ display: "grid", gap: 10 }}>
-                {customCustomers.length === 0 && (
-                  <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>
-                )}
+                {Object.values(customersByArea)
+                  .flat()
+                  .filter((c) => c.pricing !== "hourly")
+                  .sort((a, b) => a.price - b.price)
+                  .map((c, index, arr) => (
+                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, background: index === arr.length - 1 ? "#eef2ff" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <span>{c.name}</span>
+                      <strong>{kr(c.price)}</strong>
+                    </div>
+                  ))}
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12, fontWeight: 900 }}>
+                  <span>Samtals per hringur</span>
+                  <span>{kr(Object.values(customersByArea).flat().filter((c) => c.pricing !== "hourly").reduce((sum, c) => sum + c.price, 0))}</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12 }}>
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Bestu kúnnar</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {[...clientCards].filter((client) => client.totalMinutes > 0).sort((a, b) => b.calculatedHourly - a.calculatedHourly).slice(0, 5).map((client, index) => (
+                    <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#dcfce7" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontSize: 20 }}>{index === 0 ? "🔥" : "⭐"}</div>
+                      <div><div style={{ fontWeight: 900 }}>{client.name}</div><div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div></div>
+                      <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={cardStyle()}>
+                <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hægustu kúnnar</div>
+                <div style={{ display: "grid", gap: 10 }}>
+                  {[...clientCards].filter((client) => client.totalMinutes > 0).sort((a, b) => a.calculatedHourly - b.calculatedHourly).slice(0, 5).map((client, index) => (
+                    <div key={client.name} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#fee2e2" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontSize: 20 }}>{index === 0 ? "⚠️" : "•"}</div>
+                      <div><div style={{ fontWeight: 900 }}>{client.name}</div><div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div></div>
+                      <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hverfi</div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {areaSummary.map((row) => {
+                  const areaMinutes = logs.filter((l) => l.area === row.area).reduce((sum, l) => sum + l.minutes, 0);
+                  const areaHourly = areaMinutes > 0 ? Math.round(row.earned / (areaMinutes / 60)) : 0;
+                  return (
+                    <div key={row.area} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontWeight: 800 }}>{row.area}</div>
+                      <div>Tekjur: {kr(row.earned)}</div>
+                      <div>Tími: {minsToText(areaMinutes)}</div>
+                      <div>Tímakaup: {areaMinutes > 0 ? `${kr(areaHourly)}/klst` : "0 kr./klst"}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {screen === "Meira" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+                <input style={inputStyle()} placeholder="Nafn" value={newCustomerForm.name} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })} />
+                <select style={inputStyle()} value={newCustomerForm.area} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}>
+                  {AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}
+                </select>
+                <select style={inputStyle()} value={newCustomerForm.pricing} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}>
+                  <option value="fixed">Fast verð</option>
+                  <option value="hourly">Tímakaup</option>
+                </select>
+                <input style={inputStyle()} type="number" placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"} value={newCustomerForm.price} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })} />
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+                <div style={{ color: "#64748b" }}>Bætir nýjum kúnna í appið.</div>
+                <button style={buttonStyle(true)} onClick={addCustomer}>Bæta við kúnna</button>
+              </div>
+            </div>
+
+            <div style={cardStyle()}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+                <div>
+                  <div style={{ fontSize: 26, fontWeight: 900 }}>Mánaðarplan</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>Ýttu á dag og skrifaðu plan fyrir þann dag.</div>
+                </div>
+                <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedPlanDay(null); }}>
+                  {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                </select>
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
+                {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
+                {monthCells.map((cell, i) => {
+                  if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
+                  const hasPlan = !!planEntries[cell.dateStr];
+                  const allLines = hasPlan ? String(planEntries[cell.dateStr]).split("\n").map((line) => line.trim()).filter(Boolean) : [];
+                  const previewLines = allLines.slice(0, 3);
+                  return (
+                    <button
+                      key={cell.dateStr}
+                      onClick={() => setSelectedPlanDay(cell.dateStr)}
+                      style={{
+                        minHeight: 86,
+                        borderRadius: 18,
+                        border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea",
+                        background: hasPlan ? "#dbeafe" : "#fff",
+                        textAlign: "left",
+                        padding: 10,
+                        cursor: "pointer",
+                        boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none",
+                        display: "flex",
+                        flexDirection: "column",
+                        justifyContent: "space-between",
+                        overflow: "hidden",
+                      }}
+                    >
+                      <div style={{ fontWeight: 900, fontSize: 22, color: hasPlan ? "#1d4ed8" : "#111827" }}>{cell.day}</div>
+                      {hasPlan ? (
+                        <div style={{ marginTop: 6, display: "grid", gap: 2 }}>
+                          {previewLines.map((line, idx) => (
+                            <div key={idx} style={{ fontSize: 11, lineHeight: 1.15, color: "#1e3a8a", fontWeight: 700, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{line}</div>
+                          ))}
+                          {allLines.length > 3 && <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 800 }}>...</div>}
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}> </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div style={{ marginTop: 14 }}>
+                <div style={{ fontSize: 14, color: "#64748b", marginBottom: 8 }}>
+                  {selectedPlanDay ? `Plan fyrir ${formatLongDate(selectedPlanDay)}` : "Veldu dag í dagatalinu"}
+                </div>
+                <textarea
+                  style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
+                  placeholder="T.d. Kaldbakur\nStebbi\nHalla"
+                  value={selectedPlanText}
+                  onChange={(e) => {
+                    if (!selectedPlanDay) return;
+                    setPlanEntries((prev) => ({ ...prev, [selectedPlanDay]: e.target.value }));
+                  }}
+                  disabled={!selectedPlanDay}
+                />
+              </div>
+            </div>
+
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna custom kúnnum</div>
+              <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.</div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {customCustomers.length === 0 && <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>}
                 {customCustomers.map((c) => (
                   <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10, alignItems: "center", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
                     <div>
                       <div style={{ fontWeight: 900 }}>{c.name}</div>
                       <div style={{ color: "#64748b", fontSize: 13 }}>{c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}</div>
                     </div>
-                    <button style={buttonStyle(false)} onClick={() => {
-                      const newName = prompt("Nýtt nafn", c.name);
-                      const newPrice = prompt("Nýtt verð", c.price);
-                      if (!newName || !newPrice) return;
-                      setCustomCustomers(prev => prev.map(x => x.id === c.id ? { ...x, name: newName, price: Number(newPrice) } : x));
-                    }}>Edit</button>
-                    <button style={buttonStyle(false)} onClick={() => {
-                      if (confirm("Ertu viss að þú viljir eyða þessum kúnna?")) {
-                        setCustomCustomers(prev => prev.filter(x => x.id !== c.id));
-                      }
-                    }}>Eyða</button>
+                    <button style={buttonStyle(false)} onClick={() => updateCustomCustomer(c.id)}>Edit</button>
+                    <button style={buttonStyle(false)} onClick={() => deleteCustomCustomer(c.id)}>Eyða</button>
                   </div>
                 ))}
               </div>
             </div>
-
           </div>
         )}
       </div>
@@ -698,4 +1238,3 @@ export default function App() {
     </div>
   );
 }
-
