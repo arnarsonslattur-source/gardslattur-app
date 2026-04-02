@@ -55,7 +55,11 @@ function minsToText(mins) {
 function formatDate(dateStr) {
   if (!dateStr) return "";
   const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("is-IS", { day: "numeric", month: "numeric" });
+  return d.toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+  });
+});
 }
 
 function cardStyle(extra = {}) {
@@ -218,7 +222,7 @@ export default function App() {
           ))}
         </div>
 
-        <div style={{ ...cardStyle({ marginBottom: 16, position: "sticky", top: 8, zIndex: 20, background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.98))" }) }}>
+        <div style={{ ...cardStyle({ marginBottom: 16,  background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.98))" }) }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
             <div>
               <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.04em" }}>Skrá nýja færslu</div>
