@@ -1,4 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
 const baseCustomersByArea = {
   Brekkan: [
@@ -42,6 +45,8 @@ const AREA_ORDER = [
 const STORAGE_KEY = "gardslattur-bjarka-logs-v4";
 const CUSTOMER_STORAGE_KEY = "gardslattur-bjarka-customers-v3";
 const PLAN_STORAGE_KEY = "gardslattur-bjarka-plan-v3";
+const LOCATION_STORAGE_KEY = "gardslattur-bjarka-locations-v1";
+const DAY_TIMER_STORAGE_KEY = "gardslattur-bjarka-day-timer-v1";
 
 const MONTHS = [
   "Janúar",
@@ -59,7 +64,7 @@ const MONTHS = [
 ];
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const NAV_ITEMS = ["Dagatal", "Í dag", "Skrá", "Viðskiptavinir", "Tölur", "Meira"];
+const NAV_ITEMS = ["Dagatal", "Í dag", "Skrá", "Viðskiptavinir", "Tölur", "Kort", "Meira"];
 
 const starterLogs = [
   {
@@ -128,6 +133,18 @@ const starterLogs = [
     paid: true,
   },
 ];
+
+const AKUREYRI_CENTER = [65.6826, -18.0906];
+
+const markerIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [1, -34],
+  shadowSize: [41, 41],
+});
 
 function kr(n) {
   return `${Number(n || 0).toLocaleString("is-IS")} kr.`;
@@ -233,9 +250,26 @@ function iconForNav(name) {
       return "👤";
     case "Tölur":
       return "📊";
+    case "Kort":
+      return "🗺️";
     default:
       return "⋯";
   }
+}
+
+function makeCustomerKey(customer) {
+  return `${customer.area}__${customer.name}`;
+}
+
+function MapClickSetter({ selectedCustomerKey, onPickLocation }) {
+  useMapEvents({
+    click(e) {
+      if (!selectedCustomerKey) return;
+      onPickLocation(e.latlng);
+    },
+  });
+
+  return null;
 }
 
 export default function App() {
@@ -259,6 +293,15 @@ export default function App() {
     }
   });
 
+  const [customerLocations, setCustomerLocations] = useState(() => {
+    try {
+      const saved = localStorage.getItem(LOCATION_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [expandedArea, setExpandedArea] = useState(null);
@@ -275,8 +318,27 @@ export default function App() {
     }
   });
 
-  const [dayTimerStart, setDayTimerStart] = useState(null);
-  const [dayTimerRunning, setDayTimerRunning] = useState(false);
+  const [mapCustomerKey, setMapCustomerKey] = useState("");
+
+  const [dayTimerState, setDayTimerState] = useState(() => {
+    try {
+      const saved = localStorage.getItem(DAY_TIMER_STORAGE_KEY);
+      return saved
+        ? JSON.parse(saved)
+        : {
+            startTime: null,
+            running: false,
+            accumulatedMs: 0,
+          };
+    } catch {
+      return {
+        startTime: null,
+        running: false,
+        accumulatedMs: 0,
+      };
+    }
+  });
+
   const [timerNow, setTimerNow] = useState(Date.now());
 
   const customersByArea = useMemo(() => {
@@ -335,10 +397,22 @@ export default function App() {
   }, [planEntries]);
 
   useEffect(() => {
-    if (!dayTimerRunning) return;
+    try {
+      localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(customerLocations));
+    } catch {}
+  }, [customerLocations]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(DAY_TIMER_STORAGE_KEY, JSON.stringify(dayTimerState));
+    } catch {}
+  }, [dayTimerState]);
+
+  useEffect(() => {
+    if (!dayTimerState.running) return;
     const interval = setInterval(() => setTimerNow(Date.now()), 1000);
     return () => clearInterval(interval);
-  }, [dayTimerRunning]);
+  }, [dayTimerState.running]);
 
   const availableCustomers = customersByArea[entry.area] || [];
   const selectedCustomer = availableCustomers.find((c) => c.name === entry.customer);
@@ -438,24 +512,56 @@ export default function App() {
   const updateCustomCustomer = (customerId) => {
     const customer = customCustomers.find((c) => c.id === customerId);
     if (!customer) return;
+
     const newName = prompt("Nýtt nafn", customer.name);
     const newPrice = prompt("Nýtt verð", String(customer.price));
-    if (!newName || !newPrice) return;
+    const newArea = prompt("Nýtt hverfi", customer.area);
+    const newPricing = prompt("Ný pricing type (fixed eða hourly)", customer.pricing);
+
+    if (!newName || !newPrice || !newArea || !newPricing) return;
+
+    const oldKey = makeCustomerKey(customer);
+    const updatedCustomer = {
+      ...customer,
+      name: newName,
+      price: Number(newPrice),
+      area: newArea,
+      pricing: newPricing === "hourly" ? "hourly" : "fixed",
+    };
+    const newKey = makeCustomerKey(updatedCustomer);
 
     setCustomCustomers((prev) =>
-      prev.map((c) =>
-        c.id === customerId
-          ? { ...c, name: newName, price: Number(newPrice) }
-          : c
-      )
+      prev.map((c) => (c.id === customerId ? updatedCustomer : c))
     );
+
+    setCustomerLocations((prev) => {
+      if (!prev[oldKey]) return prev;
+      const next = { ...prev };
+      next[newKey] = next[oldKey];
+      delete next[oldKey];
+      return next;
+    });
+
+    if (mapCustomerKey === oldKey) {
+      setMapCustomerKey(newKey);
+    }
   };
 
   const deleteCustomCustomer = (customerId) => {
     const customer = customCustomers.find((c) => c.id === customerId);
     if (!customer) return;
     if (!window.confirm(`Eyða ${customer.name}?`)) return;
+
+    const key = makeCustomerKey(customer);
+
     setCustomCustomers((prev) => prev.filter((c) => c.id !== customerId));
+    setCustomerLocations((prev) => {
+      const next = { ...prev };
+      delete next[key];
+      return next;
+    });
+
+    if (mapCustomerKey === key) setMapCustomerKey("");
   };
 
   const togglePaid = (id) => {
@@ -510,7 +616,7 @@ export default function App() {
   const clientCards = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
       list.map((customer) => {
-        const customerLogs = logs.filter((log) => log.customer === customer.name);
+        const customerLogs = logs.filter((log) => log.customer === customer.name && log.area === area);
         const totalEarned = customerLogs.reduce((sum, log) => sum + log.earned, 0);
         const totalMinutes = customerLogs.reduce((sum, log) => sum + log.minutes, 0);
         const calculatedHourly =
@@ -519,6 +625,7 @@ export default function App() {
         return {
           ...customer,
           area,
+          key: makeCustomerKey({ ...customer, area }),
           count: customerLogs.length,
           totalEarned,
           totalMinutes,
@@ -556,21 +663,51 @@ export default function App() {
     .filter((log) => log.date === todayDate)
     .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
-  const dayTimerMinutes = dayTimerStart
-    ? Math.max(0, Math.floor((timerNow - dayTimerStart) / 60000))
-    : 0;
+  const dayTimerMinutes = useMemo(() => {
+    const runningMs =
+      dayTimerState.running && dayTimerState.startTime
+        ? Math.max(0, timerNow - dayTimerState.startTime)
+        : 0;
+
+    const totalMs = (dayTimerState.accumulatedMs || 0) + runningMs;
+    return Math.floor(totalMs / 60000);
+  }, [dayTimerState, timerNow]);
 
   const startDayTimer = () => {
-    setDayTimerStart(Date.now());
     setTimerNow(Date.now());
-    setDayTimerRunning(true);
+    setDayTimerState({
+      startTime: Date.now(),
+      running: true,
+      accumulatedMs: 0,
+    });
   };
 
-  const stopDayTimer = () => setDayTimerRunning(false);
+  const stopDayTimer = () => {
+    if (!dayTimerState.startTime) return;
+    const elapsed = Math.max(0, Date.now() - dayTimerState.startTime);
+
+    setDayTimerState((prev) => ({
+      startTime: null,
+      running: false,
+      accumulatedMs: (prev.accumulatedMs || 0) + elapsed,
+    }));
+  };
+
+  const resumeDayTimer = () => {
+    setTimerNow(Date.now());
+    setDayTimerState((prev) => ({
+      ...prev,
+      startTime: Date.now(),
+      running: true,
+    }));
+  };
 
   const resetDayTimer = () => {
-    setDayTimerRunning(false);
-    setDayTimerStart(null);
+    setDayTimerState({
+      startTime: null,
+      running: false,
+      accumulatedMs: 0,
+    });
     setTimerNow(Date.now());
   };
 
@@ -612,6 +749,41 @@ export default function App() {
       earned: logs.filter((l) => l.area === area).reduce((sum, l) => sum + l.earned, 0),
     };
   });
+
+  const allCustomers = useMemo(() => {
+    return Object.entries(customersByArea).flatMap(([area, list]) =>
+      list.map((customer) => ({
+        ...customer,
+        area,
+        key: makeCustomerKey({ ...customer, area }),
+      }))
+    );
+  }, [customersByArea]);
+
+  const selectedMapCustomer =
+    allCustomers.find((c) => c.key === mapCustomerKey) || null;
+
+  const setCustomerLocation = (latlng) => {
+    if (!selectedMapCustomer) return;
+
+    setCustomerLocations((prev) => ({
+      ...prev,
+      [selectedMapCustomer.key]: {
+        lat: Number(latlng.lat.toFixed(6)),
+        lng: Number(latlng.lng.toFixed(6)),
+      },
+    }));
+  };
+
+  const clearCustomerLocation = () => {
+    if (!selectedMapCustomer) return;
+
+    setCustomerLocations((prev) => {
+      const next = { ...prev };
+      delete next[selectedMapCustomer.key];
+      return next;
+    });
+  };
 
   return (
     <div
@@ -894,7 +1066,11 @@ export default function App() {
                   <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
                 </div>
                 <div style={{ fontWeight: 900, fontSize: 18, color: "#1d4ed8" }}>
-                  {dayTimerRunning ? "Dagur í gangi" : dayTimerStart ? "Pása" : "Ekki byrjað"}
+                  {dayTimerState.running
+                    ? "Dagur í gangi"
+                    : dayTimerState.accumulatedMs > 0
+                    ? "Pása"
+                    : "Ekki byrjað"}
                 </div>
               </div>
 
@@ -912,21 +1088,21 @@ export default function App() {
                   {minsToText(dayTimerMinutes)}
                 </div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-                  {!dayTimerStart ? (
+                  {dayTimerState.accumulatedMs === 0 && !dayTimerState.running ? (
                     <button style={buttonStyle(true)} onClick={startDayTimer}>
                       Byrja dag
                     </button>
-                  ) : dayTimerRunning ? (
+                  ) : dayTimerState.running ? (
                     <button style={buttonStyle(true)} onClick={stopDayTimer}>
                       Stoppa dag
                     </button>
                   ) : (
-                    <button style={buttonStyle(true)} onClick={() => setDayTimerRunning(true)}>
+                    <button style={buttonStyle(true)} onClick={resumeDayTimer}>
                       Halda áfram
                     </button>
                   )}
 
-                  {dayTimerStart && (
+                  {(dayTimerState.running || dayTimerState.accumulatedMs > 0) && (
                     <button style={buttonStyle(false)} onClick={resetDayTimer}>
                       Endurstilla
                     </button>
@@ -1089,7 +1265,7 @@ export default function App() {
                     onChange={(e) => setCustomerAndAutoPrice(e.target.value)}
                   >
                     {availableCustomers.map((customer) => (
-                      <option key={customer.id} value={customer.name}>
+                      <option key={`${entry.area}-${customer.id}`} value={customer.name}>
                         {customer.name}
                       </option>
                     ))}
@@ -1262,7 +1438,7 @@ export default function App() {
                     {isOpen && (
                       <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
                         {group.clients.map((client, index) => (
-                          <div key={client.name} style={{ display: "grid", gap: 10 }}>
+                          <div key={client.key} style={{ display: "grid", gap: 10 }}>
                             {index > 0 && (
                               <div
                                 style={{
@@ -1713,7 +1889,7 @@ export default function App() {
                     .slice(0, 5)
                     .map((client, index) => (
                       <div
-                        key={client.name}
+                        key={client.key}
                         style={{
                           display: "grid",
                           gridTemplateColumns: "auto 1fr auto",
@@ -1749,7 +1925,7 @@ export default function App() {
                     .slice(0, 5)
                     .map((client, index) => (
                       <div
-                        key={client.name}
+                        key={client.key}
                         style={{
                           display: "grid",
                           gridTemplateColumns: "auto 1fr auto",
@@ -1807,6 +1983,114 @@ export default function App() {
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {screen === "Kort" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 28, fontWeight: 900 }}>Kort af Akureyri</div>
+              <div style={{ color: "#64748b", marginTop: 6 }}>
+                Veldu hvaða kúnna sem er og smelltu svo á kortið til að setja eða færa pinna.
+              </div>
+
+              <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
+                <select
+                  style={inputStyle()}
+                  value={mapCustomerKey}
+                  onChange={(e) => setMapCustomerKey(e.target.value)}
+                >
+                  <option value="">Veldu kúnna</option>
+                  {AREA_ORDER.map((area) => {
+                    const areaCustomers = allCustomers.filter((c) => c.area === area);
+                    if (areaCustomers.length === 0) return null;
+
+                    return (
+                      <optgroup key={area} label={area}>
+                        {areaCustomers.map((c) => (
+                          <option key={c.key} value={c.key}>
+                            {c.name}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
+                </select>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: 8,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {selectedMapCustomer && (
+                    <button style={buttonStyle(false)} onClick={clearCustomerLocation}>
+                      Eyða pinna
+                    </button>
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    height: 520,
+                    borderRadius: 24,
+                    overflow: "hidden",
+                    border: "1px solid #dbe2ea",
+                  }}
+                >
+                  <MapContainer
+                    center={AKUREYRI_CENTER}
+                    zoom={13}
+                    scrollWheelZoom={true}
+                    style={{ height: "100%", width: "100%" }}
+                  >
+                    <TileLayer
+                      attribution="&copy; OpenStreetMap contributors"
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    />
+
+                    <MapClickSetter
+                      selectedCustomerKey={selectedMapCustomer?.key}
+                      onPickLocation={setCustomerLocation}
+                    />
+
+                    {allCustomers
+                      .filter((customer) => customerLocations[customer.key])
+                      .map((customer) => (
+                        <Marker
+                          key={customer.key}
+                          position={[
+                            customerLocations[customer.key].lat,
+                            customerLocations[customer.key].lng,
+                          ]}
+                          icon={markerIcon}
+                        >
+                          <Popup>
+                            <div>
+                              <strong>{customer.name}</strong>
+                              <br />
+                              {customer.area}
+                              <br />
+                              {customer.pricing === "hourly"
+                                ? `Tímakaup ${kr(customer.price)}/klst`
+                                : `Fast verð ${kr(customer.price)}`}
+                            </div>
+                          </Popup>
+                        </Marker>
+                      ))}
+                  </MapContainer>
+                </div>
+
+                <div style={{ color: "#64748b", fontSize: 14 }}>
+                  {selectedMapCustomer
+                    ? customerLocations[selectedMapCustomer.key]
+                      ? `Valinn kúnni: ${selectedMapCustomer.name}. Smelltu á nýjan stað til að færa pinnann.`
+                      : `Valinn kúnni: ${selectedMapCustomer.name}. Smelltu á kortið til að setja pinna.`
+                    : "Veldu kúnna fyrir ofan til að byrja."}
+                </div>
               </div>
             </div>
           </div>
@@ -2020,7 +2304,7 @@ export default function App() {
 
                 <textarea
                   style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
-                  placeholder="T.d. Kaldbakur&#10;Stebbi&#10;Halla"
+                  placeholder={"T.d. Kaldbakur\nStebbi\nHalla"}
                   value={selectedPlanText}
                   onChange={(e) => {
                     if (!selectedPlanDay) return;
@@ -2103,7 +2387,7 @@ export default function App() {
           backdropFilter: "blur(12px)",
         }}
       >
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 6 }}>
+        <div style={{ display: "grid", gridTemplateColumns: `repeat(${NAV_ITEMS.length},1fr)`, gap: 6 }}>
           {NAV_ITEMS.map((item) => {
             const active = screen === item;
             return (
