@@ -64,7 +64,7 @@ const MONTHS = [
 ];
 
 const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-const NAV_ITEMS = ["Dagatal", "Í dag", "Skrá", "Viðskiptavinir", "Tölur", "Kort", "Meira"];
+const NAV_ITEMS = ["Dagatal", "Í dag", "Skrá", "Viðskiptavinir", "Tölur", "Meira"];
 
 const starterLogs = [
   {
@@ -250,8 +250,6 @@ function iconForNav(name) {
       return "👤";
     case "Tölur":
       return "📊";
-    case "Kort":
-      return "🗺️";
     default:
       return "⋯";
   }
@@ -1990,6 +1988,13 @@ export default function App() {
 
         {screen === "Kort" && (
           <div style={{ display: "grid", gap: 16 }}>
+            <button
+              style={{ ...buttonStyle(false), width: "fit-content" }}
+              onClick={() => setScreen("Meira")}
+            >
+              ← Til baka
+            </button>
+
             <div style={cardStyle()}>
               <div style={{ fontSize: 28, fontWeight: 900 }}>Kort af Akureyri</div>
               <div style={{ color: "#64748b", marginTop: 6 }}>
@@ -2098,6 +2103,22 @@ export default function App() {
 
         {screen === "Meira" && (
           <div style={{ display: "grid", gap: 16 }}>
+            <button
+              onClick={() => setScreen("Kort")}
+              style={{
+                ...cardStyle(),
+                cursor: "pointer",
+                textAlign: "left",
+                border: "1px solid #dbeafe",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+              }}
+            >
+              <div style={{ fontSize: 26, fontWeight: 900 }}>🗺️ Kort</div>
+              <div style={{ color: "#64748b", marginTop: 6 }}>
+                Sjá alla kúnna á korti og setja pinna
+              </div>
+            </button>
+
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
 
