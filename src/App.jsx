@@ -662,8 +662,44 @@ const [receiptReading, setReceiptReading] = useState(false);
   };
 
   const addCustomer = () => {
-    if (!newCustomerForm.name || !newCustomerForm.price) return;
+  if (!newCustomerForm.name || !newCustomerForm.price) return;
 
+  const newCustomer = {
+    id: Date.now(),
+    name: newCustomerForm.name,
+    area: newCustomerForm.area,
+    pricing: newCustomerForm.pricing,
+    price: Number(newCustomerForm.price),
+  };
+
+  setCustomCustomers((prev) => [...prev, newCustomer]);
+  setNewCustomerForm({
+    name: "",
+    area: "Brekkan",
+    pricing: "fixed",
+    price: "",
+  });
+};
+ 
+  const readReceipt = async () => {
+  if (!receiptImage) return;
+
+  setReceiptReading(true);
+
+  const worker = await createWorker();
+
+  await worker.loadLanguage("eng");
+  await worker.initialize("eng");
+
+  const { data } = await worker.recognize(receiptImage);
+
+  setReceiptText(data.text);
+
+  await worker.terminate();
+
+  setReceiptReading(false);
+};
+  
     const newCustomer = {
       id: Date.now(),
       name: newCustomerForm.name,
