@@ -474,6 +474,9 @@ export default function App() {
   const [scanError, setScanError] = useState("");
   const [scanPreview, setScanPreview] = useState(null);
   const [receiptImage, setReceiptImage] = useState(null);
+
+  const [receiptText, setReceiptText] = useState("");
+const [receiptReading, setReceiptReading] = useState(false);
   
   const [dayTimerState, setDayTimerState] = useState(() => {
     try {
