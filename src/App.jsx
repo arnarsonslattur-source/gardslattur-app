@@ -47,6 +47,7 @@ const CUSTOMER_STORAGE_KEY = "gardslattur-bjarka-customers-v3";
 const PLAN_STORAGE_KEY = "gardslattur-bjarka-plan-v3";
 const LOCATION_STORAGE_KEY = "gardslattur-bjarka-locations-v1";
 const DAY_TIMER_STORAGE_KEY = "gardslattur-bjarka-day-timer-v1";
+const EXPENSE_STORAGE_KEY = "gardslattur-bjarka-expenses-v1";
 
 const MONTHS = [
   "Janúar",
@@ -270,6 +271,34 @@ function MapClickSetter({ selectedCustomerKey, onPickLocation }) {
   return null;
 }
 
+function expenseCategoryLabel(category) {
+  switch (category) {
+    case "fuel":
+      return "Eldsneyti";
+    case "clothes":
+      return "Vinnufatnaður";
+    case "tools":
+      return "Vinnuvörur";
+    case "maintenance":
+      return "Viðhald";
+    default:
+      return "Annað";
+  }
+}
+
+function fuelTypeLabel(type) {
+  switch (type) {
+    case "diesel":
+      return "Dísel";
+    case "95":
+      return "95";
+    case "98":
+      return "98";
+    default:
+      return "";
+  }
+}
+
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
@@ -297,6 +326,15 @@ export default function App() {
       return saved ? JSON.parse(saved) : {};
     } catch {
       return {};
+    }
+  });
+
+  const [expenses, setExpenses] = useState(() => {
+    try {
+      const saved = localStorage.getItem(EXPENSE_STORAGE_KEY);
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
     }
   });
 
@@ -338,6 +376,14 @@ export default function App() {
   });
 
   const [timerNow, setTimerNow] = useState(Date.now());
+
+  const [expenseForm, setExpenseForm] = useState({
+    date: "2026-04-12",
+    amount: "",
+    category: "fuel",
+    fuelType: "diesel",
+    note: "",
+  });
 
   const customersByArea = useMemo(() => {
     const result = AREA_ORDER.reduce((acc, area) => {
@@ -405,6 +451,12 @@ export default function App() {
       localStorage.setItem(DAY_TIMER_STORAGE_KEY, JSON.stringify(dayTimerState));
     } catch {}
   }, [dayTimerState]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses));
+    } catch {}
+  }, [expenses]);
 
   useEffect(() => {
     if (!dayTimerState.running) return;
@@ -505,6 +557,33 @@ export default function App() {
       pricing: "fixed",
       price: "",
     });
+  };
+
+  const addExpense = () => {
+    if (!expenseForm.amount || !expenseForm.date) return;
+
+    setExpenses((prev) => [
+      {
+        id: Date.now(),
+        date: expenseForm.date,
+        amount: Number(expenseForm.amount),
+        category: expenseForm.category,
+        fuelType: expenseForm.category === "fuel" ? expenseForm.fuelType : null,
+        note: expenseForm.note,
+        source: "manual",
+      },
+      ...prev,
+    ]);
+
+    setExpenseForm((prev) => ({
+      ...prev,
+      amount: "",
+      note: "",
+    }));
+  };
+
+  const deleteExpense = (id) => {
+    setExpenses((prev) => prev.filter((expense) => expense.id !== id));
   };
 
   const updateCustomCustomer = (customerId) => {
@@ -610,6 +689,12 @@ export default function App() {
   const unpaidTotal = logs.filter((log) => !log.paid).reduce((sum, log) => sum + log.earned, 0);
   const paidTotal = logs.filter((log) => log.paid).reduce((sum, log) => sum + log.earned, 0);
   const allMinutes = logs.reduce((sum, log) => sum + log.minutes, 0);
+
+  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const fuelExpenses = expenses
+    .filter((expense) => expense.category === "fuel")
+    .reduce((sum, expense) => sum + expense.amount, 0);
+  const profitAfterExpenses = allTotal - totalExpenses;
 
   const clientCards = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
@@ -1813,6 +1898,29 @@ export default function App() {
               </div>
             </div>
 
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))",
+                gap: 12,
+              }}
+            >
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
+              </div>
+
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
+              </div>
+
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Hagnaður eftir kostnað</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div>
+              </div>
+            </div>
+
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>
                 Áætlað per sláttuhring
@@ -2101,6 +2209,322 @@ export default function App() {
           </div>
         )}
 
+        {screen === "Kostnaður" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <button
+              style={{ ...buttonStyle(false), width: "fit-content" }}
+              onClick={() => setScreen("Meira")}
+            >
+              ← Til baka
+            </button>
+
+            <button
+              onClick={() => setScreen("Skrifa kostnað")}
+              style={{
+                ...cardStyle(),
+                cursor: "pointer",
+                textAlign: "left",
+                border: "1px solid #dbeafe",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+              }}
+            >
+              <div style={{ fontSize: 26, fontWeight: 900 }}>✍️ Skrifa kostnað</div>
+              <div style={{ color: "#64748b", marginTop: 6 }}>
+                Skrá eldsneyti, vinnufatnað, vinnuvörur og fleira
+              </div>
+            </button>
+
+            <button
+              onClick={() => setScreen("Skanna QR")}
+              style={{
+                ...cardStyle(),
+                cursor: "pointer",
+                textAlign: "left",
+                border: "1px solid #dbeafe",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+              }}
+            >
+              <div style={{ fontSize: 26, fontWeight: 900 }}>📷 Skanna QR</div>
+              <div style={{ color: "#64748b", marginTop: 6 }}>
+                QR kvittanir kemur næst
+              </div>
+            </button>
+
+            <button
+              onClick={() => setScreen("Allur kostnaður")}
+              style={{
+                ...cardStyle(),
+                cursor: "pointer",
+                textAlign: "left",
+                border: "1px solid #dbeafe",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+              }}
+            >
+              <div style={{ fontSize: 26, fontWeight: 900 }}>📋 Sjá allan kostnað</div>
+              <div style={{ color: "#64748b", marginTop: 6 }}>
+                Skoða allt sem þú hefur skráð
+              </div>
+            </button>
+          </div>
+        )}
+
+        {screen === "Skrifa kostnað" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <button
+              style={{ ...buttonStyle(false), width: "fit-content" }}
+              onClick={() => setScreen("Kostnaður")}
+            >
+              ← Til baka
+            </button>
+
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>Skrifa kostnað</div>
+              <div style={{ color: "#64748b", marginBottom: 14 }}>
+                Hér geturðu skráð allan rekstrarkostnað.
+              </div>
+
+              <div style={{ display: "grid", gap: 12 }}>
+                <div>
+                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>
+                    Dagsetning
+                  </div>
+                  <input
+                    style={inputStyle()}
+                    type="date"
+                    value={expenseForm.date}
+                    onChange={(e) =>
+                      setExpenseForm((prev) => ({ ...prev, date: e.target.value }))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>
+                    Upphæð
+                  </div>
+                  <input
+                    style={inputStyle()}
+                    type="number"
+                    placeholder="Upphæð"
+                    value={expenseForm.amount}
+                    onChange={(e) =>
+                      setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))
+                    }
+                  />
+                </div>
+
+                <div>
+                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>
+                    Tegund kostnaðar
+                  </div>
+                  <select
+                    style={inputStyle()}
+                    value={expenseForm.category}
+                    onChange={(e) =>
+                      setExpenseForm((prev) => ({ ...prev, category: e.target.value }))
+                    }
+                  >
+                    <option value="fuel">Eldsneyti</option>
+                    <option value="clothes">Vinnufatnaður</option>
+                    <option value="tools">Vinnuvörur</option>
+                    <option value="maintenance">Viðhald</option>
+                    <option value="other">Annað</option>
+                  </select>
+                </div>
+
+                {expenseForm.category === "fuel" && (
+                  <div>
+                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>
+                      Eldsneytistegund
+                    </div>
+                    <select
+                      style={inputStyle()}
+                      value={expenseForm.fuelType}
+                      onChange={(e) =>
+                        setExpenseForm((prev) => ({ ...prev, fuelType: e.target.value }))
+                      }
+                    >
+                      <option value="diesel">Dísel</option>
+                      <option value="95">95</option>
+                      <option value="98">98</option>
+                    </select>
+                  </div>
+                )}
+
+                <div>
+                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>
+                    Athugasemd
+                  </div>
+                  <input
+                    style={inputStyle()}
+                    placeholder="T.d. N1, hanskar, olía eða annað"
+                    value={expenseForm.note}
+                    onChange={(e) =>
+                      setExpenseForm((prev) => ({ ...prev, note: e.target.value }))
+                    }
+                  />
+                </div>
+              </div>
+
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: 10,
+                  flexWrap: "wrap",
+                  marginTop: 14,
+                }}
+              >
+                <div style={{ color: "#64748b" }}>
+                  Þessi kostnaður fer svo inn í tölurnar og hagnaðinn.
+                </div>
+                <button style={buttonStyle(true)} onClick={addExpense}>
+                  Vista kostnað
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {screen === "Skanna QR" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <button
+              style={{ ...buttonStyle(false), width: "fit-content" }}
+              onClick={() => setScreen("Kostnaður")}
+            >
+              ← Til baka
+            </button>
+
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 28, fontWeight: 900 }}>Skanna QR</div>
+              <div style={{ color: "#64748b", marginTop: 8 }}>
+                Þetta er placeholder í bili. Næsta skref væri að tengja myndavél eða QR scanner.
+              </div>
+
+              <div
+                style={{
+                  marginTop: 14,
+                  padding: 20,
+                  borderRadius: 22,
+                  background: "#f8fafc",
+                  border: "1px dashed #cbd5e1",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: 48 }}>📷</div>
+                <div style={{ fontWeight: 900, fontSize: 22, marginTop: 8 }}>
+                  QR skönnun kemur næst
+                </div>
+                <div style={{ color: "#64748b", marginTop: 6 }}>
+                  Þá muntu geta lesið kvittun og fyllt dagsetningu og upphæð sjálfkrafa.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {screen === "Allur kostnaður" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <button
+              style={{ ...buttonStyle(false), width: "fit-content" }}
+              onClick={() => setScreen("Kostnaður")}
+            >
+              ← Til baka
+            </button>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
+              </div>
+
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}>
+                <div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div>
+                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gap: 10 }}>
+              {expenses.length === 0 && (
+                <div style={cardStyle()}>
+                  <div style={{ fontWeight: 800 }}>Enginn kostnaður skráður enn.</div>
+                  <div style={{ color: "#64748b", marginTop: 6 }}>
+                    Farðu í Skrifa kostnað og bættu við fyrstu færslunni.
+                  </div>
+                </div>
+              )}
+
+              {expenses.map((expense) => (
+                <div key={expense.id} style={cardStyle()}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      gap: 10,
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 22, fontWeight: 900 }}>{kr(expense.amount)}</div>
+                      <div style={{ color: "#64748b", marginTop: 4 }}>
+                        {formatLongDate(expense.date)}
+                      </div>
+                    </div>
+
+                    <button style={buttonStyle(false)} onClick={() => deleteExpense(expense.id)}>
+                      Eyða
+                    </button>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+                      gap: 10,
+                      marginTop: 12,
+                    }}
+                  >
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Flokkur</div>
+                      <div style={{ fontWeight: 900 }}>{expenseCategoryLabel(expense.category)}</div>
+                    </div>
+
+                    {expense.category === "fuel" && (
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                        <div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div>
+                        <div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuelType)}</div>
+                      </div>
+                    )}
+
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Skráð með</div>
+                      <div style={{ fontWeight: 900 }}>
+                        {expense.source === "manual" ? "Handvirkt" : "QR"}
+                      </div>
+                    </div>
+                  </div>
+
+                  {expense.note && (
+                    <div
+                      style={{
+                        marginTop: 12,
+                        background: "#f8fafc",
+                        borderRadius: 18,
+                        padding: 12,
+                      }}
+                    >
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Athugasemd</div>
+                      <div style={{ fontWeight: 700, marginTop: 4 }}>{expense.note}</div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {screen === "Meira" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button
@@ -2116,6 +2540,22 @@ export default function App() {
               <div style={{ fontSize: 26, fontWeight: 900 }}>🗺️ Kort</div>
               <div style={{ color: "#64748b", marginTop: 6 }}>
                 Sjá alla kúnna á korti og setja pinna
+              </div>
+            </button>
+
+            <button
+              onClick={() => setScreen("Kostnaður")}
+              style={{
+                ...cardStyle(),
+                cursor: "pointer",
+                textAlign: "left",
+                border: "1px solid #dbeafe",
+                background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+              }}
+            >
+              <div style={{ fontSize: 26, fontWeight: 900 }}>⛽ Kostnaður</div>
+              <div style={{ color: "#64748b", marginTop: 6 }}>
+                Skrá og skoða kostnað
               </div>
             </button>
 
