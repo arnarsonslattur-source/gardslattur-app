@@ -1879,6 +1879,65 @@ export default function App() {
           </div>
         )}
 
+  {screen === "Lesa kvittun" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button
+      style={{ ...buttonStyle(false), width: "fit-content" }}
+      onClick={() => setScreen("Kostnaður")}
+    >
+      ← Til baka
+    </button>
+
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 28, fontWeight: 900 }}>Lesa kvittun</div>
+
+      <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+        <label style={buttonStyle(true)}>
+          📷 Taka mynd
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setReceiptImage(URL.createObjectURL(file));
+            }}
+          />
+        </label>
+
+        <label style={buttonStyle(false)}>
+          🖼️ Velja mynd
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setReceiptImage(URL.createObjectURL(file));
+            }}
+          />
+        </label>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        {receiptImage ? (
+          <img
+            src={receiptImage}
+            style={{ width: "100%", borderRadius: 16 }}
+          />
+        ) : (
+          <div style={{ color: "#64748b" }}>
+            Engin mynd valin enn
+          </div>
+        )}
+      </div>
+    </div>
+  </div>
+)}
+        
         {screen === "Allur kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
