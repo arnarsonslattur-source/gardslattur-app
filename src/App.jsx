@@ -1742,6 +1742,22 @@ export default function App() {
               <div style={{ color: "#64748b", marginTop: 6 }}>Skannar kvittun og fyllir inn kostnað sjálfkrafa</div>
             </button>
 
+            <button
+  onClick={() => setScreen("Lesa kvittun")}
+  style={{
+    ...cardStyle(),
+    cursor: "pointer",
+    textAlign: "left",
+    border: "1px solid #dbeafe",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+  }}
+>
+  <div style={{ fontSize: 26, fontWeight: 900 }}>🧾 Lesa kvittun</div>
+  <div style={{ color: "#64748b", marginTop: 6 }}>
+    Taka mynd eða velja kvittun
+  </div>
+</button>
+            
             <button onClick={() => setScreen("Allur kostnaður")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}>
               <div style={{ fontSize: 26, fontWeight: 900 }}>📋 Sjá allan kostnað</div>
               <div style={{ color: "#64748b", marginTop: 6 }}>Flokkað og nýjasta fyrst</div>
