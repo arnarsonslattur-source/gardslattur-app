@@ -472,7 +472,8 @@ export default function App() {
   const [mapCustomerKey, setMapCustomerKey] = useState("");
   const [scanError, setScanError] = useState("");
   const [scanPreview, setScanPreview] = useState(null);
-
+  const [receiptImage, setReceiptImage] = useState(null);
+  
   const [dayTimerState, setDayTimerState] = useState(() => {
     try {
       const saved = localStorage.getItem(DAY_TIMER_STORAGE_KEY);
