@@ -3,6 +3,7 @@ import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaf
 import { Html5Qrcode } from "html5-qrcode";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { createWorker } from "tesseract.js";
 
 const baseCustomersByArea = {
   Brekkan: [
