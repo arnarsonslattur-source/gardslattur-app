@@ -2031,6 +2031,15 @@ const [receiptReading, setReceiptReading] = useState(false);
         }}
       >
         {receiptText || "Enginn texti lesinn enn."}
+        <div style={{ marginTop: 16 }}>
+  <button
+    style={buttonStyle(true)}
+    onClick={() => addExpense("manual")}
+    disabled={!expenseForm.amount}
+  >
+    Vista í kostnað
+  </button>
+</div>
       </div>
     </div>
   </div>
