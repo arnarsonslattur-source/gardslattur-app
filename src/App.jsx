@@ -692,8 +692,40 @@ const [receiptReading, setReceiptReading] = useState(false);
   await worker.initialize("eng");
 
   const { data } = await worker.recognize(receiptImage);
+  const text = data.text || "";
 
-  setReceiptText(data.text);
+  setReceiptText(text);
+
+  const amountMatch =
+    text.match(/Samtals.*?ISK\s*([0-9]+)/i) ||
+    text.match(/ISK\s*([0-9]+)/i);
+
+  const dateMatch =
+    text.match(/(\d{2}-\d{2}-\d{4})/) ||
+    text.match(/(\d{2}\/\d{2}\/\d{4})/);
+
+  let fuelType = "";
+  if (text.includes("95")) fuelType = "95";
+  else if (text.includes("98")) fuelType = "98";
+  else if (
+    text.toLowerCase().includes("diesel") ||
+    text.toLowerCase().includes("dísel")
+  ) {
+    fuelType = "diesel";
+  }
+
+  setExpenseForm((prev) => ({
+    ...prev,
+    amount: amountMatch ? amountMatch[1] : prev.amount,
+    date: dateMatch
+      ? dateMatch[1].includes("-")
+        ? dateMatch[1].split("-").reverse().join("-")
+        : prev.date
+      : prev.date,
+    category: "fuel",
+    fuelType: fuelType || prev.fuelType,
+    note: text.slice(0, 120),
+  }));
 
   await worker.terminate();
 
