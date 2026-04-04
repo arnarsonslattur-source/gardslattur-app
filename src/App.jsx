@@ -1962,6 +1962,7 @@ const [receiptReading, setReceiptReading] = useState(false);
         </label>
       </div>
 
+      {/* Mynd preview */}
       <div style={{ marginTop: 16 }}>
         {receiptImage ? (
           <img
@@ -1973,6 +1974,31 @@ const [receiptReading, setReceiptReading] = useState(false);
             Engin mynd valin enn
           </div>
         )}
+      </div>
+
+      {/* 🔥 NÝTT - Lesa kvittun takki */}
+      <div style={{ marginTop: 16 }}>
+        <button
+          style={buttonStyle(true)}
+          onClick={readReceipt}
+          disabled={!receiptImage || receiptReading}
+        >
+          {receiptReading ? "Les kvittun..." : "Lesa kvittun"}
+        </button>
+      </div>
+
+      {/* 🔥 NÝTT - Texti úr kvittun */}
+      <div
+        style={{
+          marginTop: 16,
+          padding: 16,
+          borderRadius: 18,
+          background: "#f8fafc",
+          border: "1px solid #e2e8f0",
+          whiteSpace: "pre-wrap",
+        }}
+      >
+        {receiptText || "Enginn texti lesinn enn."}
       </div>
     </div>
   </div>
