@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import { Html5Qrcode } from "html5-qrcode";
+import { createWorker } from "tesseract.js";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { createWorker } from "tesseract.js";
 
 const baseCustomersByArea = {
   Brekkan: [
@@ -316,18 +316,12 @@ function parseIcelandicReceiptQr(raw) {
   }
 
   let date = null;
-  const datePatterns = [
-    /(20\d{2})[-/.](\d{2})[-/.](\d{2})/,
-    /(\d{2})[-/.](\d{2})[-/.](20\d{2})/,
-  ];
-  for (const pattern of datePatterns) {
-    const match = compact.match(pattern);
+  const datePatterns = [/(20\d{2})[-/.](\d{2})[-/.](\d{2})/, /(\d{2})[-/.](\d{2})[-/.](20\d{2})/];
+  for (let i = 0; i < datePatterns.length; i++) {
+    const match = compact.match(datePatterns[i]);
     if (match) {
-      if (pattern === datePatterns[0]) {
-        date = `${match[1]}-${match[2]}-${match[3]}`;
-      } else {
-        date = `${match[3]}-${match[2]}-${match[1]}`;
-      }
+      if (i === 0) date = `${match[1]}-${match[2]}-${match[3]}`;
+      else date = `${match[3]}-${match[2]}-${match[1]}`;
       break;
     }
   }
@@ -365,11 +359,7 @@ function QrScannerCard({ onDetected, scanError, setScanError }) {
 
         await scanner.start(
           { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 220, height: 220 },
-            aspectRatio: 1,
-          },
+          { fps: 10, qrbox: { width: 220, height: 220 }, aspectRatio: 1 },
           (decodedText) => {
             if (cancelled) return;
             onDetected(decodedText);
@@ -400,17 +390,9 @@ function QrScannerCard({ onDetected, scanError, setScanError }) {
     <div>
       <div
         id={regionIdRef.current}
-        style={{
-          width: "100%",
-          minHeight: 320,
-          overflow: "hidden",
-          borderRadius: 22,
-          background: "#0f172a",
-        }}
+        style={{ width: "100%", minHeight: 320, overflow: "hidden", borderRadius: 22, background: "#0f172a" }}
       />
-      {scanError && (
-        <div style={{ color: "#b91c1c", marginTop: 10, fontWeight: 700 }}>{scanError}</div>
-      )}
+      {scanError && <div style={{ color: "#b91c1c", marginTop: 10, fontWeight: 700 }}>{scanError}</div>}
     </div>
   );
 }
@@ -450,8 +432,8 @@ export default function App() {
   const [expandedArea, setExpandedArea] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date(2026, 3, 1)));
   const [editingLogId, setEditingLogId] = useState(null);
-
   const [selectedPlanDay, setSelectedPlanDay] = useState(null);
+
   const [planEntries, setPlanEntries] = useState(() => {
     try {
       const saved = localStorage.getItem(PLAN_STORAGE_KEY);
@@ -474,26 +456,17 @@ export default function App() {
   const [scanError, setScanError] = useState("");
   const [scanPreview, setScanPreview] = useState(null);
   const [receiptImage, setReceiptImage] = useState(null);
-
   const [receiptText, setReceiptText] = useState("");
-const [receiptReading, setReceiptReading] = useState(false);
-  
+  const [receiptReading, setReceiptReading] = useState(false);
+
   const [dayTimerState, setDayTimerState] = useState(() => {
     try {
       const saved = localStorage.getItem(DAY_TIMER_STORAGE_KEY);
       return saved
         ? JSON.parse(saved)
-        : {
-            startTime: null,
-            running: false,
-            accumulatedMs: 0,
-          };
+        : { startTime: null, running: false, accumulatedMs: 0 };
     } catch {
-      return {
-        startTime: null,
-        running: false,
-        accumulatedMs: 0,
-      };
+      return { startTime: null, running: false, accumulatedMs: 0 };
     }
   });
 
@@ -545,42 +518,30 @@ const [receiptReading, setReceiptReading] = useState(false);
   });
 
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(logs));
-    } catch {}
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(logs)); } catch {}
   }, [logs]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(customCustomers));
-    } catch {}
+    try { localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(customCustomers)); } catch {}
   }, [customCustomers]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(planEntries));
-    } catch {}
+    try { localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(planEntries)); } catch {}
   }, [planEntries]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(customerLocations));
-    } catch {}
+    try { localStorage.setItem(LOCATION_STORAGE_KEY, JSON.stringify(customerLocations)); } catch {}
   }, [customerLocations]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(DAY_TIMER_STORAGE_KEY, JSON.stringify(dayTimerState));
-    } catch {}
+    try { localStorage.setItem(DAY_TIMER_STORAGE_KEY, JSON.stringify(dayTimerState)); } catch {}
   }, [dayTimerState]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses));
-    } catch {}
+    try { localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses)); } catch {}
   }, [expenses]);
-
-  useEffect(() => {
+  
+    useEffect(() => {
     if (!dayTimerState.running) return;
     const interval = setInterval(() => setTimerNow(Date.now()), 1000);
     return () => clearInterval(interval);
@@ -662,76 +623,8 @@ const [receiptReading, setReceiptReading] = useState(false);
   };
 
   const addCustomer = () => {
-  if (!newCustomerForm.name || !newCustomerForm.price) return;
+    if (!newCustomerForm.name || !newCustomerForm.price) return;
 
-  const newCustomer = {
-    id: Date.now(),
-    name: newCustomerForm.name,
-    area: newCustomerForm.area,
-    pricing: newCustomerForm.pricing,
-    price: Number(newCustomerForm.price),
-  };
-
-  setCustomCustomers((prev) => [...prev, newCustomer]);
-  setNewCustomerForm({
-    name: "",
-    area: "Brekkan",
-    pricing: "fixed",
-    price: "",
-  });
-};
- 
-  const readReceipt = async () => {
-  if (!receiptImage) return;
-
-  setReceiptReading(true);
-
-  const worker = await createWorker();
-
-  await worker.loadLanguage("eng");
-  await worker.initialize("eng");
-
-  const { data } = await worker.recognize(receiptImage);
-  const text = data.text || "";
-
-  setReceiptText(text);
-
-  const amountMatch =
-    text.match(/Samtals.*?ISK\s*([0-9]+)/i) ||
-    text.match(/ISK\s*([0-9]+)/i);
-
-  const dateMatch =
-    text.match(/(\d{2}-\d{2}-\d{4})/) ||
-    text.match(/(\d{2}\/\d{2}\/\d{4})/);
-
-  let fuelType = "";
-  if (text.includes("95")) fuelType = "95";
-  else if (text.includes("98")) fuelType = "98";
-  else if (
-    text.toLowerCase().includes("diesel") ||
-    text.toLowerCase().includes("dísel")
-  ) {
-    fuelType = "diesel";
-  }
-
-  setExpenseForm((prev) => ({
-    ...prev,
-    amount: amountMatch ? amountMatch[1] : prev.amount,
-    date: dateMatch
-      ? dateMatch[1].includes("-")
-        ? dateMatch[1].split("-").reverse().join("-")
-        : prev.date
-      : prev.date,
-    category: "fuel",
-    fuelType: fuelType || prev.fuelType,
-    note: text.slice(0, 120),
-  }));
-
-  await worker.terminate();
-
-  setReceiptReading(false);
-};
-  
     const newCustomer = {
       id: Date.now(),
       name: newCustomerForm.name,
@@ -747,6 +640,56 @@ const [receiptReading, setReceiptReading] = useState(false);
       pricing: "fixed",
       price: "",
     });
+  };
+
+  const readReceipt = async () => {
+    if (!receiptImage) return;
+
+    setReceiptReading(true);
+
+    try {
+      const worker = await createWorker("eng");
+      const result = await worker.recognize(receiptImage);
+      const text = result?.data?.text || "";
+
+      setReceiptText(text);
+
+      const amountMatch =
+        text.match(/Samtals.*?ISK\s*([0-9]+)/i) ||
+        text.match(/ISK\s*([0-9]+)/i);
+
+      const dateMatch =
+        text.match(/(\d{2}-\d{2}-\d{4})/) ||
+        text.match(/(\d{2}\/\d{2}\/\d{4})/) ||
+        text.match(/(\d{2}\.\d{2}\.\d{4})/);
+
+      let parsedDate = "";
+      if (dateMatch?.[1]) {
+        if (dateMatch[1].includes("-")) parsedDate = dateMatch[1].split("-").reverse().join("-");
+        else if (dateMatch[1].includes(".")) parsedDate = dateMatch[1].split(".").reverse().join("-");
+      }
+
+      let fuelType = "";
+      if (text.includes("95")) fuelType = "95";
+      else if (text.includes("98")) fuelType = "98";
+      else if (text.toLowerCase().includes("diesel") || text.toLowerCase().includes("dísel")) fuelType = "diesel";
+
+      setExpenseForm((prev) => ({
+        ...prev,
+        amount: amountMatch ? amountMatch[1] : prev.amount,
+        date: parsedDate || prev.date,
+        category: "fuel",
+        fuelType: fuelType || prev.fuelType,
+        note: text.slice(0, 120),
+      }));
+
+      await worker.terminate();
+    } catch (error) {
+      console.error(error);
+      setReceiptText("Ekki tókst að lesa kvittun.");
+    } finally {
+      setReceiptReading(false);
+    }
   };
 
   const addExpense = (source = "manual") => {
@@ -766,12 +709,10 @@ const [receiptReading, setReceiptReading] = useState(false);
       ...prev,
     ]);
 
-    setExpenseForm((prev) => ({
-      ...prev,
-      amount: "",
-      note: "",
-    }));
+    setExpenseForm((prev) => ({ ...prev, amount: "", note: "" }));
     setScanPreview(null);
+    setReceiptText("");
+    setReceiptImage(null);
   };
 
   const deleteExpense = (id) => {
@@ -824,9 +765,7 @@ const [receiptReading, setReceiptReading] = useState(false);
       return next;
     });
 
-    if (mapCustomerKey === oldKey) {
-      setMapCustomerKey(newKey);
-    }
+    if (mapCustomerKey === oldKey) setMapCustomerKey(newKey);
   };
 
   const deleteCustomCustomer = (customerId) => {
@@ -846,9 +785,7 @@ const [receiptReading, setReceiptReading] = useState(false);
     if (mapCustomerKey === key) setMapCustomerKey("");
   };
 
-  const togglePaid = (id) => {
-    setLogs((prev) => prev.map((log) => (log.id === id ? { ...log, paid: !log.paid } : log)));
-  };
+  const togglePaid = (id) => setLogs((prev) => prev.map((log) => (log.id === id ? { ...log, paid: !log.paid } : log)));
 
   const deleteLog = (id) => {
     setLogs((prev) => prev.filter((log) => log.id !== id));
@@ -857,13 +794,7 @@ const [receiptReading, setReceiptReading] = useState(false);
 
   const startEditLog = (log) => {
     setEditingLogId(log.id);
-    setEditForm({
-      date: log.date,
-      startTime: log.startTime,
-      endTime: log.endTime,
-      earned: String(log.earned),
-      paid: log.paid,
-    });
+    setEditForm({ date: log.date, startTime: log.startTime, endTime: log.endTime, earned: String(log.earned), paid: log.paid });
   };
 
   const saveEditLog = () => {
@@ -894,7 +825,6 @@ const [receiptReading, setReceiptReading] = useState(false);
   const unpaidTotal = logs.filter((log) => !log.paid).reduce((sum, log) => sum + log.earned, 0);
   const paidTotal = logs.filter((log) => log.paid).reduce((sum, log) => sum + log.earned, 0);
   const allMinutes = logs.reduce((sum, log) => sum + log.minutes, 0);
-
   const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
   const fuelExpenses = expenses.filter((e) => e.category === "fuel").reduce((sum, e) => sum + e.amount, 0);
   const profitAfterExpenses = allTotal - totalExpenses;
@@ -924,7 +854,6 @@ const [receiptReading, setReceiptReading] = useState(false);
   const clientsByArea = useMemo(() => {
     return AREA_ORDER.map((area) => {
       const clients = clientCards.filter((client) => client.area === area).sort((a, b) => a.price - b.price);
-
       return {
         area,
         clients,
@@ -944,45 +873,27 @@ const [receiptReading, setReceiptReading] = useState(false);
 
   const dayTimerMinutes = useMemo(() => {
     const runningMs = dayTimerState.running && dayTimerState.startTime ? Math.max(0, timerNow - dayTimerState.startTime) : 0;
-    const totalMs = (dayTimerState.accumulatedMs || 0) + runningMs;
-    return Math.floor(totalMs / 60000);
+    return Math.floor(((dayTimerState.accumulatedMs || 0) + runningMs) / 60000);
   }, [dayTimerState, timerNow]);
 
   const startDayTimer = () => {
     setTimerNow(Date.now());
-    setDayTimerState({
-      startTime: Date.now(),
-      running: true,
-      accumulatedMs: 0,
-    });
+    setDayTimerState({ startTime: Date.now(), running: true, accumulatedMs: 0 });
   };
 
   const stopDayTimer = () => {
     if (!dayTimerState.startTime) return;
     const elapsed = Math.max(0, Date.now() - dayTimerState.startTime);
-
-    setDayTimerState((prev) => ({
-      startTime: null,
-      running: false,
-      accumulatedMs: (prev.accumulatedMs || 0) + elapsed,
-    }));
+    setDayTimerState((prev) => ({ startTime: null, running: false, accumulatedMs: (prev.accumulatedMs || 0) + elapsed }));
   };
 
   const resumeDayTimer = () => {
     setTimerNow(Date.now());
-    setDayTimerState((prev) => ({
-      ...prev,
-      startTime: Date.now(),
-      running: true,
-    }));
+    setDayTimerState((prev) => ({ ...prev, startTime: Date.now(), running: true }));
   };
 
   const resetDayTimer = () => {
-    setDayTimerState({
-      startTime: null,
-      running: false,
-      accumulatedMs: 0,
-    });
+    setDayTimerState({ startTime: null, running: false, accumulatedMs: 0 });
     setTimerNow(Date.now());
   };
 
@@ -1001,7 +912,6 @@ const [receiptReading, setReceiptReading] = useState(false);
   }, [selectedMonth]);
 
   const monthCells = useMemo(() => buildCalendar(monthDate.getFullYear(), monthDate.getMonth()), [monthDate]);
-
   const selectedDayLogs = selectedDay ? logsByDate[selectedDay] || [] : [];
   const selectedPlanText = selectedPlanDay ? planEntries[selectedPlanDay] || "" : "";
 
@@ -1022,11 +932,7 @@ const [receiptReading, setReceiptReading] = useState(false);
 
   const allCustomers = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
-      list.map((customer) => ({
-        ...customer,
-        area,
-        key: makeCustomerKey({ ...customer, area }),
-      }))
+      list.map((customer) => ({ ...customer, area, key: makeCustomerKey({ ...customer, area }) }))
     );
   }, [customersByArea]);
 
@@ -1034,19 +940,14 @@ const [receiptReading, setReceiptReading] = useState(false);
 
   const setCustomerLocation = (latlng) => {
     if (!selectedMapCustomer) return;
-
     setCustomerLocations((prev) => ({
       ...prev,
-      [selectedMapCustomer.key]: {
-        lat: Number(latlng.lat.toFixed(6)),
-        lng: Number(latlng.lng.toFixed(6)),
-      },
+      [selectedMapCustomer.key]: { lat: Number(latlng.lat.toFixed(6)), lng: Number(latlng.lng.toFixed(6)) },
     }));
   };
 
   const clearCustomerLocation = () => {
     if (!selectedMapCustomer) return;
-
     setCustomerLocations((prev) => {
       const next = { ...prev };
       delete next[selectedMapCustomer.key];
@@ -1055,20 +956,13 @@ const [receiptReading, setReceiptReading] = useState(false);
   };
 
   const expensesSortedNewest = useMemo(() => {
-    return [...expenses].sort((a, b) => {
-      const aKey = `${a.date || ""} ${a.createdAt || ""}`;
-      const bKey = `${b.date || ""} ${b.createdAt || ""}`;
-      return bKey.localeCompare(aKey);
-    });
+    return [...expenses].sort((a, b) => `${b.date || ""} ${b.createdAt || ""}`.localeCompare(`${a.date || ""} ${a.createdAt || ""}`));
   }, [expenses]);
 
   const groupedExpenses = useMemo(() => {
     const order = ["fuel", "clothes", "tools", "maintenance", "other"];
     return order
-      .map((category) => ({
-        category,
-        items: expensesSortedNewest.filter((expense) => expense.category === category),
-      }))
+      .map((category) => ({ category, items: expensesSortedNewest.filter((expense) => expense.category === category) }))
       .filter((group) => group.items.length > 0);
   }, [expensesSortedNewest]);
 
@@ -1084,90 +978,31 @@ const [receiptReading, setReceiptReading] = useState(false);
       }}
     >
       <div style={{ maxWidth: 900, margin: "0 auto" }}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: 16,
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <div>
-            <div
-              style={{
-                fontSize: 34,
-                fontWeight: 900,
-                letterSpacing: "-0.05em",
-                lineHeight: 1,
-              }}
-            >
-              Garðsláttur Bjarka
-            </div>
+            <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1 }}>Garðsláttur Bjarka</div>
             <div style={{ color: "#64748b", marginTop: 6 }}>Snirtilegt mobile app fyrir slætti</div>
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#1d4ed8" }}>2026</div>
         </div>
-
-        {screen === "Dagatal" && (
+        
+                {screen === "Dagatal" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={cardStyle()}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginBottom: 14,
-                }}
-              >
-                <select
-                  style={{ ...inputStyle(), maxWidth: 220 }}
-                  value={selectedMonth}
-                  onChange={(e) => {
-                    setSelectedMonth(e.target.value);
-                    setSelectedDay(null);
-                  }}
-                >
-                  {monthOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+                <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedDay(null); }}>
+                  {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
                 <div style={{ color: "#64748b", fontWeight: 700 }}>Ýttu á dag til að sjá detail</div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
-                {WEEK_DAYS.map((d) => (
-                  <div
-                    key={d}
-                    style={{
-                      textAlign: "center",
-                      fontWeight: 800,
-                      color: "#64748b",
-                      padding: "6px 0",
-                    }}
-                  >
-                    {d}
-                  </div>
-                ))}
+                {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
                 {monthCells.map((cell, i) => {
-                  if (!cell) {
-                    return (
-                      <div
-                        key={i}
-                        style={{
-                          minHeight: 104,
-                          borderRadius: 20,
-                          background: "rgba(226,232,240,0.45)",
-                        }}
-                      />
-                    );
-                  }
+                  if (!cell) return <div key={i} style={{ minHeight: 104, borderRadius: 20, background: "rgba(226,232,240,0.45)" }} />;
 
                   const dayLogs = logsByDate[cell.dateStr] || [];
                   const total = dayLogs.reduce((sum, log) => sum + log.earned, 0);
@@ -1178,33 +1013,10 @@ const [receiptReading, setReceiptReading] = useState(false);
                     <button
                       key={cell.dateStr}
                       onClick={() => setSelectedDay(cell.dateStr)}
-                      style={{
-                        minHeight: 104,
-                        borderRadius: 20,
-                        border: selectedDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea",
-                        background: bg,
-                        textAlign: "left",
-                        padding: 10,
-                        cursor: "pointer",
-                      }}
+                      style={{ minHeight: 104, borderRadius: 20, border: selectedDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea", background: bg, textAlign: "left", padding: 10, cursor: "pointer" }}
                     >
                       <div style={{ fontWeight: 900, fontSize: 24 }}>{cell.day}</div>
-
-                      {dayLogs.slice(0, 2).map((log) => (
-                        <div
-                          key={log.id}
-                          style={{
-                            fontSize: 12,
-                            color: "#334155",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                          }}
-                        >
-                          {log.customer}
-                        </div>
-                      ))}
-
+                      {dayLogs.slice(0, 2).map((log) => <div key={log.id} style={{ fontSize: 12, color: "#334155", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{log.customer}</div>)}
                       {dayLogs.length > 0 && <div style={{ marginTop: 6, fontSize: 12, fontWeight: 800 }}>{kr(total)}</div>}
                     </button>
                   );
@@ -1214,13 +1026,7 @@ const [receiptReading, setReceiptReading] = useState(false);
 
             {selectedDay && (
               <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
-                <div
-                  style={{
-                    background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)",
-                    color: "#fff",
-                    padding: 18,
-                  }}
-                >
+                <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                   <div style={{ fontSize: 32, fontWeight: 900 }}>{formatLongDate(selectedDay)}</div>
                   <div style={{ opacity: 0.9, marginTop: 6 }}>
                     {selectedDayLogs.length} færslur • {minsToText(selectedDayLogs.reduce((s, l) => s + l.minutes, 0))} • {kr(selectedDayLogs.reduce((s, l) => s + l.earned, 0))}
@@ -1229,62 +1035,20 @@ const [receiptReading, setReceiptReading] = useState(false);
 
                 <div style={{ padding: 14, display: "grid", gap: 10 }}>
                   {selectedDayLogs.length === 0 && <div style={{ color: "#64748b" }}>Engar færslur þennan dag.</div>}
-
                   {selectedDayLogs.map((log) => (
-                    <div
-                      key={log.id}
-                      style={{
-                        background: "#fff",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: 22,
-                        padding: 14,
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          gap: 10,
-                          flexWrap: "wrap",
-                          alignItems: "center",
-                          marginBottom: 10,
-                        }}
-                      >
+                    <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
                         <div>
                           <div style={{ fontSize: 20, fontWeight: 900 }}>{log.customer}</div>
                           <div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div>
                         </div>
-
-                        <div
-                          style={{
-                            padding: "8px 12px",
-                            borderRadius: 999,
-                            background: log.paid ? "#dcfce7" : "#fee2e2",
-                            color: log.paid ? "#166534" : "#991b1b",
-                            fontWeight: 800,
-                          }}
-                        >
-                          {log.paid ? "Greitt" : "Ógreitt"}
-                        </div>
+                        <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>{log.paid ? "Greitt" : "Ógreitt"}</div>
                       </div>
-
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                          <div style={{ color: "#64748b", fontSize: 13 }}>Frá</div>
-                          <div style={{ fontWeight: 900, fontSize: 20 }}>{log.startTime}</div>
-                        </div>
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                          <div style={{ color: "#64748b", fontSize: 13 }}>Til</div>
-                          <div style={{ fontWeight: 900, fontSize: 20 }}>{log.endTime}</div>
-                        </div>
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                          <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-                          <div style={{ fontWeight: 900, fontSize: 20 }}>{minsToText(log.minutes)}</div>
-                        </div>
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                          <div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div>
-                          <div style={{ fontWeight: 900, fontSize: 20 }}>{kr(log.earned)}</div>
-                        </div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Frá</div><div style={{ fontWeight: 900, fontSize: 20 }}>{log.startTime}</div></div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Til</div><div style={{ fontWeight: 900, fontSize: 20 }}>{log.endTime}</div></div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900, fontSize: 20 }}>{minsToText(log.minutes)}</div></div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div><div style={{ fontWeight: 900, fontSize: 20 }}>{kr(log.earned)}</div></div>
                       </div>
                     </div>
                   ))}
@@ -1318,26 +1082,14 @@ const [receiptReading, setReceiptReading] = useState(false);
                   ) : (
                     <button style={buttonStyle(true)} onClick={resumeDayTimer}>Halda áfram</button>
                   )}
-
-                  {(dayTimerState.running || dayTimerState.accumulatedMs > 0) && (
-                    <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>
-                  )}
+                  {(dayTimerState.running || dayTimerState.accumulatedMs > 0) && <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>}
                 </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
-                <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}>
-                  <div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div>
-                  <div style={{ fontWeight: 900, fontSize: 24 }}>{kr(myDayLogs.reduce((s, l) => s + l.earned, 0))}</div>
-                </div>
-                <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}>
-                  <div style={{ color: "#475569", fontSize: 13 }}>Sláttutími</div>
-                  <div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div>
-                </div>
-                <div style={{ background: "#dcfce7", borderRadius: 22, padding: 14 }}>
-                  <div style={{ color: "#475569", fontSize: 13 }}>Slættir í dag</div>
-                  <div style={{ fontWeight: 900, fontSize: 24 }}>{myDayLogs.length}</div>
-                </div>
+                <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{kr(myDayLogs.reduce((s, l) => s + l.earned, 0))}</div></div>
+                <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Sláttutími</div><div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div></div>
+                <div style={{ background: "#dcfce7", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Slættir í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{myDayLogs.length}</div></div>
               </div>
             </div>
 
@@ -1348,30 +1100,16 @@ const [receiptReading, setReceiptReading] = useState(false);
                   <div style={{ color: "#64748b", marginTop: 6 }}>Farðu í Skrá og bættu við slætti til að sjá timeline hér.</div>
                 </div>
               )}
-
               {myDayLogs.map((log) => (
                 <div key={log.id} style={cardStyle()}>
                   <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                    <div>
-                      <div style={{ fontSize: 22, fontWeight: 900 }}>{log.customer}</div>
-                      <div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div>
-                    </div>
+                    <div><div style={{ fontSize: 22, fontWeight: 900 }}>{log.customer}</div><div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div></div>
                     <div style={{ fontWeight: 900, fontSize: 22 }}>{kr(log.earned)}</div>
                   </div>
-
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Frá</div>
-                      <div style={{ fontWeight: 900 }}>{log.startTime}</div>
-                    </div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Til</div>
-                      <div style={{ fontWeight: 900 }}>{log.endTime}</div>
-                    </div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-                      <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
-                    </div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Frá</div><div style={{ fontWeight: 900 }}>{log.startTime}</div></div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Til</div><div style={{ fontWeight: 900 }}>{log.endTime}</div></div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div></div>
                   </div>
                 </div>
               ))}
@@ -1393,42 +1131,22 @@ const [receiptReading, setReceiptReading] = useState(false);
               <div style={{ display: "grid", gap: 12 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
                   <select style={inputStyle()} value={entry.area} onChange={(e) => setAreaAndDefaultCustomer(e.target.value)}>
-                    {AREA_ORDER.map((area) => (
-                      <option key={area} value={area}>{area}</option>
-                    ))}
+                    {AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}
                   </select>
-
                   <select style={inputStyle()} value={entry.customer} onChange={(e) => setCustomerAndAutoPrice(e.target.value)}>
-                    {availableCustomers.map((customer) => (
-                      <option key={`${entry.area}-${customer.id}`} value={customer.name}>{customer.name}</option>
-                    ))}
+                    {availableCustomers.map((customer) => <option key={`${entry.area}-${customer.id}`} value={customer.name}>{customer.name}</option>)}
                   </select>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div>
-                    <input style={inputStyle()} type="date" value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Frá</div>
-                    <input style={inputStyle()} type="time" value={entry.startTime} onChange={(e) => setEntry({ ...entry, startTime: e.target.value })} />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Til</div>
-                    <input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} />
-                  </div>
+                  <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div><input style={inputStyle()} type="date" value={entry.date} onChange={(e) => setEntry({ ...entry, date: e.target.value })} /></div>
+                  <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Frá</div><input style={inputStyle()} type="time" value={entry.startTime} onChange={(e) => setEntry({ ...entry, startTime: e.target.value })} /></div>
+                  <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Til</div><input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} /></div>
                 </div>
 
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
-                  <div>
-                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div>
-                    <input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" />
-                  </div>
-                  <div>
-                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Heildartími</div>
-                    <div style={{ ...inputStyle(), display: "flex", alignItems: "center", fontWeight: 900, fontSize: 24, background: "#f8fafc" }}>{minsToText(currentMinutes)}</div>
-                  </div>
+                  <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div><input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" /></div>
+                  <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Heildartími</div><div style={{ ...inputStyle(), display: "flex", alignItems: "center", fontWeight: 900, fontSize: 24, background: "#f8fafc" }}>{minsToText(currentMinutes)}</div></div>
                 </div>
 
                 <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700, minHeight: 62 }}>
@@ -1447,67 +1165,45 @@ const [receiptReading, setReceiptReading] = useState(false);
 
         {screen === "Viðskiptavinir" && (
           <div style={{ display: "grid", gap: 16 }}>
-            {!selectedClient &&
-              clientsByArea.map((group) => {
-                const isOpen = expandedArea === group.area;
-                return (
-                  <div key={group.area} style={cardStyle({ padding: 0, overflow: "hidden" })}>
-                    <button onClick={() => setExpandedArea(isOpen ? null : group.area)} style={{ width: "100%", border: "none", background: "transparent", padding: 18, cursor: "pointer", textAlign: "left" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-                        <div>
-                          <div style={{ fontSize: 28, fontWeight: 900 }}>{group.area}</div>
-                          <div style={{ color: "#64748b", marginTop: 6 }}>{group.clients.length} kúnnar • {kr(group.totalEarned)} • {minsToText(group.totalMinutes)}</div>
+            {!selectedClient && clientsByArea.map((group) => {
+              const isOpen = expandedArea === group.area;
+              return (
+                <div key={group.area} style={cardStyle({ padding: 0, overflow: "hidden" })}>
+                  <button onClick={() => setExpandedArea(isOpen ? null : group.area)} style={{ width: "100%", border: "none", background: "transparent", padding: 18, cursor: "pointer", textAlign: "left" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+                      <div><div style={{ fontSize: 28, fontWeight: 900 }}>{group.area}</div><div style={{ color: "#64748b", marginTop: 6 }}>{group.clients.length} kúnnar • {kr(group.totalEarned)} • {minsToText(group.totalMinutes)}</div></div>
+                      <div style={{ fontSize: 26, fontWeight: 900, color: "#1d4ed8" }}>{isOpen ? "−" : "+"}</div>
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
+                      {group.clients.map((client, index) => (
+                        <div key={client.key} style={{ display: "grid", gap: 10 }}>
+                          {index > 0 && <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #cbd5e1, transparent)", margin: "2px 6px" }} />}
+                          <button onClick={() => setSelectedClient(client.name)} style={{ ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }), textAlign: "left", cursor: "pointer" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                              <div><div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div><div style={{ color: "#64748b", marginTop: 4 }}>{client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}</div></div>
+                              <div style={{ color: "#1d4ed8", fontWeight: 800 }}>Open</div>
+                            </div>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Slættir</div><div style={{ fontWeight: 900 }}>{client.count}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div><div style={{ fontWeight: 900 }}>{minsToText(client.totalMinutes)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div><div style={{ fontWeight: 900 }}>{kr(client.totalEarned)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tímakaup</div><div style={{ fontWeight: 900 }}>{client.totalMinutes > 0 ? `${kr(client.calculatedHourly)}/klst` : "0 kr./klst"}</div></div>
+                            </div>
+                          </button>
                         </div>
-                        <div style={{ fontSize: 26, fontWeight: 900, color: "#1d4ed8" }}>{isOpen ? "−" : "+"}</div>
-                      </div>
-                    </button>
-
-                    {isOpen && (
-                      <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
-                        {group.clients.map((client, index) => (
-                          <div key={client.key} style={{ display: "grid", gap: 10 }}>
-                            {index > 0 && <div style={{ height: 1, background: "linear-gradient(90deg, transparent, #cbd5e1, transparent)", margin: "2px 6px" }} />}
-
-                            <button onClick={() => setSelectedClient(client.name)} style={{ ...cardStyle({ padding: 14, boxShadow: "none", borderRadius: 22, background: "#fff" }), textAlign: "left", cursor: "pointer" }}>
-                              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                                <div>
-                                  <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
-                                  <div style={{ color: "#64748b", marginTop: 4 }}>{client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}</div>
-                                </div>
-                                <div style={{ color: "#1d4ed8", fontWeight: 800 }}>Open</div>
-                              </div>
-
-                              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
-                                <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                                  <div style={{ color: "#64748b", fontSize: 13 }}>Slættir</div>
-                                  <div style={{ fontWeight: 900 }}>{client.count}</div>
-                                </div>
-                                <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                                  <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
-                                  <div style={{ fontWeight: 900 }}>{minsToText(client.totalMinutes)}</div>
-                                </div>
-                                <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                                  <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
-                                  <div style={{ fontWeight: 900 }}>{kr(client.totalEarned)}</div>
-                                </div>
-                                <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                                  <div style={{ color: "#64748b", fontSize: 13 }}>Tímakaup</div>
-                                  <div style={{ fontWeight: 900 }}>{client.totalMinutes > 0 ? `${kr(client.calculatedHourly)}/klst` : "0 kr./klst"}</div>
-                                </div>
-                              </div>
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {selectedClientCard && (
               <div style={{ display: "grid", gap: 16 }}>
                 <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>← Til baka</button>
-
                 <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
                   <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                     <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
@@ -1516,31 +1212,16 @@ const [receiptReading, setReceiptReading] = useState(false);
 
                   <div style={{ padding: 14, display: "grid", gap: 12 }}>
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
-                        <div style={{ fontWeight: 900 }}>{selectedClientCard.pricing === "hourly" ? `Tímakaup ${kr(selectedClientCard.price)}/klst` : `Fast verð ${kr(selectedClientCard.price)}`}</div>
-                      </div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
-                        <div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div>
-                      </div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
-                        <div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div>
-                      </div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                        <div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div>
-                        <div style={{ fontWeight: 900 }}>{selectedClientCard.totalMinutes > 0 ? `${kr(selectedClientCard.calculatedHourly)}/klst` : "0 kr./klst"}</div>
-                      </div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{selectedClientCard.pricing === "hourly" ? `Tímakaup ${kr(selectedClientCard.price)}/klst` : `Fast verð ${kr(selectedClientCard.price)}`}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div><div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div><div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div></div>
+                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div><div style={{ fontWeight: 900 }}>{selectedClientCard.totalMinutes > 0 ? `${kr(selectedClientCard.calculatedHourly)}/klst` : "0 kr./klst"}</div></div>
                     </div>
-
-                    {selectedClientCard.logs.map((log) => (
+                    
+                                        {selectedClientCard.logs.map((log) => (
                       <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
-                          <div>
-                            <div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div>
-                            <div style={{ color: "#64748b", marginTop: 4 }}>{log.startTime} – {log.endTime}</div>
-                          </div>
+                          <div><div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div><div style={{ color: "#64748b", marginTop: 4 }}>{log.startTime} – {log.endTime}</div></div>
                           <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>{log.paid ? "Greitt" : "Ógreitt"}</div>
                         </div>
 
@@ -1564,26 +1245,12 @@ const [receiptReading, setReceiptReading] = useState(false);
                         ) : (
                           <>
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginBottom: 12 }}>
-                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                                <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-                                <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
-                              </div>
-                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                                <div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div>
-                                <div style={{ fontWeight: 900 }}>{kr(log.earned)}</div>
-                              </div>
-                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                                <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
-                                <div style={{ fontWeight: 900 }}>{log.pricing === "hourly" ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}` : "Fast verð"}</div>
-                              </div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div><div style={{ fontWeight: 900 }}>{kr(log.earned)}</div></div>
+                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{log.pricing === "hourly" ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}` : "Fast verð"}</div></div>
                             </div>
-
                             <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                              <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}>
-                                <input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} />
-                                Breyta í greitt
-                              </label>
-
+                              <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}><input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} />Breyta í greitt</label>
                               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                                 <button style={buttonStyle(false)} onClick={() => startEditLog(log)}>Edit</button>
                                 <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
@@ -1603,70 +1270,34 @@ const [receiptReading, setReceiptReading] = useState(false);
         {screen === "Tölur" && (
           <div style={{ display: "grid", gap: 16 }}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Greitt</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
-              </div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Greitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div></div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div>
-              </div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div></div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div></div>
+              <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div></div>
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Hagnaður eftir kostnað</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div>
-              </div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Hagnaður eftir kostnað</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div></div>
             </div>
 
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Áætlað per sláttuhring</div>
               <div style={{ color: "#64748b", marginBottom: 12 }}>Lægsta verð er efst og hæsta verð neðst.</div>
-
               <div style={{ display: "grid", gap: 10 }}>
-                {Object.values(customersByArea)
-                  .flat()
-                  .filter((c) => c.pricing !== "hourly")
-                  .sort((a, b) => a.price - b.price)
-                  .map((c, index, arr) => (
-                    <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, background: index === arr.length - 1 ? "#eef2ff" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                      <span>{c.name}</span>
-                      <strong>{kr(c.price)}</strong>
-                    </div>
-                  ))}
-
+                {Object.values(customersByArea).flat().filter((c) => c.pricing !== "hourly").sort((a, b) => a.price - b.price).map((c, index, arr) => (
+                  <div key={c.id} style={{ display: "flex", justifyContent: "space-between", gap: 10, background: index === arr.length - 1 ? "#eef2ff" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                    <span>{c.name}</span>
+                    <strong>{kr(c.price)}</strong>
+                  </div>
+                ))}
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12, fontWeight: 900 }}>
                   <span>Samtals per hringur</span>
                   <span>{kr(Object.values(customersByArea).flat().filter((c) => c.pricing !== "hourly").reduce((sum, c) => sum + c.price, 0))}</span>
@@ -1678,40 +1309,26 @@ const [receiptReading, setReceiptReading] = useState(false);
               <div style={cardStyle()}>
                 <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Bestu kúnnar</div>
                 <div style={{ display: "grid", gap: 10 }}>
-                  {[...clientCards]
-                    .filter((client) => client.totalMinutes > 0)
-                    .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
-                    .slice(0, 5)
-                    .map((client, index) => (
-                      <div key={client.key} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#dcfce7" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                        <div style={{ fontSize: 20 }}>{index === 0 ? "🔥" : "⭐"}</div>
-                        <div>
-                          <div style={{ fontWeight: 900 }}>{client.name}</div>
-                          <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
-                        </div>
-                        <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
-                      </div>
-                    ))}
+                  {[...clientCards].filter((client) => client.totalMinutes > 0).sort((a, b) => b.calculatedHourly - a.calculatedHourly).slice(0, 5).map((client, index) => (
+                    <div key={client.key} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#dcfce7" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontSize: 20 }}>{index === 0 ? "🔥" : "⭐"}</div>
+                      <div><div style={{ fontWeight: 900 }}>{client.name}</div><div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div></div>
+                      <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
               <div style={cardStyle()}>
                 <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hægustu kúnnar</div>
                 <div style={{ display: "grid", gap: 10 }}>
-                  {[...clientCards]
-                    .filter((client) => client.totalMinutes > 0)
-                    .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
-                    .slice(0, 5)
-                    .map((client, index) => (
-                      <div key={client.key} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#fee2e2" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                        <div style={{ fontSize: 20 }}>{index === 0 ? "⚠️" : "•"}</div>
-                        <div>
-                          <div style={{ fontWeight: 900 }}>{client.name}</div>
-                          <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
-                        </div>
-                        <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
-                      </div>
-                    ))}
+                  {[...clientCards].filter((client) => client.totalMinutes > 0).sort((a, b) => a.calculatedHourly - b.calculatedHourly).slice(0, 5).map((client, index) => (
+                    <div key={client.key} style={{ display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 10, alignItems: "center", background: index === 0 ? "#fee2e2" : "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+                      <div style={{ fontSize: 20 }}>{index === 0 ? "⚠️" : "•"}</div>
+                      <div><div style={{ fontWeight: 900 }}>{client.name}</div><div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div></div>
+                      <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1722,7 +1339,6 @@ const [receiptReading, setReceiptReading] = useState(false);
                 {areaSummary.map((row) => {
                   const areaMinutes = logs.filter((l) => l.area === row.area).reduce((sum, l) => sum + l.minutes, 0);
                   const areaHourly = areaMinutes > 0 ? Math.round(row.earned / (areaMinutes / 60)) : 0;
-
                   return (
                     <div key={row.area} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
                       <div style={{ fontWeight: 800 }}>{row.area}</div>
@@ -1740,52 +1356,36 @@ const [receiptReading, setReceiptReading] = useState(false);
         {screen === "Kort" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>← Til baka</button>
-
             <div style={cardStyle()}>
               <div style={{ fontSize: 28, fontWeight: 900 }}>Kort af Akureyri</div>
               <div style={{ color: "#64748b", marginTop: 6 }}>Veldu hvaða kúnna sem er og smelltu svo á kortið til að setja eða færa pinna.</div>
-
               <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
                 <select style={inputStyle()} value={mapCustomerKey} onChange={(e) => setMapCustomerKey(e.target.value)}>
                   <option value="">Veldu kúnna</option>
                   {AREA_ORDER.map((area) => {
                     const areaCustomers = allCustomers.filter((c) => c.area === area);
                     if (areaCustomers.length === 0) return null;
-                    return (
-                      <optgroup key={area} label={area}>
-                        {areaCustomers.map((c) => (
-                          <option key={c.key} value={c.key}>{c.name}</option>
-                        ))}
-                      </optgroup>
-                    );
+                    return <optgroup key={area} label={area}>{areaCustomers.map((c) => <option key={c.key} value={c.key}>{c.name}</option>)}</optgroup>;
                   })}
                 </select>
 
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  {selectedMapCustomer && <button style={buttonStyle(false)} onClick={clearCustomerLocation}>Eyða pinna</button>}
-                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{selectedMapCustomer && <button style={buttonStyle(false)} onClick={clearCustomerLocation}>Eyða pinna</button>}</div>
 
                 <div style={{ height: 520, borderRadius: 24, overflow: "hidden", border: "1px solid #dbe2ea" }}>
                   <MapContainer center={AKUREYRI_CENTER} zoom={13} scrollWheelZoom={true} style={{ height: "100%", width: "100%" }}>
                     <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
                     <MapClickSetter selectedCustomerKey={selectedMapCustomer?.key} onPickLocation={setCustomerLocation} />
-
-                    {allCustomers
-                      .filter((customer) => customerLocations[customer.key])
-                      .map((customer) => (
-                        <Marker key={customer.key} position={[customerLocations[customer.key].lat, customerLocations[customer.key].lng]} icon={markerIcon}>
-                          <Popup>
-                            <div>
-                              <strong>{customer.name}</strong>
-                              <br />
-                              {customer.area}
-                              <br />
-                              {customer.pricing === "hourly" ? `Tímakaup ${kr(customer.price)}/klst` : `Fast verð ${kr(customer.price)}`}
-                            </div>
-                          </Popup>
-                        </Marker>
-                      ))}
+                    {allCustomers.filter((customer) => customerLocations[customer.key]).map((customer) => (
+                      <Marker key={customer.key} position={[customerLocations[customer.key].lat, customerLocations[customer.key].lng]} icon={markerIcon}>
+                        <Popup>
+                          <div>
+                            <strong>{customer.name}</strong><br />
+                            {customer.area}<br />
+                            {customer.pricing === "hourly" ? `Tímakaup ${kr(customer.price)}/klst` : `Fast verð ${kr(customer.price)}`}
+                          </div>
+                        </Popup>
+                      </Marker>
+                    ))}
                   </MapContainer>
                 </div>
 
@@ -1800,91 +1400,30 @@ const [receiptReading, setReceiptReading] = useState(false);
             </div>
           </div>
         )}
-
-        {screen === "Kostnaður" && (
+        
+                {screen === "Kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>← Til baka</button>
-
-            <button onClick={() => setScreen("Skrifa kostnað")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}>
-              <div style={{ fontSize: 26, fontWeight: 900 }}>✍️ Skrifa kostnað</div>
-              <div style={{ color: "#64748b", marginTop: 6 }}>Skrá eldsneyti, vinnufatnað, vinnuvörur og fleira</div>
-            </button>
-
-            <button onClick={() => setScreen("Skanna QR")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}>
-              <div style={{ fontSize: 26, fontWeight: 900 }}>📷 Skanna QR</div>
-              <div style={{ color: "#64748b", marginTop: 6 }}>Skannar kvittun og fyllir inn kostnað sjálfkrafa</div>
-            </button>
-
-            <button
-  onClick={() => setScreen("Lesa kvittun")}
-  style={{
-    ...cardStyle(),
-    cursor: "pointer",
-    textAlign: "left",
-    border: "1px solid #dbeafe",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
-  }}
->
-  <div style={{ fontSize: 26, fontWeight: 900 }}>🧾 Lesa kvittun</div>
-  <div style={{ color: "#64748b", marginTop: 6 }}>
-    Taka mynd eða velja kvittun
-  </div>
-</button>
-            
-            <button onClick={() => setScreen("Allur kostnaður")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}>
-              <div style={{ fontSize: 26, fontWeight: 900 }}>📋 Sjá allan kostnað</div>
-              <div style={{ color: "#64748b", marginTop: 6 }}>Flokkað og nýjasta fyrst</div>
-            </button>
+            <button onClick={() => setScreen("Skrifa kostnað")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>✍️ Skrifa kostnað</div><div style={{ color: "#64748b", marginTop: 6 }}>Skrá eldsneyti, vinnufatnað, vinnuvörur og fleira</div></button>
+            <button onClick={() => setScreen("Skanna QR")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>📷 Skanna QR</div><div style={{ color: "#64748b", marginTop: 6 }}>Skannar kvittun og fyllir inn kostnað sjálfkrafa</div></button>
+            <button onClick={() => setScreen("Lesa kvittun")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>🧾 Lesa kvittun</div><div style={{ color: "#64748b", marginTop: 6 }}>Taka mynd eða velja kvittun</div></button>
+            <button onClick={() => setScreen("Allur kostnaður")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>📋 Sjá allan kostnað</div><div style={{ color: "#64748b", marginTop: 6 }}>Flokkað og nýjasta fyrst</div></button>
           </div>
         )}
 
         {screen === "Skrifa kostnað" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
-
             <div style={cardStyle()}>
               <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>Skrifa kostnað</div>
               <div style={{ color: "#64748b", marginBottom: 14 }}>Hér geturðu skráð allan rekstrarkostnað.</div>
-
               <div style={{ display: "grid", gap: 12 }}>
-                <div>
-                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div>
-                  <input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} />
-                </div>
-
-                <div>
-                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div>
-                  <input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} />
-                </div>
-
-                <div>
-                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Tegund kostnaðar</div>
-                  <select style={inputStyle()} value={expenseForm.category} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: e.target.value }))}>
-                    <option value="fuel">Eldsneyti</option>
-                    <option value="clothes">Vinnufatnaður</option>
-                    <option value="tools">Vinnuvörur</option>
-                    <option value="maintenance">Viðhald</option>
-                    <option value="other">Annað</option>
-                  </select>
-                </div>
-
-                {expenseForm.category === "fuel" && (
-                  <div>
-                    <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Eldsneytistegund</div>
-                    <select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, fuelType: e.target.value }))}>
-                      <option value="diesel">Dísel</option>
-                      <option value="95">95</option>
-                      <option value="98">98</option>
-                    </select>
-                  </div>
-                )}
-
-                <div>
-                  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Athugasemd</div>
-                  <input style={inputStyle()} placeholder="T.d. N1, hanskar, olía eða annað" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} />
-                </div>
+                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div><input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} /></div>
+                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div><input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} /></div>
+                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Tegund kostnaðar</div><select style={inputStyle()} value={expenseForm.category} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: e.target.value }))}><option value="fuel">Eldsneyti</option><option value="clothes">Vinnufatnaður</option><option value="tools">Vinnuvörur</option><option value="maintenance">Viðhald</option><option value="other">Annað</option></select></div>
+                {expenseForm.category === "fuel" && <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Eldsneytistegund</div><select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, fuelType: e.target.value }))}><option value="diesel">Dísel</option><option value="95">95</option><option value="98">98</option></select></div>}
+                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Athugasemd</div><input style={inputStyle()} placeholder="T.d. N1, hanskar, olía eða annað" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} /></div>
               </div>
-
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
                 <div style={{ color: "#64748b" }}>Þessi kostnaður fer svo inn í tölurnar og hagnaðinn.</div>
                 <button style={buttonStyle(true)} onClick={() => addExpense("manual")}>Vista kostnað</button>
@@ -1896,14 +1435,10 @@ const [receiptReading, setReceiptReading] = useState(false);
         {screen === "Skanna QR" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
-
             <div style={cardStyle()}>
               <div style={{ fontSize: 28, fontWeight: 900 }}>Skanna QR</div>
               <div style={{ color: "#64748b", marginTop: 8 }}>Beindu myndavélinni að QR kóða á kvittun. Ef appið finnur upphæð og dagsetningu fyllist formið sjálfkrafa.</div>
-
-              <div style={{ marginTop: 14 }}>
-                <QrScannerCard onDetected={handleQrDetected} scanError={scanError} setScanError={setScanError} />
-              </div>
+              <div style={{ marginTop: 14 }}><QrScannerCard onDetected={handleQrDetected} scanError={scanError} setScanError={setScanError} /></div>
             </div>
 
             <div style={cardStyle()}>
@@ -1911,24 +1446,13 @@ const [receiptReading, setReceiptReading] = useState(false);
               {scanPreview ? (
                 <div style={{ display: "grid", gap: 10 }}>
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10 }}>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Dagsetning</div>
-                      <div style={{ fontWeight: 900 }}>{scanPreview.date || "Fannst ekki"}</div>
-                    </div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Upphæð</div>
-                      <div style={{ fontWeight: 900 }}>{scanPreview.amount ? kr(scanPreview.amount) : "Fannst ekki"}</div>
-                    </div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div>
-                      <div style={{ fontWeight: 900 }}>{fuelTypeLabel(scanPreview.fuelType) || "Óþekkt"}</div>
-                    </div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Dagsetning</div><div style={{ fontWeight: 900 }}>{scanPreview.date || "Fannst ekki"}</div></div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Upphæð</div><div style={{ fontWeight: 900 }}>{scanPreview.amount ? kr(scanPreview.amount) : "Fannst ekki"}</div></div>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div><div style={{ fontWeight: 900 }}>{fuelTypeLabel(scanPreview.fuelType) || "Óþekkt"}</div></div>
                   </div>
                   <div style={{ color: "#64748b" }}>Þú getur lagað upplýsingarnar handvirkt hér fyrir neðan áður en þú vistar.</div>
                 </div>
-              ) : (
-                <div style={{ color: "#64748b" }}>Engin QR niðurstaða komin enn.</div>
-              )}
+              ) : <div style={{ color: "#64748b" }}>Engin QR niðurstaða komin enn.</div>}
             </div>
 
             <div style={cardStyle()}>
@@ -1936,128 +1460,73 @@ const [receiptReading, setReceiptReading] = useState(false);
               <div style={{ display: "grid", gap: 12 }}>
                 <input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} />
                 <input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} />
-                <select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: "fuel", fuelType: e.target.value }))}>
-                  <option value="diesel">Dísel</option>
-                  <option value="95">95</option>
-                  <option value="98">98</option>
-                </select>
+                <select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: "fuel", fuelType: e.target.value }))}><option value="diesel">Dísel</option><option value="95">95</option><option value="98">98</option></select>
                 <input style={inputStyle()} placeholder="Raw QR text / athugasemd" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} />
               </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}><button style={buttonStyle(true)} onClick={() => addExpense("qr")}>Vista úr QR</button></div>
+            </div>
+          </div>
+        )}
 
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
-                <button style={buttonStyle(true)} onClick={() => addExpense("qr")}>Vista úr QR</button>
+        {screen === "Lesa kvittun" && (
+          <div style={{ display: "grid", gap: 16 }}>
+            <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
+            <div style={cardStyle()}>
+              <div style={{ fontSize: 28, fontWeight: 900 }}>Lesa kvittun</div>
+
+              <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+                <label style={buttonStyle(true)}>
+                  📷 Taka mynd
+                  <input type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setReceiptImage(URL.createObjectURL(file));
+                  }} />
+                </label>
+
+                <label style={buttonStyle(false)}>
+                  🖼️ Velja mynd
+                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    setReceiptImage(URL.createObjectURL(file));
+                  }} />
+                </label>
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                {receiptImage ? (
+                  <img src={receiptImage} alt="Kvittun" style={{ width: "100%", borderRadius: 16 }} />
+                ) : (
+                  <div style={{ color: "#64748b" }}>Engin mynd valin enn</div>
+                )}
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                <button style={buttonStyle(true)} onClick={readReceipt} disabled={!receiptImage || receiptReading}>
+                  {receiptReading ? "Les kvittun..." : "Lesa kvittun"}
+                </button>
+              </div>
+
+              <div style={{ marginTop: 16, padding: 16, borderRadius: 18, background: "#f8fafc", border: "1px solid #e2e8f0", whiteSpace: "pre-wrap" }}>
+                {receiptText || "Enginn texti lesinn enn."}
+              </div>
+
+              <div style={{ marginTop: 16 }}>
+                <button style={buttonStyle(true)} onClick={() => addExpense("manual")} disabled={!expenseForm.amount}>
+                  Vista í kostnað
+                </button>
               </div>
             </div>
           </div>
         )}
 
-  {screen === "Lesa kvittun" && (
-  <div style={{ display: "grid", gap: 16 }}>
-    <button
-      style={{ ...buttonStyle(false), width: "fit-content" }}
-      onClick={() => setScreen("Kostnaður")}
-    >
-      ← Til baka
-    </button>
-
-    <div style={cardStyle()}>
-      <div style={{ fontSize: 28, fontWeight: 900 }}>Lesa kvittun</div>
-
-      <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-        <label style={buttonStyle(true)}>
-          📷 Taka mynd
-          <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              setReceiptImage(URL.createObjectURL(file));
-            }}
-          />
-        </label>
-
-        <label style={buttonStyle(false)}>
-          🖼️ Velja mynd
-          <input
-            type="file"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (!file) return;
-              setReceiptImage(URL.createObjectURL(file));
-            }}
-          />
-        </label>
-      </div>
-
-      {/* Mynd preview */}
-      <div style={{ marginTop: 16 }}>
-        {receiptImage ? (
-          <img
-            src={receiptImage}
-            style={{ width: "100%", borderRadius: 16 }}
-          />
-        ) : (
-          <div style={{ color: "#64748b" }}>
-            Engin mynd valin enn
-          </div>
-        )}
-      </div>
-
-      {/* 🔥 NÝTT - Lesa kvittun takki */}
-      <div style={{ marginTop: 16 }}>
-        <button
-          style={buttonStyle(true)}
-          onClick={readReceipt}
-          disabled={!receiptImage || receiptReading}
-        >
-          {receiptReading ? "Les kvittun..." : "Lesa kvittun"}
-        </button>
-      </div>
-
-      {/* 🔥 NÝTT - Texti úr kvittun */}
-      <div
-        style={{
-          marginTop: 16,
-          padding: 16,
-          borderRadius: 18,
-          background: "#f8fafc",
-          border: "1px solid #e2e8f0",
-          whiteSpace: "pre-wrap",
-        }}
-      >
-        {receiptText || "Enginn texti lesinn enn."}
-        <div style={{ marginTop: 16 }}>
-  <button
-    style={buttonStyle(true)}
-    onClick={() => addExpense("manual")}
-    disabled={!expenseForm.amount}
-  >
-    Vista í kostnað
-  </button>
-</div>
-      </div>
-    </div>
-  </div>
-)}
-        
         {screen === "Allur kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
-
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
-              </div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div></div>
+              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div></div>
             </div>
 
             {groupedExpenses.length === 0 && (
@@ -2073,43 +1542,19 @@ const [receiptReading, setReceiptReading] = useState(false);
                   <div style={{ fontSize: 26, fontWeight: 900 }}>{expenseCategoryLabel(group.category)}</div>
                   <div style={{ opacity: 0.9, marginTop: 6 }}>{group.items.length} færslur • {kr(group.items.reduce((sum, item) => sum + item.amount, 0))}</div>
                 </div>
-
                 <div style={{ padding: 14, display: "grid", gap: 10 }}>
                   {group.items.map((expense) => (
                     <div key={expense.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
                       <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                        <div>
-                          <div style={{ fontSize: 22, fontWeight: 900 }}>{kr(expense.amount)}</div>
-                          <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(expense.date)}</div>
-                        </div>
+                        <div><div style={{ fontSize: 22, fontWeight: 900 }}>{kr(expense.amount)}</div><div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(expense.date)}</div></div>
                         <button style={buttonStyle(false)} onClick={() => deleteExpense(expense.id)}>Eyða</button>
                       </div>
-
                       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginTop: 12 }}>
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                          <div style={{ color: "#64748b", fontSize: 13 }}>Flokkur</div>
-                          <div style={{ fontWeight: 900 }}>{expenseCategoryLabel(expense.category)}</div>
-                        </div>
-
-                        {expense.category === "fuel" && (
-                          <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                            <div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div>
-                            <div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuelType)}</div>
-                          </div>
-                        )}
-
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                          <div style={{ color: "#64748b", fontSize: 13 }}>Skráð með</div>
-                          <div style={{ fontWeight: 900 }}>{expense.source === "qr" ? "QR" : "Handvirkt"}</div>
-                        </div>
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Flokkur</div><div style={{ fontWeight: 900 }}>{expenseCategoryLabel(expense.category)}</div></div>
+                        {expense.category === "fuel" && <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div><div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuelType)}</div></div>}
+                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Skráð með</div><div style={{ fontWeight: 900 }}>{expense.source === "qr" ? "QR" : "Handvirkt"}</div></div>
                       </div>
-
-                      {expense.note && (
-                        <div style={{ marginTop: 12, background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                          <div style={{ color: "#64748b", fontSize: 13 }}>Athugasemd</div>
-                          <div style={{ fontWeight: 700, marginTop: 4, wordBreak: "break-word" }}>{expense.note}</div>
-                        </div>
-                      )}
+                      {expense.note && <div style={{ marginTop: 12, background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Athugasemd</div><div style={{ fontWeight: 700, marginTop: 4, wordBreak: "break-word" }}>{expense.note}</div></div>}
                     </div>
                   ))}
                 </div>
@@ -2132,92 +1577,53 @@ const [receiptReading, setReceiptReading] = useState(false);
 
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
-
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
                 <input style={inputStyle()} placeholder="Nafn" value={newCustomerForm.name} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })} />
-
-                <select style={inputStyle()} value={newCustomerForm.area} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}>
-                  {AREA_ORDER.map((area) => (
-                    <option key={area} value={area}>{area}</option>
-                  ))}
-                </select>
-
-                <select style={inputStyle()} value={newCustomerForm.pricing} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}>
-                  <option value="fixed">Fast verð</option>
-                  <option value="hourly">Tímakaup</option>
-                </select>
-
+                <select style={inputStyle()} value={newCustomerForm.area} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}>{AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}</select>
+                <select style={inputStyle()} value={newCustomerForm.pricing} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}><option value="fixed">Fast verð</option><option value="hourly">Tímakaup</option></select>
                 <input style={inputStyle()} type="number" placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"} value={newCustomerForm.price} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })} />
               </div>
-
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
                 <div style={{ color: "#64748b" }}>Bætir nýjum kúnna í appið.</div>
                 <button style={buttonStyle(true)} onClick={addCustomer}>Bæta við kúnna</button>
               </div>
             </div>
-
-            <div style={cardStyle()}>
+            
+                        <div style={cardStyle()}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
                 <div>
                   <div style={{ fontSize: 26, fontWeight: 900 }}>Mánaðarplan</div>
                   <div style={{ color: "#64748b", marginTop: 6 }}>Ýttu á dag og skrifaðu plan fyrir þann dag.</div>
                 </div>
-
                 <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedPlanDay(null); }}>
-                  {monthOptions.map((opt) => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
+                  {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                 </select>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
-                {WEEK_DAYS.map((d) => (
-                  <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>
-                ))}
+                {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
                 {monthCells.map((cell, i) => {
-                  if (!cell) {
-                    return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
-                  }
-
+                  if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
                   const hasPlan = !!planEntries[cell.dateStr];
                   const allLines = hasPlan ? String(planEntries[cell.dateStr]).split("\n").map((line) => line.trim()).filter(Boolean) : [];
                   const previewShort = allLines.slice(0, 3).map((name) => name.slice(0, 3));
                   const extraCount = allLines.length - 3;
-
                   return (
                     <button
                       key={cell.dateStr}
                       onClick={() => setSelectedPlanDay(cell.dateStr)}
-                      style={{
-                        minHeight: 86,
-                        borderRadius: 18,
-                        border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea",
-                        background: hasPlan ? "#dbeafe" : "#fff",
-                        textAlign: "left",
-                        padding: 10,
-                        cursor: "pointer",
-                        boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none",
-                        display: "flex",
-                        flexDirection: "column",
-                        justifyContent: "space-between",
-                        overflow: "hidden",
-                      }}
+                      style={{ minHeight: 86, borderRadius: 18, border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea", background: hasPlan ? "#dbeafe" : "#fff", textAlign: "left", padding: 10, cursor: "pointer", boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden" }}
                     >
                       <div style={{ fontWeight: 900, fontSize: 22, color: hasPlan ? "#1d4ed8" : "#111827" }}>{cell.day}</div>
-
                       {hasPlan ? (
                         <div style={{ marginTop: 6, display: "grid", gap: 2 }}>
-                          {previewShort.map((line, idx) => (
-                            <div key={idx} style={{ fontSize: 11, lineHeight: 1.15, color: "#1e3a8a", fontWeight: 800 }}>{line}</div>
-                          ))}
+                          {previewShort.map((line, idx) => <div key={idx} style={{ fontSize: 11, lineHeight: 1.15, color: "#1e3a8a", fontWeight: 800 }}>{line}</div>)}
                           {extraCount > 0 && <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 900 }}>+{extraCount}</div>}
                         </div>
-                      ) : (
-                        <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}> </div>
-                      )}
+                      ) : <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}> </div>}
                     </button>
                   );
                 })}
@@ -2225,17 +1631,13 @@ const [receiptReading, setReceiptReading] = useState(false);
 
               <div style={{ marginTop: 14 }}>
                 <div style={{ fontSize: 14, color: "#64748b", marginBottom: 8 }}>{selectedPlanDay ? `Plan fyrir ${formatLongDate(selectedPlanDay)}` : "Veldu dag í dagatalinu"}</div>
-
                 <textarea
                   style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
                   placeholder={"T.d. Kaldbakur\nStebbi\nHalla"}
                   value={selectedPlanText}
                   onChange={(e) => {
                     if (!selectedPlanDay) return;
-                    setPlanEntries((prev) => ({
-                      ...prev,
-                      [selectedPlanDay]: e.target.value,
-                    }));
+                    setPlanEntries((prev) => ({ ...prev, [selectedPlanDay]: e.target.value }));
                   }}
                   disabled={!selectedPlanDay}
                 />
@@ -2245,17 +1647,11 @@ const [receiptReading, setReceiptReading] = useState(false);
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna custom kúnnum</div>
               <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.</div>
-
               <div style={{ display: "grid", gap: 10 }}>
                 {customCustomers.length === 0 && <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>}
-
                 {customCustomers.map((c) => (
                   <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10, alignItems: "center", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                    <div>
-                      <div style={{ fontWeight: 900 }}>{c.name}</div>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>{c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}</div>
-                    </div>
-
+                    <div><div style={{ fontWeight: 900 }}>{c.name}</div><div style={{ color: "#64748b", fontSize: 13 }}>{c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}</div></div>
                     <button style={buttonStyle(false)} onClick={() => updateCustomCustomer(c.id)}>Edit</button>
                     <button style={buttonStyle(false)} onClick={() => deleteCustomCustomer(c.id)}>Eyða</button>
                   </div>
@@ -2299,7 +1695,9 @@ const [receiptReading, setReceiptReading] = useState(false);
                 }}
               >
                 <div style={{ fontSize: 24, lineHeight: 1 }}>{iconForNav(item)}</div>
-                <div style={{ fontSize: 13, fontWeight: active ? 800 : 600, marginTop: 6 }}>{item}</div>
+                <div style={{ fontSize: 13, fontWeight: active ? 800 : 600, marginTop: 6 }}>
+                  {item}
+                </div>
               </button>
             );
           })}
