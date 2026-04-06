@@ -1200,12 +1200,36 @@ export default function App() {
                 </div>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
-                <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{kr(myDayLogs.reduce((s, l) => s + l.earned, 0))}</div></div>
-                <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Sláttutími</div><div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div></div>
-                <div style={{ background: "#dcfce7", borderRadius: 22, padding: 14 }}><div style={{ color: "#475569", fontSize: 13 }}>Slættir í dag</div><div style={{ fontWeight: 900, fontSize: 24 }}>{myDayLogs.length}</div></div>
-              </div>
-            </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10, marginTop: 12 }}>
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Frá</div>
+    <div style={{ fontWeight: 900 }}>{log.startTime}</div>
+  </div>
+
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Til</div>
+    <div style={{ fontWeight: 900 }}>{log.endTime}</div>
+  </div>
+
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
+    <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
+  </div>
+
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Verk</div>
+    <div style={{ fontWeight: 900 }}>
+      {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
+        ? "🧹"
+        : (log.note || "").toLowerCase().includes("blóm")
+        ? "🌸"
+        : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
+        ? "✂️"
+        : "🌿"}{" "}
+      {log.note || "Garðsláttur"}
+    </div>
+  </div>
+</div>
 
             <div style={{ display: "grid", gap: 10 }}>
               {myDayLogs.length === 0 && (
