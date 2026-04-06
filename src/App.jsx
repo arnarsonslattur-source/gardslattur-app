@@ -500,6 +500,26 @@ function getSuggestedPrice(client) {
   return newPrice;
 }
 
+function getSuggestedPrice(client) {
+  if (!client.totalMinutes || client.totalMinutes === 0) return null;
+
+  const hourly = client.calculatedHourly;
+  if (hourly >= 12000) return null;
+
+  const currentPrice = client.price || 0;
+
+  let suggested = currentPrice;
+
+  if (hourly < 6000) suggested = currentPrice + 4000;
+  else if (hourly < 8000) suggested = currentPrice + 3000;
+  else if (hourly < 10000) suggested = currentPrice + 2000;
+  else suggested = currentPrice + 1000;
+
+  suggested = Math.ceil(suggested / 1000) * 1000;
+
+  return suggested;
+}
+
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
