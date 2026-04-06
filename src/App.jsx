@@ -1482,6 +1482,47 @@ export default function App() {
   </div>
 )}
 
+{screen === "Tölur" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div></div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div></div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Greitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div></div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div></div>
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+      <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div></div>
+      <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div></div>
+      <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div></div>
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div></div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div></div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Hagnaður eftir kostnað</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div></div>
+    </div>
+
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hverfi</div>
+      <div style={{ display: "grid", gap: 10 }}>
+        {areaSummary.map((row) => {
+          const areaMinutes = logs.filter((l) => l.area === row.area).reduce((sum, l) => sum + l.minutes, 0);
+          const areaHourly = areaMinutes > 0 ? Math.round(row.earned / (areaMinutes / 60)) : 0;
+          return (
+            <div key={row.area} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+              <div style={{ fontWeight: 800 }}>{row.area}</div>
+              <div>Tekjur: {kr(row.earned)}</div>
+              <div>Tími: {minsToText(areaMinutes)}</div>
+              <div>Tímakaup: {areaMinutes > 0 ? `${kr(areaHourly)}/klst` : "0 kr./klst"}</div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  </div>
+)}
+
         {screen === "Kort" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>← Til baka</button>
