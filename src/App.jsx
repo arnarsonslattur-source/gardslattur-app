@@ -1342,7 +1342,23 @@ export default function App() {
 >
   {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
 </div>
-                    </div>
+                    <div
+  style={{
+    padding: "8px 12px",
+    borderRadius: 999,
+    background: getClientStatus(client.calculatedHourly).bg,
+    color: getClientStatus(client.calculatedHourly).color,
+    fontWeight: 800,
+  }}
+>
+  {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
+</div>
+
+{getSuggestedPrice(client) && (
+  <div style={{ color: "#991b1b", fontWeight: 700, marginTop: 6 }}>
+    💰 Mælt verð: {kr(getSuggestedPrice(client))}
+  </div>
+)}
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
                       <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
