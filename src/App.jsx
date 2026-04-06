@@ -1485,22 +1485,152 @@ export default function App() {
 {screen === "Tölur" && (
   <div style={{ display: "grid", gap: 16 }}>
     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
-      <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div></div>
-      <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div></div>
-      <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Greitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div></div>
-      <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div></div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
+      </div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
+      </div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Greitt</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
+      </div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
+      </div>
     </div>
 
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-      <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div></div>
-      <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div></div>
-      <div style={cardStyle()}><div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div><div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div></div>
+      <div style={cardStyle()}>
+        <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div>
+        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div>
+      </div>
+      <div style={cardStyle()}>
+        <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div>
+        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div>
+      </div>
+      <div style={cardStyle()}>
+        <div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div>
+        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div>
+      </div>
     </div>
 
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-      <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div></div>
-      <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div></div>
-      <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Hagnaður eftir kostnað</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div></div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
+      </div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
+      </div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Hagnaður eftir kostnað</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div>
+      </div>
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+      {clientCards.length > 0 && (
+        <div style={cardStyle({ background: "linear-gradient(135deg,#fef9c3 0%, #fde68a 100%)" })}>
+          <div style={{ color: "#475569", fontSize: 13 }}>🏆 Besti kúnni</div>
+          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
+            {[...clientCards].filter((c) => c.totalMinutes > 0).sort((a, b) => b.calculatedHourly - a.calculatedHourly)[0]?.name || "-"}
+          </div>
+          <div style={{ marginTop: 4 }}>
+            {[...clientCards].filter((c) => c.totalMinutes > 0).length > 0
+              ? `${kr([...clientCards].filter((c) => c.totalMinutes > 0).sort((a, b) => b.calculatedHourly - a.calculatedHourly)[0]?.calculatedHourly)}/klst`
+              : "0 kr./klst"}
+          </div>
+        </div>
+      )}
+
+      {logs.length > 0 && (
+        <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
+          <div style={{ color: "#475569", fontSize: 13 }}>💸 Hæsta greiðsla</div>
+          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
+            {kr(Math.max(...logs.map((l) => l.earned || 0)))}
+          </div>
+        </div>
+      )}
+
+      {logs.length > 0 && (
+        <div style={cardStyle({ background: "linear-gradient(135deg,#e0e7ff 0%, #c7d2fe 100%)" })}>
+          <div style={{ color: "#475569", fontSize: 13 }}>⏱️ Lengsti sláttur</div>
+          <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
+            {minsToText(Math.max(...logs.map((l) => l.minutes || 0)))}
+          </div>
+        </div>
+      )}
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12 }}>
+      <div style={cardStyle()}>
+        <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Bestu kúnnar</div>
+        <div style={{ display: "grid", gap: 10 }}>
+          {[...clientCards]
+            .filter((client) => client.totalMinutes > 0)
+            .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
+            .slice(0, 5)
+            .map((client, index) => (
+              <div
+                key={client.key}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "auto 1fr auto",
+                  gap: 10,
+                  alignItems: "center",
+                  background: index === 0 ? "#dcfce7" : "#fff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 18,
+                  padding: 12,
+                }}
+              >
+                <div style={{ fontSize: 20 }}>{index === 0 ? "🔥" : "⭐"}</div>
+                <div>
+                  <div style={{ fontWeight: 900 }}>{client.name}</div>
+                  <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
+                </div>
+                <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+              </div>
+            ))}
+        </div>
+      </div>
+
+      <div style={cardStyle()}>
+        <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hægustu kúnnar</div>
+        <div style={{ display: "grid", gap: 10 }}>
+          {[...clientCards]
+            .filter((client) => client.totalMinutes > 0)
+            .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
+            .slice(0, 5)
+            .map((client, index) => (
+              <div
+                key={client.key}
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "auto 1fr auto",
+                  gap: 10,
+                  alignItems: "center",
+                  background: index === 0 ? "#fee2e2" : "#fff",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 18,
+                  padding: 12,
+                }}
+              >
+                <div style={{ fontSize: 20 }}>{index === 0 ? "⚠️" : "•"}</div>
+                <div>
+                  <div style={{ fontWeight: 900 }}>{client.name}</div>
+                  <div style={{ color: "#64748b", fontSize: 13, marginTop: 4 }}>{client.area}</div>
+                </div>
+                <div style={{ fontWeight: 900 }}>{kr(client.calculatedHourly)}/klst</div>
+              </div>
+            ))}
+        </div>
+      </div>
     </div>
 
     <div style={cardStyle()}>
