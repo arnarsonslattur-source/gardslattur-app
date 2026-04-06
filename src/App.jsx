@@ -486,6 +486,20 @@ function getClientStatus(hourly) {
   return { label: "Of lágt verð", emoji: "🔴", bg: "#fee2e2", color: "#991b1b" };
 }
 
+function getSuggestedPrice(client) {
+  if (!client.totalMinutes || client.totalMinutes === 0) return null;
+
+  const hourly = client.calculatedHourly;
+  const targetHourly = 12000;
+
+  if (hourly >= targetHourly) return null;
+
+  const hours = client.totalMinutes / 60;
+  const newPrice = Math.round(targetHourly * hours);
+
+  return newPrice;
+}
+
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
