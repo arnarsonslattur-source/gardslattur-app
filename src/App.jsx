@@ -1173,87 +1173,106 @@ export default function App() {
         )}
 
         {screen === "Í dag" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(219,234,254,0.95))" })}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                <div>
-                  <div style={{ fontSize: 28, fontWeight: 900 }}>Í dag</div>
-                  <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
-                </div>
-                <div style={{ fontWeight: 900, fontSize: 18, color: "#1d4ed8" }}>
-                  {dayTimerState.running ? "Dagur í gangi" : dayTimerState.accumulatedMs > 0 ? "Pása" : "Ekki byrjað"}
-                </div>
-              </div>
+  <div style={{ display: "grid", gap: 16 }}>
+    <div style={cardStyle({ background: "linear-gradient(180deg, rgba(255,255,255,0.96), rgba(219,234,254,0.95))" })}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+        <div>
+          <div style={{ fontSize: 28, fontWeight: 900 }}>Í dag</div>
+          <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
+        </div>
+        <div style={{ fontWeight: 900, fontSize: 18, color: "#1d4ed8" }}>
+          {dayTimerState.running ? "Dagur í gangi" : dayTimerState.accumulatedMs > 0 ? "Pása" : "Ekki byrjað"}
+        </div>
+      </div>
 
-              <div style={{ background: "#0f172a", color: "#fff", borderRadius: 24, padding: 18, marginTop: 14 }}>
-                <div style={{ fontSize: 14, opacity: 0.8 }}>Dagstimer</div>
-                <div style={{ fontSize: 34, fontWeight: 900, marginTop: 6 }}>{minsToText(dayTimerMinutes)}</div>
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-                  {dayTimerState.accumulatedMs === 0 && !dayTimerState.running ? (
-                    <button style={buttonStyle(true)} onClick={startDayTimer}>Byrja dag</button>
-                  ) : dayTimerState.running ? (
-                    <button style={buttonStyle(true)} onClick={stopDayTimer}>Stoppa dag</button>
-                  ) : (
-                    <button style={buttonStyle(true)} onClick={resumeDayTimer}>Halda áfram</button>
-                  )}
-                  {(dayTimerState.running || dayTimerState.accumulatedMs > 0) && <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>}
-                </div>
-              </div>
+      <div style={{ background: "#0f172a", color: "#fff", borderRadius: 24, padding: 18, marginTop: 14 }}>
+        <div style={{ fontSize: 14, opacity: 0.8 }}>Dagstimer</div>
+        <div style={{ fontSize: 34, fontWeight: 900, marginTop: 6 }}>{minsToText(dayTimerMinutes)}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+          {dayTimerState.accumulatedMs === 0 && !dayTimerState.running ? (
+            <button style={buttonStyle(true)} onClick={startDayTimer}>Byrja dag</button>
+          ) : dayTimerState.running ? (
+            <button style={buttonStyle(true)} onClick={stopDayTimer}>Stoppa dag</button>
+          ) : (
+            <button style={buttonStyle(true)} onClick={resumeDayTimer}>Halda áfram</button>
+          )}
+          {(dayTimerState.running || dayTimerState.accumulatedMs > 0) && (
+            <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>
+          )}
+        </div>
+      </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10, marginTop: 12 }}>
-  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-    <div style={{ color: "#64748b", fontSize: 13 }}>Frá</div>
-    <div style={{ fontWeight: 900 }}>{log.startTime}</div>
-  </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
+        <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}>
+          <div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div>
+          <div style={{ fontWeight: 900, fontSize: 24 }}>{kr(myDayLogs.reduce((s, l) => s + l.earned, 0))}</div>
+        </div>
 
-  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-    <div style={{ color: "#64748b", fontSize: 13 }}>Til</div>
-    <div style={{ fontWeight: 900 }}>{log.endTime}</div>
-  </div>
+        <div style={{ background: "#ede9fe", borderRadius: 22, padding: 14 }}>
+          <div style={{ color: "#475569", fontSize: 13 }}>Sláttutími</div>
+          <div style={{ fontWeight: 900, fontSize: 24 }}>{minsToText(myDayLogs.reduce((s, l) => s + l.minutes, 0))}</div>
+        </div>
 
-  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-    <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-    <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
-  </div>
-
-  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-    <div style={{ color: "#64748b", fontSize: 13 }}>Verk</div>
-    <div style={{ fontWeight: 900 }}>
-      {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
-        ? "🧹"
-        : (log.note || "").toLowerCase().includes("blóm")
-        ? "🌸"
-        : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
-        ? "✂️"
-        : "🌿"}{" "}
-      {log.note || "Garðsláttur"}
+        <div style={{ background: "#dcfce7", borderRadius: 22, padding: 14 }}>
+          <div style={{ color: "#475569", fontSize: 13 }}>Slættir í dag</div>
+          <div style={{ fontWeight: 900, fontSize: 24 }}>{myDayLogs.length}</div>
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
-            <div style={{ display: "grid", gap: 10 }}>
-              {myDayLogs.length === 0 && (
-                <div style={cardStyle()}>
-                  <div style={{ fontWeight: 800 }}>Engar færslur í dag enn.</div>
-                  <div style={{ color: "#64748b", marginTop: 6 }}>Farðu í Skrá og bættu við slætti til að sjá timeline hér.</div>
-                </div>
-              )}
-              {myDayLogs.map((log) => (
-                <div key={log.id} style={cardStyle()}>
-                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                    <div><div style={{ fontSize: 22, fontWeight: 900 }}>{log.customer}</div><div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div></div>
-                    <div style={{ fontWeight: 900, fontSize: 22 }}>{kr(log.earned)}</div>
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Frá</div><div style={{ fontWeight: 900 }}>{log.startTime}</div></div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Til</div><div style={{ fontWeight: 900 }}>{log.endTime}</div></div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div></div>
-                  </div>
-                </div>
-              ))}
+    <div style={{ display: "grid", gap: 10 }}>
+      {myDayLogs.length === 0 && (
+        <div style={cardStyle()}>
+          <div style={{ fontWeight: 800 }}>Engar færslur í dag enn.</div>
+          <div style={{ color: "#64748b", marginTop: 6 }}>Farðu í Skrá og bættu við slætti til að sjá timeline hér.</div>
+        </div>
+      )}
+
+      {myDayLogs.map((log) => (
+        <div key={log.id} style={cardStyle()}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: 22, fontWeight: 900 }}>{log.customer}</div>
+              <div style={{ color: "#64748b", marginTop: 4 }}>{log.area}</div>
+            </div>
+            <div style={{ fontWeight: 900, fontSize: 22 }}>{kr(log.earned)}</div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10, marginTop: 12 }}>
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Frá</div>
+              <div style={{ fontWeight: 900 }}>{log.startTime}</div>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Til</div>
+              <div style={{ fontWeight: 900 }}>{log.endTime}</div>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
+              <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Verk</div>
+              <div style={{ fontWeight: 900 }}>
+                {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
+                  ? "🧹"
+                  : (log.note || "").toLowerCase().includes("blóm")
+                  ? "🌸"
+                  : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
+                  ? "✂️"
+                  : "🌿"}{" "}
+                {log.note || "Garðsláttur"}
+              </div>
             </div>
           </div>
-        )}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
 
         {screen === "Skrá" && (
           <div style={{ display: "grid", gap: 16 }}>
