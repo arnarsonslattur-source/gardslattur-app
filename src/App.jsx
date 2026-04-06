@@ -1417,20 +1417,13 @@ export default function App() {
               <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
             </div>
           </div>
-        </>
-      )}
+        )}
     </div>
   ))}
 </div>
-                          </>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
+</div>
+</div>
+</div>
         )}
 
         {screen === "Tölur" && (
