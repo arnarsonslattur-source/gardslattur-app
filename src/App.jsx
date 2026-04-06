@@ -563,6 +563,8 @@ export default function App() {
     return result;
   }, [customCustomers]);
 
+  const [jobNote, setJobNote] = useState("");
+  
   const [entry, setEntry] = useState({
     area: "Brekkan",
     customer: "Haukur",
@@ -685,10 +687,12 @@ export default function App() {
         minutes: mins,
         earned: Number(entry.earned),
         paid: entry.paid,
+        note: jobNote || "Garðsláttur",
       },
       ...prev,
     ]);
 
+    setJobNote("");
     setEntry((prev) => ({
       ...prev,
       startTime: "12:00",
@@ -1224,6 +1228,16 @@ export default function App() {
                   <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Til</div><input style={inputStyle()} type="time" value={entry.endTime} onChange={(e) => setEntry({ ...entry, endTime: e.target.value })} /></div>
                 </div>
 
+                <div>
+  <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Verk</div>
+  <input
+    style={inputStyle()}
+    placeholder="t.d. Garðsláttur, blóm, þrif"
+    value={jobNote}
+    onChange={(e) => setJobNote(e.target.value)}
+  />
+</div>
+
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
                   <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div><input style={inputStyle()} type="number" value={entry.earned} onChange={(e) => setEntry({ ...entry, earned: e.target.value })} placeholder="Upphæð" /></div>
                   <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Heildartími</div><div style={{ ...inputStyle(), display: "flex", alignItems: "center", fontWeight: 900, fontSize: 24, background: "#f8fafc" }}>{minsToText(currentMinutes)}</div></div>
@@ -1491,26 +1505,26 @@ export default function App() {
           </div>
         )}
 
-        {screen === "Skrifa kostnað" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>Skrifa kostnað</div>
-              <div style={{ color: "#64748b", marginBottom: 14 }}>Hér geturðu skráð allan rekstrarkostnað.</div>
-              <div style={{ display: "grid", gap: 12 }}>
-                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div><input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} /></div>
-                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div><input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} /></div>
-                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Tegund kostnaðar</div><select style={inputStyle()} value={expenseForm.category} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: e.target.value }))}><option value="fuel">Eldsneyti</option><option value="clothes">Vinnufatnaður</option><option value="tools">Vinnuvörur</option><option value="maintenance">Viðhald</option><option value="other">Annað</option></select></div>
-                {expenseForm.category === "fuel" && <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Eldsneytistegund</div><select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, fuelType: e.target.value }))}><option value="diesel">Dísel</option><option value="95">95</option><option value="98">98</option></select></div>}
-                <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Athugasemd</div><input style={inputStyle()} placeholder="T.d. N1, hanskar, olía eða annað" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} /></div>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
-                <div style={{ color: "#64748b" }}>Þessi kostnaður fer svo inn í tölurnar og hagnaðinn.</div>
-                <button style={buttonStyle(true)} onClick={() => addExpense("manual")}>Vista kostnað</button>
-              </div>
-            </div>
-          </div>
-        )}
+      {screen === "Skrifa kostnað" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>Skrifa kostnað</div>
+      <div style={{ color: "#64748b", marginBottom: 14 }}>Hér geturðu skráð allan rekstrarkostnað.</div>
+      <div style={{ display: "grid", gap: 12 }}>
+        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div><input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} /></div>
+        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div><input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} /></div>
+        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Tegund kostnaðar</div><select style={inputStyle()} value={expenseForm.category} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: e.target.value }))}><option value="fuel">Eldsneyti</option><option value="clothes">Vinnufatnaður</option><option value="tools">Vinnuvörur</option><option value="maintenance">Viðhald</option><option value="other">Annað</option></select></div>
+        {expenseForm.category === "fuel" && <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Eldsneytistegund</div><select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, fuelType: e.target.value }))}><option value="diesel">Dísel</option><option value="95">95</option><option value="98">98</option></select></div>}
+        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Athugasemd</div><input style={inputStyle()} placeholder="T.d. N1, hanskar, olía eða annað" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} /></div>
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
+        <div style={{ color: "#64748b" }}>Þessi kostnaður fer svo inn í tölurnar og hagnaðinn.</div>
+        <button style={buttonStyle(true)} onClick={() => addExpense("manual")}>Vista kostnað</button>
+      </div>
+    </div>
+  </div>
+)}
 
         {screen === "Skanna QR" && (
           <div style={{ display: "grid", gap: 16 }}>
