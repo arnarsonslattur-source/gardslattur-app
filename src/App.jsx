@@ -1317,7 +1317,17 @@ export default function App() {
                           {client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}
                         </div>
                       </div>
-                      <div style={{ color: "#1d4ed8", fontWeight: 800 }}>Open</div>
+                      <div
+  style={{
+    padding: "8px 12px",
+    borderRadius: 999,
+    background: getClientStatus(client.calculatedHourly).bg,
+    color: getClientStatus(client.calculatedHourly).color,
+    fontWeight: 800,
+  }}
+>
+  {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
+</div>
                     </div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
