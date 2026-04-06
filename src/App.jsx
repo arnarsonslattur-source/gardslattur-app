@@ -476,6 +476,16 @@ async function preprocessImage(imageSrc) {
   });
 }
 
+function getClientStatus(hourly) {
+  if (hourly >= 12000) {
+    return { label: "Mjög góður", emoji: "🟢", bg: "#dcfce7", color: "#166534" };
+  }
+  if (hourly >= 8000) {
+    return { label: "Allt í lagi", emoji: "🟡", bg: "#fef9c3", color: "#854d0e" };
+  }
+  return { label: "Of lágt verð", emoji: "🔴", bg: "#fee2e2", color: "#991b1b" };
+}
+
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
