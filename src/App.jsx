@@ -1342,7 +1342,7 @@ export default function App() {
 >
   {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
 </div>
-                    <div
+                 <div
   style={{
     padding: "8px 12px",
     borderRadius: 999,
