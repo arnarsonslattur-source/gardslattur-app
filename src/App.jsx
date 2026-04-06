@@ -490,20 +490,6 @@ function getSuggestedPrice(client) {
   if (!client.totalMinutes || client.totalMinutes === 0) return null;
 
   const hourly = client.calculatedHourly;
-  const targetHourly = 12000;
-
-  if (hourly >= targetHourly) return null;
-
-  const hours = client.totalMinutes / 60;
-  const newPrice = Math.round(targetHourly * hours);
-
-  return newPrice;
-}
-
-function getSuggestedPrice(client) {
-  if (!client.totalMinutes || client.totalMinutes === 0) return null;
-
-  const hourly = client.calculatedHourly;
   if (hourly >= 12000) return null;
 
   const currentPrice = client.price || 0;
