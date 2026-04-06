@@ -397,6 +397,52 @@ function QrScannerCard({ onDetected, scanError, setScanError }) {
   );
 }
 
+function parseReceiptText(text) {
+  const clean = String(text || "").replace(/\s+/g, " ").trim();
+
+  const amountMatch =
+    clean.match(/UKUPNO\s*[:=]?\s*([0-9]+[.,][0-9]{2})/i) ||
+    clean.match(/TOTAL\s*[:=]?\s*([0-9]+[.,][0-9]{2})/i) ||
+    clean.match(/Samtals\s*[:=]?\s*([0-9]+[.,][0-9]{2})/i) ||
+    clean.match(/([0-9]+[.,][0-9]{2})/);
+
+  const dateMatch =
+    clean.match(/(\d{2})\.(\d{2})\.(\d{2,4})/) ||
+    clean.match(/(\d{2})-(\d{2})-(\d{2,4})/) ||
+    clean.match(/(\d{2})\/(\d{2})\/(\d{2,4})/);
+
+  let amount = "";
+  if (amountMatch?.[1]) {
+    amount = amountMatch[1].replace(",", ".");
+  }
+
+  let date = "";
+  if (dateMatch) {
+    let year = dateMatch[3];
+    if (year.length === 2) year = `20${year}`;
+    date = `${year}-${dateMatch[2]}-${dateMatch[1]}`;
+  }
+
+  let fuelType = "";
+  if (/\b95\b/.test(clean)) fuelType = "95";
+  else if (/\b98\b/.test(clean)) fuelType = "98";
+  else if (/diesel|dísel/i.test(clean)) fuelType = "diesel";
+
+  let station = "";
+  if (/orkan/i.test(clean)) station = "Orkan";
+  else if (/n1/i.test(clean)) station = "N1";
+  else if (/olis|olís/i.test(clean)) station = "Olís";
+  else if (/costco/i.test(clean)) station = "Costco";
+  else if (/maslina/i.test(clean)) station = "Maslina";
+
+  return {
+    amount,
+    date,
+    fuelType,
+    station,
+  };
+}
+
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
