@@ -1325,40 +1325,33 @@ export default function App() {
                     }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                      <div>
-                        <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
-                        <div style={{ color: "#64748b", marginTop: 4 }}>
-                          {client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}
-                        </div>
-                      </div>
-                      <div
-  style={{
-    padding: "8px 12px",
-    borderRadius: 999,
-    background: getClientStatus(client.calculatedHourly).bg,
-    color: getClientStatus(client.calculatedHourly).color,
-    fontWeight: 800,
-  }}
->
-  {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
-</div>
-                 <div
-  style={{
-    padding: "8px 12px",
-    borderRadius: 999,
-    background: getClientStatus(client.calculatedHourly).bg,
-    color: getClientStatus(client.calculatedHourly).color,
-    fontWeight: 800,
-  }}
->
-  {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
-</div>
-
-{getSuggestedPrice(client) && (
-  <div style={{ color: "#991b1b", fontWeight: 700, marginTop: 6 }}>
-    💰 Mælt verð: {kr(getSuggestedPrice(client))}
+  <div>
+    <div style={{ fontSize: 22, fontWeight: 900 }}>{client.name}</div>
+    <div style={{ color: "#64748b", marginTop: 4 }}>
+      {client.pricing === "hourly" ? `Tímakaup ${kr(client.price)}/klst` : `Fast verð ${kr(client.price)}`}
+    </div>
   </div>
-)}
+
+  <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6 }}>
+    <div
+      style={{
+        padding: "8px 12px",
+        borderRadius: 999,
+        background: getClientStatus(client.calculatedHourly).bg,
+        color: getClientStatus(client.calculatedHourly).color,
+        fontWeight: 800,
+      }}
+    >
+      {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
+    </div>
+
+    {getSuggestedPrice(client) && (
+      <div style={{ color: "#991b1b", fontWeight: 700 }}>
+        💰 Mælt verð: {kr(getSuggestedPrice(client))}
+      </div>
+    )}
+  </div>
+</div>
 
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginTop: 12 }}>
                       <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
