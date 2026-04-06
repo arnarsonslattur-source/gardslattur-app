@@ -1343,15 +1343,26 @@ export default function App() {
                               <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div><div style={{ fontWeight: 900 }}>{kr(log.earned)}</div></div>
                               <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{log.pricing === "hourly" ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}` : "Fast verð"}</div></div>
                             </div>
-                            <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-                              <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}><input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} />Breyta í greitt</label>
-                              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                                <div style={{ fontWeight: 800, marginBottom: 8 }}>
-                                <div style={{ fontWeight: 800, marginBottom: 8 }}>🌿 {log.note || "Garðsláttur"}</div>
-                                <button style={buttonStyle(false)} onClick={() => startEditLog(log)}>Edit</button>
-                                <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
-                              </div>
-                            </div>
+                           <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+  <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}><input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} />Breyta í greitt</label>
+  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+    <div style={{ fontWeight: 800, marginBottom: 2 }}>
+      {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
+        ? "🧹"
+        : (log.note || "").toLowerCase().includes("blóm")
+        ? "🌸"
+        : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
+        ? "✂️"
+        : "🌿"}{" "}
+      {log.note || "Garðsláttur"}
+    </div>
+
+    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      <button style={buttonStyle(false)} onClick={() => startEditLog(log)}>Edit</button>
+      <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
+    </div>
+  </div>
+</div>
                           </>
                         )}
                       </div>
