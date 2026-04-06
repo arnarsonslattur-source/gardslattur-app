@@ -1305,63 +1305,122 @@ export default function App() {
                   </div>
 
                   <div style={{ padding: 14, display: "grid", gap: 12 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{selectedClientCard.pricing === "hourly" ? `Tímakaup ${kr(selectedClientCard.price)}/klst` : `Fast verð ${kr(selectedClientCard.price)}`}</div></div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div><div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div></div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div><div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div></div>
-                      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div><div style={{ fontWeight: 900 }}>{selectedClientCard.totalMinutes > 0 ? `${kr(selectedClientCard.calculatedHourly)}/klst` : "0 kr./klst"}</div></div>
-                    </div>
-                    
-                                        {selectedClientCard.logs.map((log) => (
-                      <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
-                          <div><div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div><div style={{ color: "#64748b", marginTop: 4 }}>{log.startTime} – {log.endTime}</div></div>
-                          <div style={{ padding: "8px 12px", borderRadius: 999, background: log.paid ? "#dcfce7" : "#fee2e2", color: log.paid ? "#166534" : "#991b1b", fontWeight: 800 }}>{log.paid ? "Greitt" : "Ógreitt"}</div>
-                        </div>
-
-                        {editingLogId === log.id ? (
-                          <div style={{ display: "grid", gap: 10 }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
-                              <input style={inputStyle()} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} />
-                              <input style={inputStyle()} type="time" value={editForm.startTime} onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })} />
-                              <input style={inputStyle()} type="time" value={editForm.endTime} onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })} />
-                              <input style={inputStyle()} type="number" value={editForm.earned} onChange={(e) => setEditForm({ ...editForm, earned: e.target.value })} />
-                              <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700 }}>
-                                <input type="checkbox" checked={editForm.paid} onChange={(e) => setEditForm({ ...editForm, paid: e.target.checked })} />
-                                Greitt
-                              </label>
-                            </div>
-                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                              <button style={buttonStyle(true)} onClick={saveEditLog}>Vista breytingar</button>
-                              <button style={buttonStyle(false)} onClick={cancelEdit}>Hætta við</button>
-                            </div>
-                          </div>
-                        ) : (
-                          <>
-                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(120px,1fr))", gap: 10, marginBottom: 12 }}>
-                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tími</div><div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div></div>
-                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div><div style={{ fontWeight: 900 }}>{kr(log.earned)}</div></div>
-                              <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div><div style={{ fontWeight: 900 }}>{log.pricing === "hourly" ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}` : "Fast verð"}</div></div>
-                            </div>
-                           <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-  <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}><input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} />Breyta í greitt</label>
-  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-    <div style={{ fontWeight: 800, marginBottom: 2 }}>
-      {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
-        ? "🧹"
-        : (log.note || "").toLowerCase().includes("blóm")
-        ? "🌸"
-        : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
-        ? "✂️"
-        : "🌿"}{" "}
-      {log.note || "Garðsláttur"}
+  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(130px,1fr))", gap: 10 }}>
+    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+      <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
+      <div style={{ fontWeight: 900 }}>
+        {selectedClientCard.pricing === "hourly"
+          ? `Tímakaup ${kr(selectedClientCard.price)}/klst`
+          : `Fast verð ${kr(selectedClientCard.price)}`}
+      </div>
     </div>
-
-    <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-      <button style={buttonStyle(false)} onClick={() => startEditLog(log)}>Edit</button>
-      <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
+    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+      <div style={{ color: "#64748b", fontSize: 13 }}>Heildartími</div>
+      <div style={{ fontWeight: 900 }}>{minsToText(selectedClientCard.totalMinutes)}</div>
+    </div>
+    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+      <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
+      <div style={{ fontWeight: 900 }}>{kr(selectedClientCard.totalEarned)}</div>
+    </div>
+    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+      <div style={{ color: "#64748b", fontSize: 13 }}>Reiknað tímakaup</div>
+      <div style={{ fontWeight: 900 }}>
+        {selectedClientCard.totalMinutes > 0
+          ? `${kr(selectedClientCard.calculatedHourly)}/klst`
+          : "0 kr./klst"}
+      </div>
     </div>
   </div>
+
+  {selectedClientCard.logs.map((log) => (
+    <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
+        <div>
+          <div style={{ fontSize: 20, fontWeight: 900 }}>{formatLongDate(log.date)}</div>
+          <div style={{ color: "#64748b", marginTop: 4 }}>{log.startTime} – {log.endTime}</div>
+        </div>
+        <div
+          style={{
+            padding: "8px 12px",
+            borderRadius: 999,
+            background: log.paid ? "#dcfce7" : "#fee2e2",
+            color: log.paid ? "#166534" : "#991b1b",
+            fontWeight: 800,
+          }}
+        >
+          {log.paid ? "Greitt" : "Ógreitt"}
+        </div>
+      </div>
+
+      {editingLogId === log.id ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+            <input style={inputStyle()} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} />
+            <input style={inputStyle()} type="time" value={editForm.startTime} onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })} />
+            <input style={inputStyle()} type="time" value={editForm.endTime} onChange={(e) => setEditForm({ ...editForm, endTime: e.target.value })} />
+            <input style={inputStyle()} type="number" value={editForm.earned} onChange={(e) => setEditForm({ ...editForm, earned: e.target.value })} />
+            <label style={{ ...inputStyle(), display: "flex", alignItems: "center", gap: 10, fontWeight: 700 }}>
+              <input type="checkbox" checked={editForm.paid} onChange={(e) => setEditForm({ ...editForm, paid: e.target.checked })} />
+              Greitt
+            </label>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <button style={buttonStyle(true)} onClick={saveEditLog}>Vista breytingar</button>
+            <button style={buttonStyle(false)} onClick={cancelEdit}>Hætta við</button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10, marginBottom: 12 }}>
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
+              <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div>
+              <div style={{ fontWeight: 900 }}>{kr(log.earned)}</div>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
+              <div style={{ fontWeight: 900 }}>
+                {log.pricing === "hourly"
+                  ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}`
+                  : "Fast verð"}
+              </div>
+            </div>
+
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Verk</div>
+              <div style={{ fontWeight: 900 }}>
+                {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
+                  ? "🧹"
+                  : (log.note || "").toLowerCase().includes("blóm")
+                  ? "🌸"
+                  : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
+                  ? "✂️"
+                  : "🌿"}{" "}
+                {log.note || "Garðsláttur"}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+            <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}>
+              <input type="checkbox" checked={log.paid} onChange={() => togglePaid(log.id)} />
+              Breyta í greitt
+            </label>
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button style={buttonStyle(false)} onClick={() => startEditLog(log)}>Edit</button>
+              <button style={buttonStyle(false)} onClick={() => deleteLog(log.id)}>Eyða</button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  ))}
 </div>
                           </>
                         )}
