@@ -728,7 +728,8 @@ export default function App() {
 
     try {
       const worker = await createWorker("eng");
-      const result = await worker.recognize(receiptImage);
+      const betterImage = await preprocessImage(receiptImage);
+      const result = await worker.recognize(betterImage);
       const text = result?.data?.text || "";
 
       setReceiptText(text);
@@ -1579,6 +1580,20 @@ export default function App() {
                 ) : (
                   <div style={{ color: "#64748b" }}>Engin mynd valin enn</div>
                 )}
+                
+                {receiptImage && (
+  <div style={{ marginTop: 12 }}>
+    <button
+      style={buttonStyle(false)}
+      onClick={() => {
+        setReceiptImage(null);
+        setReceiptText("");
+      }}
+    >
+      Eyða mynd
+    </button>
+  </div>
+ )}
               </div>
 
               <div style={{ marginTop: 16 }}>
