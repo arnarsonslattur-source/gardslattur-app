@@ -162,6 +162,15 @@ function minutesBetween(start, end) {
   return Math.max(0, e - s);
 }
 
+function formatClockTime(timestamp) {
+  if (!timestamp) return "--:--";
+
+  return new Date(timestamp).toLocaleTimeString("is-IS", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 function minsToText(mins) {
   const h = Math.floor((mins || 0) / 60);
   const m = (mins || 0) % 60;
@@ -573,7 +582,15 @@ export default function App() {
       const saved = localStorage.getItem(DAY_TIMER_STORAGE_KEY);
       return saved
         ? JSON.parse(saved)
-        : { startTime: null, running: false, accumulatedMs: 0 };
+        : {
+  startTime: null,
+  running: false,
+  accumulatedMs: 0,
+  dayStartedAt: null,
+  dayEndedAt: null,
+  breakMs: 0,
+  lastStoppedAt: null,
+};
     } catch {
       return { startTime: null, running: false, accumulatedMs: 0 };
     }
@@ -1009,25 +1026,63 @@ const todayPlanLines = todayPlan
   }, [dayTimerState, timerNow]);
 
   const startDayTimer = () => {
-    setTimerNow(Date.now());
-    setDayTimerState({ startTime: Date.now(), running: true, accumulatedMs: 0 });
-  };
+  const now = Date.now();
+  setTimerNow(now);
+  setDayTimerState({
+    startTime: now,
+    running: true,
+    accumulatedMs: 0,
+    dayStartedAt: now,
+    dayEndedAt: null,
+    breakMs: 0,
+    lastStoppedAt: null,
+  });
+};
 
   const stopDayTimer = () => {
-    if (!dayTimerState.startTime) return;
-    const elapsed = Math.max(0, Date.now() - dayTimerState.startTime);
-    setDayTimerState((prev) => ({ startTime: null, running: false, accumulatedMs: (prev.accumulatedMs || 0) + elapsed }));
-  };
+  if (!dayTimerState.startTime) return;
+
+  const now = Date.now();
+  const elapsed = Math.max(0, now - dayTimerState.startTime);
+
+  setDayTimerState((prev) => ({
+    ...prev,
+    startTime: null,
+    running: false,
+    accumulatedMs: (prev.accumulatedMs || 0) + elapsed,
+    dayEndedAt: now,
+    lastStoppedAt: now,
+  }));
+};
 
   const resumeDayTimer = () => {
-    setTimerNow(Date.now());
-    setDayTimerState((prev) => ({ ...prev, startTime: Date.now(), running: true }));
-  };
+  const now = Date.now();
+  setTimerNow(now);
+
+  setDayTimerState((prev) => ({
+    ...prev,
+    startTime: now,
+    running: true,
+    breakMs:
+      (prev.breakMs || 0) +
+      (prev.lastStoppedAt ? Math.max(0, now - prev.lastStoppedAt) : 0),
+    dayEndedAt: null,
+    lastStoppedAt: null,
+  }));
+};
 
   const resetDayTimer = () => {
-    setDayTimerState({ startTime: null, running: false, accumulatedMs: 0 });
-    setTimerNow(Date.now());
-  };
+  setDayTimerState({
+    startTime: null,
+    running: false,
+    accumulatedMs: 0,
+    dayStartedAt: null,
+    dayEndedAt: null,
+    breakMs: 0,
+    lastStoppedAt: null,
+  });
+  setTimerNow(Date.now());
+};
 
   const logsByDate = useMemo(() => {
     const map = {};
@@ -1217,8 +1272,37 @@ const todayPlanLines = todayPlan
           {(dayTimerState.running || dayTimerState.accumulatedMs > 0) && (
             <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>
           )}
-        </div>
+                  </div>
       </div>
+          <div
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+    gap: 12,
+    marginTop: 16,
+  }}
+>
+  <div style={{ background: "#f8fafc", borderRadius: 22, padding: 14 }}>
+    <div style={{ color: "#475569", fontSize: 13 }}>Byrjaði</div>
+    <div style={{ fontWeight: 900, fontSize: 24 }}>
+      {formatClockTime(dayTimerState.dayStartedAt)}
+    </div>
+  </div>
+
+  <div style={{ background: "#f8fafc", borderRadius: 22, padding: 14 }}>
+    <div style={{ color: "#475569", fontSize: 13 }}>Endaði</div>
+    <div style={{ fontWeight: 900, fontSize: 24 }}>
+      {formatClockTime(dayTimerState.running ? null : dayTimerState.dayEndedAt)}
+    </div>
+  </div>
+
+  <div style={{ background: "#f8fafc", borderRadius: 22, padding: 14 }}>
+    <div style={{ color: "#475569", fontSize: 13 }}>Pásur</div>
+    <div style={{ fontWeight: 900, fontSize: 24 }}>
+      {minsToText(Math.floor((dayTimerState.breakMs || 0) / 60000))}
+    </div>
+  </div>
+</div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
         <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}>
