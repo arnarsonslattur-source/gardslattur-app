@@ -1954,25 +1954,58 @@ const cancelDayTimerEdit = () => {
               </button>
 
               {isOpen && (
-                <div style={{ padding: "0 14px 14px", display: "grid", gap: 10 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
-                      <div style={{ fontWeight: 900 }}>{kr(month.earned)}</div>
-                    </div>
+  <div style={{ padding: "0 14px 14px", display: "grid", gap: 10 }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+        <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
+        <div style={{ fontWeight: 900 }}>{kr(month.earned)}</div>
+      </div>
 
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-                      <div style={{ fontWeight: 900 }}>{minsToText(month.minutes)}</div>
-                    </div>
+      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+        <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
+        <div style={{ fontWeight: 900 }}>{minsToText(month.minutes)}</div>
+      </div>
 
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>Fjöldi verka</div>
-                      <div style={{ fontWeight: 900 }}>{month.count}</div>
-                    </div>
-                  </div>
-                </div>
-              )}
+      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+        <div style={{ color: "#64748b", fontSize: 13 }}>Fjöldi verka</div>
+        <div style={{ fontWeight: 900 }}>{month.count}</div>
+      </div>
+    </div>
+
+    <div style={{ display: "grid", gap: 8 }}>
+      {month.weeks.length > 0 ? (
+        month.weeks.map((week) => (
+          <div
+            key={week.weekKey}
+            style={{
+              background: "#fff",
+              border: "1px solid #e2e8f0",
+              borderRadius: 18,
+              padding: 12,
+              display: "grid",
+              gridTemplateColumns: "1fr auto",
+              gap: 10,
+              alignItems: "center",
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 900 }}>{week.weekLabel}</div>
+              <div style={{ color: "#64748b", marginTop: 4 }}>
+                {week.count} verk • {minsToText(week.minutes)}
+              </div>
+            </div>
+
+            <div style={{ fontWeight: 900 }}>
+              {kr(week.earned)}
+            </div>
+          </div>
+        ))
+      ) : (
+        <div style={{ color: "#64748b" }}>Engar færslur í þessum mánuði.</div>
+      )}
+    </div>
+  </div>
+)}
             </div>
           );
         })}
