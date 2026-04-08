@@ -1209,6 +1209,31 @@ const cancelDayTimerEdit = () => {
     const monthMinutes = monthLogs.reduce((sum, log) => sum + log.minutes, 0);
     const monthCount = monthLogs.length;
 
+    const weeksMap = {};
+
+    monthLogs.forEach((log) => {
+      const day = new Date(`${log.date}T00:00:00`);
+      const firstDayOfMonth = new Date(day.getFullYear(), day.getMonth(), 1);
+      const weekNumber = Math.ceil((day.getDate() + firstDayOfMonth.getDay()) / 7);
+      const weekKey = `${monthKey}-vika-${weekNumber}`;
+
+      if (!weeksMap[weekKey]) {
+        weeksMap[weekKey] = {
+          weekKey,
+          weekLabel: `Vika ${weekNumber}`,
+          logs: [],
+          earned: 0,
+          minutes: 0,
+          count: 0,
+        };
+      }
+
+      weeksMap[weekKey].logs.push(log);
+      weeksMap[weekKey].earned += log.earned;
+      weeksMap[weekKey].minutes += log.minutes;
+      weeksMap[weekKey].count += 1;
+    });
+
     return {
       monthKey,
       monthLabel: MONTHS[index],
@@ -1216,12 +1241,13 @@ const cancelDayTimerEdit = () => {
       earned: monthEarned,
       minutes: monthMinutes,
       count: monthCount,
+      weeks: Object.values(weeksMap),
     };
   });
 
   return months;
 }, [logs, selectedStatsYear]);
-
+  
   const allCustomers = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
       list.map((customer) => ({ ...customer, area, key: makeCustomerKey({ ...customer, area }) }))
@@ -1880,10 +1906,18 @@ const cancelDayTimerEdit = () => {
           </div>
         </div>
 
-        <button style={buttonStyle(false)} onClick={() => setSelectedStatsYear("2026")}>
-          {selectedStatsYear}
-        </button>
-      </div>
+        <select
+  style={{ ...inputStyle(), maxWidth: 140 }}
+  value={selectedStatsYear}
+  onChange={(e) => {
+    setSelectedStatsYear(e.target.value);
+    setExpandedStatsMonth(null);
+  }}
+>
+  <option value="2026">2026</option>
+  <option value="2025">2025</option>
+  <option value="2027">2027</option>
+</select>
 
       <div style={{ display: "grid", gap: 10 }}>
         {statsMonths.map((month) => {
