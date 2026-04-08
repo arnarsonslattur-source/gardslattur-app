@@ -1952,8 +1952,8 @@ const cancelDayTimerEdit = () => {
                   textAlign: "left",
                   padding: 14,
                   cursor: "pointer",
-                }}
-              >
+                  }}>
+                  
                 <div
                   style={{
                     display: "flex",
