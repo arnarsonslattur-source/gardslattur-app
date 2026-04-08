@@ -979,9 +979,21 @@ export default function App() {
 
   const selectedClientCard = clientCards.find((c) => c.name === selectedClient);
 
-  const todayDate = useMemo(() => {
-    return logs.length ? [...logs].sort((a, b) => b.date.localeCompare(a.date))[0].date : "2026-04-12";
-  }, [logs]);
+  function getTodayLocal() {
+  const now = new Date();
+  const offset = now.getTimezoneOffset() * 60000;
+  return new Date(now - offset).toISOString().slice(0, 10);
+}
+
+const [todayDate, setTodayDate] = useState(getTodayLocal());
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setTodayDate(getTodayLocal());
+  }, 60000);
+
+  return () => clearInterval(interval);
+}, []);
 
   const myDayLogs = logs.filter((log) => log.date === todayDate).sort((a, b) => a.startTime.localeCompare(b.startTime));
 
