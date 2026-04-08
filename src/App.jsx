@@ -171,6 +171,22 @@ function formatClockTime(timestamp) {
   });
 }
 
+function timestampToTimeInput(timestamp) {
+  if (!timestamp) return "";
+  const d = new Date(timestamp);
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}
+
+function setTimestampTime(baseTimestamp, timeValue) {
+  if (!baseTimestamp || !timeValue) return baseTimestamp;
+  const [hours, minutes] = timeValue.split(":").map(Number);
+  const d = new Date(baseTimestamp);
+  d.setHours(hours, minutes, 0, 0);
+  return d.getTime();
+}
+
 function minsToText(mins) {
   const h = Math.floor((mins || 0) / 60);
   const m = (mins || 0) % 60;
@@ -597,6 +613,12 @@ export default function App() {
   });
 
   const [timerNow, setTimerNow] = useState(Date.now());
+
+  const [editingDayTimer, setEditingDayTimer] = useState(false);
+const [dayTimerEditForm, setDayTimerEditForm] = useState({
+  start: "",
+  end: "",
+});
 
   const customersByArea = useMemo(() => {
     const result = AREA_ORDER.reduce((acc, area) => {
@@ -1090,6 +1112,42 @@ const todayPlanLines = todayPlan
   setTimerNow(Date.now());
 };
 
+  const startEditDayTimer = () => {
+  setDayTimerEditForm({
+    start: timestampToTimeInput(dayTimerState.dayStartedAt),
+    end: timestampToTimeInput(dayTimerState.dayEndedAt),
+  });
+  setEditingDayTimer(true);
+};
+
+const saveDayTimerEdit = () => {
+  if (!dayTimerState.dayStartedAt || !dayTimerEditForm.start) return;
+
+  const newStartedAt = setTimestampTime(dayTimerState.dayStartedAt, dayTimerEditForm.start);
+  const baseEnd = dayTimerState.dayEndedAt || dayTimerState.dayStartedAt;
+  const newEndedAt = dayTimerEditForm.end
+    ? setTimestampTime(baseEnd, dayTimerEditForm.end)
+    : null;
+
+  const workedMs = newEndedAt
+    ? Math.max(0, newEndedAt - newStartedAt - (dayTimerState.breakMs || 0))
+    : dayTimerState.accumulatedMs;
+
+  setDayTimerState((prev) => ({
+    ...prev,
+    dayStartedAt: newStartedAt,
+    dayEndedAt: newEndedAt,
+    accumulatedMs: workedMs,
+    startTime: prev.running ? newStartedAt : null,
+  }));
+
+  setEditingDayTimer(false);
+};
+
+const cancelDayTimerEdit = () => {
+  setEditingDayTimer(false);
+};
+
   const logsByDate = useMemo(() => {
     const map = {};
     for (const log of logs) {
@@ -1280,7 +1338,16 @@ const todayPlanLines = todayPlan
           )}
                   </div>
       </div>
-          <div
+          
+            <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+        {!editingDayTimer ? (
+          <button style={buttonStyle(false)} onClick={startEditDayTimer}>
+            Edita dagstimer
+          </button>
+        ) : null}
+      </div>
+      
+      <div
   style={{
     display: "grid",
     gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
@@ -1310,6 +1377,43 @@ const todayPlanLines = todayPlan
   </div>
 </div>
 
+{editingDayTimer && (
+  <div style={cardStyle({ marginTop: 12 })}>
+    <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 12 }}>
+      Edita dagstimer
+    </div>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+      <input
+        style={inputStyle()}
+        type="time"
+        value={dayTimerEditForm.start}
+        onChange={(e) =>
+          setDayTimerEditForm((prev) => ({ ...prev, start: e.target.value }))
+        }
+      />
+
+      <input
+        style={inputStyle()}
+        type="time"
+        value={dayTimerEditForm.end}
+        onChange={(e) =>
+          setDayTimerEditForm((prev) => ({ ...prev, end: e.target.value }))
+        }
+      />
+    </div>
+
+    <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+      <button style={buttonStyle(true)} onClick={saveDayTimerEdit}>
+        Vista
+      </button>
+      <button style={buttonStyle(false)} onClick={cancelDayTimerEdit}>
+        Hætta við
+      </button>
+    </div>
+  </div>
+)}
+      
             <div style={cardStyle({ marginTop: 16 })}>
         <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 10 }}>
           Plan dagsins
