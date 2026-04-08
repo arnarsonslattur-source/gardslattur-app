@@ -1041,12 +1041,6 @@ const todayPlanLines = todayPlan
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
-
-  const todayPlan = planEntries[todayDate] || "";
-const todayPlanLines = todayPlan
-  .split("\n")
-  .map((line) => line.trim())
-  .filter(Boolean);
   
   const dayTimerMinutes = useMemo(() => {
     const runningMs = dayTimerState.running && dayTimerState.startTime ? Math.max(0, timerNow - dayTimerState.startTime) : 0;
