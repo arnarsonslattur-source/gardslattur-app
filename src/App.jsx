@@ -1897,8 +1897,17 @@ const cancelDayTimerEdit = () => {
 
 {screen === "Tölur" && (
   <div style={{ display: "grid", gap: 16 }}>
-        <div style={cardStyle()}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+    <div style={cardStyle()}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 10,
+          flexWrap: "wrap",
+          marginBottom: 12,
+        }}
+      >
         <div>
           <div style={{ fontSize: 24, fontWeight: 900 }}>Ár → mánuðir</div>
           <div style={{ color: "#64748b", marginTop: 4 }}>
@@ -1907,36 +1916,73 @@ const cancelDayTimerEdit = () => {
         </div>
 
         <select
-  style={{ ...inputStyle(), maxWidth: 140 }}
-  value={selectedStatsYear}
-  onChange={(e) => {
-    setSelectedStatsYear(e.target.value);
-    setExpandedStatsMonth(null);
-  }}
->
-  <option value="2026">2026</option>
-  <option value="2025">2025</option>
-  <option value="2027">2027</option>
-</select>
+          style={{ ...inputStyle(), maxWidth: 140 }}
+          value={selectedStatsYear}
+          onChange={(e) => {
+            setSelectedStatsYear(e.target.value);
+            setExpandedStatsMonth(null);
+          }}
+        >
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2027">2027</option>
+        </select>
+      </div>
 
       <div style={{ display: "grid", gap: 10 }}>
-        
+        {statsMonths.map((month) => {
+          const isOpen = expandedStatsMonth === month.monthKey;
+
+          return (
+            <div
+              key={month.monthKey}
+              style={{
+                background: "#fff",
+                border: "1px solid #e2e8f0",
+                borderRadius: 22,
+                overflow: "hidden",
+              }}
+            >
+              <button
+                onClick={() => setExpandedStatsMonth(isOpen ? null : month.monthKey)}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  background: "transparent",
                   textAlign: "left",
                   padding: 14,
                   cursor: "pointer",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: 10,
+                    flexWrap: "wrap",
+                  }}
+                >
                   <div>
-                    <div style={{ fontSize: 22, fontWeight: 900 }}>{month.monthLabel}</div>
+                    <div style={{ fontSize: 22, fontWeight: 900 }}>
+                      {month.monthLabel}
+                    </div>
                     <div style={{ color: "#64748b", marginTop: 4 }}>
                       {month.count} slættir • {minsToText(month.minutes)}
                     </div>
                   </div>
 
                   <div style={{ textAlign: "right" }}>
-                    <div style={{ fontWeight: 900, fontSize: 20 }}>{kr(month.earned)}</div>
-                    <div style={{ color: "#1d4ed8", fontWeight: 800, marginTop: 4 }}>
+                    <div style={{ fontWeight: 900, fontSize: 20 }}>
+                      {kr(month.earned)}
+                    </div>
+                    <div
+                      style={{
+                        color: "#1d4ed8",
+                        fontWeight: 800,
+                        marginTop: 4,
+                      }}
+                    >
                       {isOpen ? "Loka" : "Opna"}
                     </div>
                   </div>
@@ -1944,63 +1990,88 @@ const cancelDayTimerEdit = () => {
               </button>
 
               {isOpen && (
-  <div style={{ padding: "0 14px 14px", display: "grid", gap: 10 }}>
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
-      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-        <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
-        <div style={{ fontWeight: 900 }}>{kr(month.earned)}</div>
-      </div>
+                <div style={{ padding: "0 14px 14px", display: "grid", gap: 10 }}>
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+                      gap: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        background: "#f8fafc",
+                        borderRadius: 18,
+                        padding: 12,
+                      }}
+                    >
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
+                      <div style={{ fontWeight: 900 }}>{kr(month.earned)}</div>
+                    </div>
 
-      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-        <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-        <div style={{ fontWeight: 900 }}>{minsToText(month.minutes)}</div>
-      </div>
+                    <div
+                      style={{
+                        background: "#f8fafc",
+                        borderRadius: 18,
+                        padding: 12,
+                      }}
+                    >
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
+                      <div style={{ fontWeight: 900 }}>{minsToText(month.minutes)}</div>
+                    </div>
 
-      <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-        <div style={{ color: "#64748b", fontSize: 13 }}>Fjöldi verka</div>
-        <div style={{ fontWeight: 900 }}>{month.count}</div>
-      </div>
-    </div>
+                    <div
+                      style={{
+                        background: "#f8fafc",
+                        borderRadius: 18,
+                        padding: 12,
+                      }}
+                    >
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Fjöldi verka</div>
+                      <div style={{ fontWeight: 900 }}>{month.count}</div>
+                    </div>
+                  </div>
 
-    <div style={{ display: "grid", gap: 8 }}>
-      {month.weeks.length > 0 ? (
-        month.weeks.map((week) => (
-          <div
-            key={week.weekKey}
-            style={{
-              background: "#fff",
-              border: "1px solid #e2e8f0",
-              borderRadius: 18,
-              padding: 12,
-              display: "grid",
-              gridTemplateColumns: "1fr auto",
-              gap: 10,
-              alignItems: "center",
-            }}
-          >
-            <div>
-              <div style={{ fontWeight: 900 }}>{week.weekLabel}</div>
-              <div style={{ color: "#64748b", marginTop: 4 }}>
-                {week.count} verk • {minsToText(week.minutes)}
-              </div>
-            </div>
+                  <div style={{ display: "grid", gap: 8 }}>
+                    {month.weeks.length > 0 ? (
+                      month.weeks.map((week) => (
+                        <div
+                          key={week.weekKey}
+                          style={{
+                            background: "#fff",
+                            border: "1px solid #e2e8f0",
+                            borderRadius: 18,
+                            padding: 12,
+                            display: "grid",
+                            gridTemplateColumns: "1fr auto",
+                            gap: 10,
+                            alignItems: "center",
+                          }}
+                        >
+                          <div>
+                            <div style={{ fontWeight: 900 }}>{week.weekLabel}</div>
+                            <div style={{ color: "#64748b", marginTop: 4 }}>
+                              {week.count} verk • {minsToText(week.minutes)}
+                            </div>
+                          </div>
 
-            <div style={{ fontWeight: 900 }}>
-              {kr(week.earned)}
-            </div>
-          </div>
-        ))
-      ) : (
-        <div style={{ color: "#64748b" }}>Engar færslur í þessum mánuði.</div>
-            )}
-           </div>
-           </div>
-            )}
+                          <div style={{ fontWeight: 900 }}>{kr(week.earned)}</div>
+                        </div>
+                      ))
+                    ) : (
+                      <div style={{ color: "#64748b" }}>
+                        Engar færslur í þessum mánuði.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}
       </div>
     </div>
+
     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
       <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}>
         <div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div>
@@ -2023,15 +2094,21 @@ const cancelDayTimerEdit = () => {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
       <div style={cardStyle()}>
         <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div>
-        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}</div>
+        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+          {logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}
+        </div>
       </div>
       <div style={cardStyle()}>
         <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div>
-        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}</div>
+        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+          {logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}
+        </div>
       </div>
       <div style={cardStyle()}>
         <div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div>
-        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>{allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}</div>
+        <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+          {allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}
+        </div>
       </div>
     </div>
 
@@ -2055,11 +2132,17 @@ const cancelDayTimerEdit = () => {
         <div style={cardStyle({ background: "linear-gradient(135deg,#fef9c3 0%, #fde68a 100%)" })}>
           <div style={{ color: "#475569", fontSize: 13 }}>🏆 Besti kúnni</div>
           <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
-            {[...clientCards].filter((c) => c.totalMinutes > 0).sort((a, b) => b.calculatedHourly - a.calculatedHourly)[0]?.name || "-"}
+            {[...clientCards]
+              .filter((c) => c.totalMinutes > 0)
+              .sort((a, b) => b.calculatedHourly - a.calculatedHourly)[0]?.name || "-"}
           </div>
           <div style={{ marginTop: 4 }}>
             {[...clientCards].filter((c) => c.totalMinutes > 0).length > 0
-              ? `${kr([...clientCards].filter((c) => c.totalMinutes > 0).sort((a, b) => b.calculatedHourly - a.calculatedHourly)[0]?.calculatedHourly)}/klst`
+              ? `${kr(
+                  [...clientCards]
+                    .filter((c) => c.totalMinutes > 0)
+                    .sort((a, b) => b.calculatedHourly - a.calculatedHourly)[0]?.calculatedHourly
+                )}/klst`
               : "0 kr./klst"}
           </div>
         </div>
@@ -2154,10 +2237,24 @@ const cancelDayTimerEdit = () => {
       <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hverfi</div>
       <div style={{ display: "grid", gap: 10 }}>
         {areaSummary.map((row) => {
-          const areaMinutes = logs.filter((l) => l.area === row.area).reduce((sum, l) => sum + l.minutes, 0);
+          const areaMinutes = logs
+            .filter((l) => l.area === row.area)
+            .reduce((sum, l) => sum + l.minutes, 0);
           const areaHourly = areaMinutes > 0 ? Math.round(row.earned / (areaMinutes / 60)) : 0;
+
           return (
-            <div key={row.area} style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr 1fr 1fr", gap: 10, background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
+            <div
+              key={row.area}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1.2fr 1fr 1fr 1fr",
+                gap: 10,
+                background: "#fff",
+                border: "1px solid #e2e8f0",
+                borderRadius: 18,
+                padding: 12,
+              }}
+            >
               <div style={{ fontWeight: 800 }}>{row.area}</div>
               <div>Tekjur: {kr(row.earned)}</div>
               <div>Tími: {minsToText(areaMinutes)}</div>
@@ -2170,77 +2267,152 @@ const cancelDayTimerEdit = () => {
   </div>
 )}
 
-        {screen === "Kort" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>← Til baka</button>
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 28, fontWeight: 900 }}>Kort af Akureyri</div>
-              <div style={{ color: "#64748b", marginTop: 6 }}>Veldu hvaða kúnna sem er og smelltu svo á kortið til að setja eða færa pinna.</div>
-              <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
-                <select style={inputStyle()} value={mapCustomerKey} onChange={(e) => setMapCustomerKey(e.target.value)}>
-                  <option value="">Veldu kúnna</option>
-                  {AREA_ORDER.map((area) => {
-                    const areaCustomers = allCustomers.filter((c) => c.area === area);
-                    if (areaCustomers.length === 0) return null;
-                    return <optgroup key={area} label={area}>{areaCustomers.map((c) => <option key={c.key} value={c.key}>{c.name}</option>)}</optgroup>;
-                  })}
-                </select>
+{screen === "Kort" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>← Til baka</button>
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 28, fontWeight: 900 }}>Kort af Akureyri</div>
+      <div style={{ color: "#64748b", marginTop: 6 }}>Veldu hvaða kúnna sem er og smelltu svo á kortið til að setja eða færa pinna.</div>
+      <div style={{ marginTop: 14, display: "grid", gap: 12 }}>
+        <select style={inputStyle()} value={mapCustomerKey} onChange={(e) => setMapCustomerKey(e.target.value)}>
+          <option value="">Veldu kúnna</option>
+          {AREA_ORDER.map((area) => {
+            const areaCustomers = allCustomers.filter((c) => c.area === area);
+            if (areaCustomers.length === 0) return null;
+            return (
+              <optgroup key={area} label={area}>
+                {areaCustomers.map((c) => (
+                  <option key={c.key} value={c.key}>{c.name}</option>
+                ))}
+              </optgroup>
+            );
+          })}
+        </select>
 
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{selectedMapCustomer && <button style={buttonStyle(false)} onClick={clearCustomerLocation}>Eyða pinna</button>}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {selectedMapCustomer && <button style={buttonStyle(false)} onClick={clearCustomerLocation}>Eyða pinna</button>}
+        </div>
 
-                <div style={{ height: 520, borderRadius: 24, overflow: "hidden", border: "1px solid #dbe2ea" }}>
-                  <MapContainer center={AKUREYRI_CENTER} zoom={13} scrollWheelZoom={true} style={{ height: "100%", width: "100%" }}>
-                    <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <MapClickSetter selectedCustomerKey={selectedMapCustomer?.key} onPickLocation={setCustomerLocation} />
-                    {allCustomers.filter((customer) => customerLocations[customer.key]).map((customer) => (
-                      <Marker key={customer.key} position={[customerLocations[customer.key].lat, customerLocations[customer.key].lng]} icon={markerIcon}>
-                        <Popup>
-                          <div>
-                            <strong>{customer.name}</strong><br />
-                            {customer.area}<br />
-                            {customer.pricing === "hourly" ? `Tímakaup ${kr(customer.price)}/klst` : `Fast verð ${kr(customer.price)}`}
-                          </div>
-                        </Popup>
-                      </Marker>
-                    ))}
-                  </MapContainer>
-                </div>
+        <div style={{ height: 520, borderRadius: 24, overflow: "hidden", border: "1px solid #dbe2ea" }}>
+          <MapContainer center={AKUREYRI_CENTER} zoom={13} scrollWheelZoom={true} style={{ height: "100%", width: "100%" }}>
+            <TileLayer attribution="&copy; OpenStreetMap contributors" url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <MapClickSetter selectedCustomerKey={selectedMapCustomer?.key} onPickLocation={setCustomerLocation} />
+            {allCustomers
+              .filter((customer) => customerLocations[customer.key])
+              .map((customer) => (
+                <Marker
+                  key={customer.key}
+                  position={[customerLocations[customer.key].lat, customerLocations[customer.key].lng]}
+                  icon={markerIcon}
+                >
+                  <Popup>
+                    <div>
+                      <strong>{customer.name}</strong><br />
+                      {customer.area}<br />
+                      {customer.pricing === "hourly"
+                        ? `Tímakaup ${kr(customer.price)}/klst`
+                        : `Fast verð ${kr(customer.price)}`}
+                    </div>
+                  </Popup>
+                </Marker>
+              ))}
+          </MapContainer>
+        </div>
 
-                <div style={{ color: "#64748b", fontSize: 14 }}>
-                  {selectedMapCustomer
-                    ? customerLocations[selectedMapCustomer.key]
-                      ? `Valinn kúnni: ${selectedMapCustomer.name}. Smelltu á nýjan stað til að færa pinnann.`
-                      : `Valinn kúnni: ${selectedMapCustomer.name}. Smelltu á kortið til að setja pinna.`
-                    : "Veldu kúnna fyrir ofan til að byrja."}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-        
-                {screen === "Kostnaður" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>← Til baka</button>
-            <button onClick={() => setScreen("Skrifa kostnað")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>✍️ Skrifa kostnað</div><div style={{ color: "#64748b", marginTop: 6 }}>Skrá eldsneyti, vinnufatnað, vinnuvörur og fleira</div></button>
-            <button onClick={() => setScreen("Skanna QR")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>📷 Skanna QR</div><div style={{ color: "#64748b", marginTop: 6 }}>Skannar kvittun og fyllir inn kostnað sjálfkrafa</div></button>
-            <button onClick={() => setScreen("Lesa kvittun")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>🧾 Lesa kvittun</div><div style={{ color: "#64748b", marginTop: 6 }}>Taka mynd eða velja kvittun</div></button>
-            <button onClick={() => setScreen("Allur kostnaður")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}><div style={{ fontSize: 26, fontWeight: 900 }}>📋 Sjá allan kostnað</div><div style={{ color: "#64748b", marginTop: 6 }}>Flokkað og nýjasta fyrst</div></button>
-          </div>
-        )}
+        <div style={{ color: "#64748b", fontSize: 14 }}>
+          {selectedMapCustomer
+            ? customerLocations[selectedMapCustomer.key]
+              ? `Valinn kúnni: ${selectedMapCustomer.name}. Smelltu á nýjan stað til að færa pinnann.`
+              : `Valinn kúnni: ${selectedMapCustomer.name}. Smelltu á kortið til að setja pinna.`
+            : "Veldu kúnna fyrir ofan til að byrja."}
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
-      {screen === "Skrifa kostnað" && (
+{screen === "Kostnaður" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>← Til baka</button>
+    <button
+      onClick={() => setScreen("Skrifa kostnað")}
+      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+    >
+      <div style={{ fontSize: 26, fontWeight: 900 }}>✍️ Skrifa kostnað</div>
+      <div style={{ color: "#64748b", marginTop: 6 }}>Skrá eldsneyti, vinnufatnað, vinnuvörur og fleira</div>
+    </button>
+
+    <button
+      onClick={() => setScreen("Skanna QR")}
+      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+    >
+      <div style={{ fontSize: 26, fontWeight: 900 }}>📷 Skanna QR</div>
+      <div style={{ color: "#64748b", marginTop: 6 }}>Skannar kvittun og fyllir inn kostnað sjálfkrafa</div>
+    </button>
+
+    <button
+      onClick={() => setScreen("Lesa kvittun")}
+      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+    >
+      <div style={{ fontSize: 26, fontWeight: 900 }}>🧾 Lesa kvittun</div>
+      <div style={{ color: "#64748b", marginTop: 6 }}>Taka mynd eða velja kvittun</div>
+    </button>
+
+    <button
+      onClick={() => setScreen("Allur kostnaður")}
+      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+    >
+      <div style={{ fontSize: 26, fontWeight: 900 }}>📋 Sjá allan kostnað</div>
+      <div style={{ color: "#64748b", marginTop: 6 }}>Flokkað og nýjasta fyrst</div>
+    </button>
+  </div>
+)}
+
+{screen === "Skrifa kostnað" && (
   <div style={{ display: "grid", gap: 16 }}>
     <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
     <div style={cardStyle()}>
       <div style={{ fontSize: 28, fontWeight: 900, marginBottom: 8 }}>Skrifa kostnað</div>
       <div style={{ color: "#64748b", marginBottom: 14 }}>Hér geturðu skráð allan rekstrarkostnað.</div>
       <div style={{ display: "grid", gap: 12 }}>
-        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div><input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} /></div>
-        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div><input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} /></div>
-        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Tegund kostnaðar</div><select style={inputStyle()} value={expenseForm.category} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: e.target.value }))}><option value="fuel">Eldsneyti</option><option value="clothes">Vinnufatnaður</option><option value="tools">Vinnuvörur</option><option value="maintenance">Viðhald</option><option value="other">Annað</option></select></div>
-        {expenseForm.category === "fuel" && <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Eldsneytistegund</div><select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, fuelType: e.target.value }))}><option value="diesel">Dísel</option><option value="95">95</option><option value="98">98</option></select></div>}
-        <div><div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Athugasemd</div><input style={inputStyle()} placeholder="T.d. N1, hanskar, olía eða annað" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} /></div>
+        <div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Dagsetning</div>
+          <input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} />
+        </div>
+
+        <div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Upphæð</div>
+          <input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} />
+        </div>
+
+        <div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Tegund kostnaðar</div>
+          <select style={inputStyle()} value={expenseForm.category} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: e.target.value }))}>
+            <option value="fuel">Eldsneyti</option>
+            <option value="clothes">Vinnufatnaður</option>
+            <option value="tools">Vinnuvörur</option>
+            <option value="maintenance">Viðhald</option>
+            <option value="other">Annað</option>
+          </select>
+        </div>
+
+        {expenseForm.category === "fuel" && (
+          <div>
+            <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Eldsneytistegund</div>
+            <select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, fuelType: e.target.value }))}>
+              <option value="diesel">Dísel</option>
+              <option value="95">95</option>
+              <option value="98">98</option>
+            </select>
+          </div>
+        )}
+
+        <div>
+          <div style={{ fontSize: 13, color: "#64748b", marginBottom: 6, marginLeft: 4 }}>Athugasemd</div>
+          <input style={inputStyle()} placeholder="T.d. N1, hanskar, olía eða annað" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} />
+        </div>
       </div>
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 14 }}>
         <div style={{ color: "#64748b" }}>Þessi kostnaður fer svo inn í tölurnar og hagnaðinn.</div>
         <button style={buttonStyle(true)} onClick={() => addExpense("manual")}>Vista kostnað</button>
@@ -2249,251 +2421,365 @@ const cancelDayTimerEdit = () => {
   </div>
 )}
 
-        {screen === "Skanna QR" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 28, fontWeight: 900 }}>Skanna QR</div>
-              <div style={{ color: "#64748b", marginTop: 8 }}>Beindu myndavélinni að QR kóða á kvittun. Ef appið finnur upphæð og dagsetningu fyllist formið sjálfkrafa.</div>
-              <div style={{ marginTop: 14 }}><QrScannerCard onDetected={handleQrDetected} scanError={scanError} setScanError={setScanError} /></div>
-            </div>
+{screen === "Skanna QR" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
 
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>QR niðurstaða</div>
-              {scanPreview ? (
-                <div style={{ display: "grid", gap: 10 }}>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10 }}>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Dagsetning</div><div style={{ fontWeight: 900 }}>{scanPreview.date || "Fannst ekki"}</div></div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Upphæð</div><div style={{ fontWeight: 900 }}>{scanPreview.amount ? kr(scanPreview.amount) : "Fannst ekki"}</div></div>
-                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div><div style={{ fontWeight: 900 }}>{fuelTypeLabel(scanPreview.fuelType) || "Óþekkt"}</div></div>
-                  </div>
-                  <div style={{ color: "#64748b" }}>Þú getur lagað upplýsingarnar handvirkt hér fyrir neðan áður en þú vistar.</div>
-                </div>
-              ) : <div style={{ color: "#64748b" }}>Engin QR niðurstaða komin enn.</div>}
-            </div>
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 28, fontWeight: 900 }}>Skanna QR</div>
+      <div style={{ color: "#64748b", marginTop: 8 }}>
+        Beindu myndavélinni að QR kóða á kvittun. Ef appið finnur upphæð og dagsetningu fyllist formið sjálfkrafa.
+      </div>
+      <div style={{ marginTop: 14 }}>
+        <QrScannerCard onDetected={handleQrDetected} scanError={scanError} setScanError={setScanError} />
+      </div>
+    </div>
 
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Staðfesta kostnað</div>
-              <div style={{ display: "grid", gap: 12 }}>
-                <input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} />
-                <input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} />
-                <select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: "fuel", fuelType: e.target.value }))}><option value="diesel">Dísel</option><option value="95">95</option><option value="98">98</option></select>
-                <input style={inputStyle()} placeholder="Raw QR text / athugasemd" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} />
-              </div>
-              <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}><button style={buttonStyle(true)} onClick={() => addExpense("qr")}>Vista úr QR</button></div>
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>QR niðurstaða</div>
+      {scanPreview ? (
+        <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 10 }}>
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Dagsetning</div>
+              <div style={{ fontWeight: 900 }}>{scanPreview.date || "Fannst ekki"}</div>
+            </div>
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Upphæð</div>
+              <div style={{ fontWeight: 900 }}>{scanPreview.amount ? kr(scanPreview.amount) : "Fannst ekki"}</div>
+            </div>
+            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+              <div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div>
+              <div style={{ fontWeight: 900 }}>{fuelTypeLabel(scanPreview.fuelType) || "Óþekkt"}</div>
             </div>
           </div>
-        )}
+          <div style={{ color: "#64748b" }}>Þú getur lagað upplýsingarnar handvirkt hér fyrir neðan áður en þú vistar.</div>
+        </div>
+      ) : (
+        <div style={{ color: "#64748b" }}>Engin QR niðurstaða komin enn.</div>
+      )}
+    </div>
 
-        {screen === "Lesa kvittun" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 28, fontWeight: 900 }}>Lesa kvittun</div>
-
-              <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-                <label style={buttonStyle(true)}>
-                  📷 Taka mynd
-                  <input type="file" accept="image/*" capture="environment" style={{ display: "none" }} onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setReceiptImage(URL.createObjectURL(file));
-                  }} />
-                </label>
-
-                <label style={buttonStyle(false)}>
-                  🖼️ Velja mynd
-                  <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (!file) return;
-                    setReceiptImage(URL.createObjectURL(file));
-                  }} />
-                </label>
-              </div>
-
-              <div style={{ marginTop: 16 }}>
-                {receiptImage ? (
-                  <img src={receiptImage} alt="Kvittun" style={{ width: "100%", borderRadius: 16 }} />
-                ) : (
-                  <div style={{ color: "#64748b" }}>Engin mynd valin enn</div>
-                )}
-                
-                {receiptImage && (
-  <div style={{ marginTop: 12 }}>
-    <button
-      style={buttonStyle(false)}
-      onClick={() => {
-        setReceiptImage(null);
-        setReceiptText("");
-      }}
-    >
-      Eyða mynd
-    </button>
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Staðfesta kostnað</div>
+      <div style={{ display: "grid", gap: 12 }}>
+        <input style={inputStyle()} type="date" value={expenseForm.date} onChange={(e) => setExpenseForm((prev) => ({ ...prev, date: e.target.value }))} />
+        <input style={inputStyle()} type="number" placeholder="Upphæð" value={expenseForm.amount} onChange={(e) => setExpenseForm((prev) => ({ ...prev, amount: e.target.value }))} />
+        <select style={inputStyle()} value={expenseForm.fuelType} onChange={(e) => setExpenseForm((prev) => ({ ...prev, category: "fuel", fuelType: e.target.value }))}>
+          <option value="diesel">Dísel</option>
+          <option value="95">95</option>
+          <option value="98">98</option>
+        </select>
+        <input style={inputStyle()} placeholder="Raw QR text / athugasemd" value={expenseForm.note} onChange={(e) => setExpenseForm((prev) => ({ ...prev, note: e.target.value }))} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 14 }}>
+        <button style={buttonStyle(true)} onClick={() => addExpense("qr")}>Vista úr QR</button>
+      </div>
+    </div>
   </div>
- )}
-              </div>
+)}
 
-              <div style={{ marginTop: 16 }}>
-                <button style={buttonStyle(true)} onClick={readReceipt} disabled={!receiptImage || receiptReading}>
-                  {receiptReading ? "Les kvittun..." : "Lesa kvittun"}
-                </button>
-              </div>
+{screen === "Lesa kvittun" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 28, fontWeight: 900 }}>Lesa kvittun</div>
 
-              <div style={{ marginTop: 16, padding: 16, borderRadius: 18, background: "#f8fafc", border: "1px solid #e2e8f0", whiteSpace: "pre-wrap" }}>
-                {receiptText || "Enginn texti lesinn enn."}
-              </div>
+      <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
+        <label style={buttonStyle(true)}>
+          📷 Taka mynd
+          <input
+            type="file"
+            accept="image/*"
+            capture="environment"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setReceiptImage(URL.createObjectURL(file));
+            }}
+          />
+        </label>
 
-              <div style={{ marginTop: 16 }}>
-                <button style={buttonStyle(true)} onClick={() => addExpense("manual")} disabled={!expenseForm.amount}>
-                  Vista í kostnað
-                </button>
-              </div>
-            </div>
-          </div>
+        <label style={buttonStyle(false)}>
+          🖼️ Velja mynd
+          <input
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (!file) return;
+              setReceiptImage(URL.createObjectURL(file));
+            }}
+          />
+        </label>
+      </div>
+
+      <div style={{ marginTop: 16 }}>
+        {receiptImage ? (
+          <img src={receiptImage} alt="Kvittun" style={{ width: "100%", borderRadius: 16 }} />
+        ) : (
+          <div style={{ color: "#64748b" }}>Engin mynd valin enn</div>
         )}
 
-        {screen === "Allur kostnaður" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div></div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}><div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div><div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div></div>
-            </div>
-
-            {groupedExpenses.length === 0 && (
-              <div style={cardStyle()}>
-                <div style={{ fontWeight: 800 }}>Enginn kostnaður skráður enn.</div>
-                <div style={{ color: "#64748b", marginTop: 6 }}>Farðu í Skrifa kostnað eða Skanna QR og bættu við fyrstu færslunni.</div>
-              </div>
-            )}
-
-            {groupedExpenses.map((group) => (
-              <div key={group.category} style={cardStyle({ padding: 0, overflow: "hidden" })}>
-                <div style={{ padding: 18, background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff" }}>
-                  <div style={{ fontSize: 26, fontWeight: 900 }}>{expenseCategoryLabel(group.category)}</div>
-                  <div style={{ opacity: 0.9, marginTop: 6 }}>{group.items.length} færslur • {kr(group.items.reduce((sum, item) => sum + item.amount, 0))}</div>
-                </div>
-                <div style={{ padding: 14, display: "grid", gap: 10 }}>
-                  {group.items.map((expense) => (
-                    <div key={expense.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                        <div><div style={{ fontSize: 22, fontWeight: 900 }}>{kr(expense.amount)}</div><div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(expense.date)}</div></div>
-                        <button style={buttonStyle(false)} onClick={() => deleteExpense(expense.id)}>Eyða</button>
-                      </div>
-                      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginTop: 12 }}>
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Flokkur</div><div style={{ fontWeight: 900 }}>{expenseCategoryLabel(expense.category)}</div></div>
-                        {expense.category === "fuel" && <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div><div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuelType)}</div></div>}
-                        <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Skráð með</div><div style={{ fontWeight: 900 }}>{expense.source === "qr" ? "QR" : "Handvirkt"}</div></div>
-                      </div>
-                      {expense.note && <div style={{ marginTop: 12, background: "#f8fafc", borderRadius: 18, padding: 12 }}><div style={{ color: "#64748b", fontSize: 13 }}>Athugasemd</div><div style={{ fontWeight: 700, marginTop: 4, wordBreak: "break-word" }}>{expense.note}</div></div>}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
+        {receiptImage && (
+          <div style={{ marginTop: 12 }}>
+            <button
+              style={buttonStyle(false)}
+              onClick={() => {
+                setReceiptImage(null);
+                setReceiptText("");
+              }}
+            >
+              Eyða mynd
+            </button>
           </div>
         )}
+      </div>
 
-        {screen === "Meira" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <button onClick={() => setScreen("Kort")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}>
-              <div style={{ fontSize: 26, fontWeight: 900 }}>🗺️ Kort</div>
-              <div style={{ color: "#64748b", marginTop: 6 }}>Sjá alla kúnna á korti og setja pinna</div>
-            </button>
+      <div style={{ marginTop: 16 }}>
+        <button style={buttonStyle(true)} onClick={readReceipt} disabled={!receiptImage || receiptReading}>
+          {receiptReading ? "Les kvittun..." : "Lesa kvittun"}
+        </button>
+      </div>
 
-            <button onClick={() => setScreen("Kostnaður")} style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}>
-              <div style={{ fontSize: 26, fontWeight: 900 }}>⛽ Kostnaður</div>
-              <div style={{ color: "#64748b", marginTop: 6 }}>Skrá, skanna og skoða kostnað</div>
-            </button>
+      <div style={{ marginTop: 16, padding: 16, borderRadius: 18, background: "#f8fafc", border: "1px solid #e2e8f0", whiteSpace: "pre-wrap" }}>
+        {receiptText || "Enginn texti lesinn enn."}
+      </div>
 
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
-                <input style={inputStyle()} placeholder="Nafn" value={newCustomerForm.name} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })} />
-                <select style={inputStyle()} value={newCustomerForm.area} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}>{AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}</select>
-                <select style={inputStyle()} value={newCustomerForm.pricing} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}><option value="fixed">Fast verð</option><option value="hourly">Tímakaup</option></select>
-                <input style={inputStyle()} type="number" placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"} value={newCustomerForm.price} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })} />
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
-                <div style={{ color: "#64748b" }}>Bætir nýjum kúnna í appið.</div>
-                <button style={buttonStyle(true)} onClick={addCustomer}>Bæta við kúnna</button>
-              </div>
-            </div>
-            
-                        <div style={cardStyle()}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+      <div style={{ marginTop: 16 }}>
+        <button style={buttonStyle(true)} onClick={() => addExpense("manual")} disabled={!expenseForm.amount}>
+          Vista í kostnað
+        </button>
+      </div>
+    </div>
+  </div>
+)}
+
+{screen === "Allur kostnaður" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Kostnaður")}>← Til baka</button>
+
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
+      </div>
+      <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}>
+        <div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div>
+        <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
+      </div>
+    </div>
+
+    {groupedExpenses.length === 0 && (
+      <div style={cardStyle()}>
+        <div style={{ fontWeight: 800 }}>Enginn kostnaður skráður enn.</div>
+        <div style={{ color: "#64748b", marginTop: 6 }}>
+          Farðu í Skrifa kostnað eða Skanna QR og bættu við fyrstu færslunni.
+        </div>
+      </div>
+    )}
+
+    {groupedExpenses.map((group) => (
+      <div key={group.category} style={cardStyle({ padding: 0, overflow: "hidden" })}>
+        <div style={{ padding: 18, background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff" }}>
+          <div style={{ fontSize: 26, fontWeight: 900 }}>{expenseCategoryLabel(group.category)}</div>
+          <div style={{ opacity: 0.9, marginTop: 6 }}>
+            {group.items.length} færslur • {kr(group.items.reduce((sum, item) => sum + item.amount, 0))}
+          </div>
+        </div>
+
+        <div style={{ padding: 14, display: "grid", gap: 10 }}>
+          {group.items.map((expense) => (
+            <div key={expense.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: 26, fontWeight: 900 }}>Mánaðarplan</div>
-                  <div style={{ color: "#64748b", marginTop: 6 }}>Ýttu á dag og skrifaðu plan fyrir þann dag.</div>
+                  <div style={{ fontSize: 22, fontWeight: 900 }}>{kr(expense.amount)}</div>
+                  <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(expense.date)}</div>
                 </div>
-                <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedPlanDay(null); }}>
-                  {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                </select>
+                <button style={buttonStyle(false)} onClick={() => deleteExpense(expense.id)}>Eyða</button>
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
-                {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
-              </div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10, marginTop: 12 }}>
+                <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                  <div style={{ color: "#64748b", fontSize: 13 }}>Flokkur</div>
+                  <div style={{ fontWeight: 900 }}>{expenseCategoryLabel(expense.category)}</div>
+                </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
-                {monthCells.map((cell, i) => {
-                  if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
-                  const hasPlan = !!planEntries[cell.dateStr];
-                  const allLines = hasPlan ? String(planEntries[cell.dateStr]).split("\n").map((line) => line.trim()).filter(Boolean) : [];
-                  const previewShort = allLines.slice(0, 3).map((name) => name.slice(0, 3));
-                  const extraCount = allLines.length - 3;
-                  return (
-                    <button
-                      key={cell.dateStr}
-                      onClick={() => setSelectedPlanDay(cell.dateStr)}
-                      style={{ minHeight: 86, borderRadius: 18, border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea", background: hasPlan ? "#dbeafe" : "#fff", textAlign: "left", padding: 10, cursor: "pointer", boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none", display: "flex", flexDirection: "column", justifyContent: "space-between", overflow: "hidden" }}
-                    >
-                      <div style={{ fontWeight: 900, fontSize: 22, color: hasPlan ? "#1d4ed8" : "#111827" }}>{cell.day}</div>
-                      {hasPlan ? (
-                        <div style={{ marginTop: 6, display: "grid", gap: 2 }}>
-                          {previewShort.map((line, idx) => <div key={idx} style={{ fontSize: 11, lineHeight: 1.15, color: "#1e3a8a", fontWeight: 800 }}>{line}</div>)}
-                          {extraCount > 0 && <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 900 }}>+{extraCount}</div>}
-                        </div>
-                      ) : <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}> </div>}
-                    </button>
-                  );
-                })}
-              </div>
-
-              <div style={{ marginTop: 14 }}>
-                <div style={{ fontSize: 14, color: "#64748b", marginBottom: 8 }}>{selectedPlanDay ? `Plan fyrir ${formatLongDate(selectedPlanDay)}` : "Veldu dag í dagatalinu"}</div>
-                <textarea
-                  style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
-                  placeholder={"T.d. Kaldbakur\nStebbi\nHalla"}
-                  value={selectedPlanText}
-                  onChange={(e) => {
-                    if (!selectedPlanDay) return;
-                    setPlanEntries((prev) => ({ ...prev, [selectedPlanDay]: e.target.value }));
-                  }}
-                  disabled={!selectedPlanDay}
-                />
-              </div>
-            </div>
-
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna custom kúnnum</div>
-              <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.</div>
-              <div style={{ display: "grid", gap: 10 }}>
-                {customCustomers.length === 0 && <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>}
-                {customCustomers.map((c) => (
-                  <div key={c.id} style={{ display: "grid", gridTemplateColumns: "1fr auto auto", gap: 10, alignItems: "center", background: "#fff", border: "1px solid #e2e8f0", borderRadius: 18, padding: 12 }}>
-                    <div><div style={{ fontWeight: 900 }}>{c.name}</div><div style={{ color: "#64748b", fontSize: 13 }}>{c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}</div></div>
-                    <button style={buttonStyle(false)} onClick={() => updateCustomCustomer(c.id)}>Edit</button>
-                    <button style={buttonStyle(false)} onClick={() => deleteCustomCustomer(c.id)}>Eyða</button>
+                {expense.category === "fuel" && (
+                  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                    <div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div>
+                    <div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuelType)}</div>
                   </div>
-                ))}
+                )}
+
+                <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                  <div style={{ color: "#64748b", fontSize: 13 }}>Skráð með</div>
+                  <div style={{ fontWeight: 900 }}>{expense.source === "qr" ? "QR" : "Handvirkt"}</div>
+                </div>
+              </div>
+
+              {expense.note && (
+                <div style={{ marginTop: 12, background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                  <div style={{ color: "#64748b", fontSize: 13 }}>Athugasemd</div>
+                  <div style={{ fontWeight: 700, marginTop: 4, wordBreak: "break-word" }}>{expense.note}</div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+{screen === "Meira" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button
+      onClick={() => setScreen("Kort")}
+      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+    >
+      <div style={{ fontSize: 26, fontWeight: 900 }}>🗺️ Kort</div>
+      <div style={{ color: "#64748b", marginTop: 6 }}>Sjá alla kúnna á korti og setja pinna</div>
+    </button>
+
+    <button
+      onClick={() => setScreen("Kostnaður")}
+      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+    >
+      <div style={{ fontSize: 26, fontWeight: 900 }}>⛽ Kostnaður</div>
+      <div style={{ color: "#64748b", marginTop: 6 }}>Skrá, skanna og skoða kostnað</div>
+    </button>
+
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
+        <input style={inputStyle()} placeholder="Nafn" value={newCustomerForm.name} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })} />
+        <select style={inputStyle()} value={newCustomerForm.area} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}>
+          {AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}
+        </select>
+        <select style={inputStyle()} value={newCustomerForm.pricing} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}>
+          <option value="fixed">Fast verð</option>
+          <option value="hourly">Tímakaup</option>
+        </select>
+        <input style={inputStyle()} type="number" placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"} value={newCustomerForm.price} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })} />
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
+        <div style={{ color: "#64748b" }}>Bætir nýjum kúnna í appið.</div>
+        <button style={buttonStyle(true)} onClick={addCustomer}>Bæta við kúnna</button>
+      </div>
+    </div>
+
+    <div style={cardStyle()}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 26, fontWeight: 900 }}>Mánaðarplan</div>
+          <div style={{ color: "#64748b", marginTop: 6 }}>Ýttu á dag og skrifaðu plan fyrir þann dag.</div>
+        </div>
+        <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedPlanDay(null); }}>
+          {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+        </select>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
+        {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
+        {monthCells.map((cell, i) => {
+          if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
+          const hasPlan = !!planEntries[cell.dateStr];
+          const allLines = hasPlan ? String(planEntries[cell.dateStr]).split("\n").map((line) => line.trim()).filter(Boolean) : [];
+          const previewShort = allLines.slice(0, 3).map((name) => name.slice(0, 3));
+          const extraCount = allLines.length - 3;
+
+          return (
+            <button
+              key={cell.dateStr}
+              onClick={() => setSelectedPlanDay(cell.dateStr)}
+              style={{
+                minHeight: 86,
+                borderRadius: 18,
+                border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea",
+                background: hasPlan ? "#dbeafe" : "#fff",
+                textAlign: "left",
+                padding: 10,
+                cursor: "pointer",
+                boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+                overflow: "hidden",
+              }}
+            >
+              <div style={{ fontWeight: 900, fontSize: 22, color: hasPlan ? "#1d4ed8" : "#111827" }}>{cell.day}</div>
+              {hasPlan ? (
+                <div style={{ marginTop: 6, display: "grid", gap: 2 }}>
+                  {previewShort.map((line, idx) => (
+                    <div key={idx} style={{ fontSize: 11, lineHeight: 1.15, color: "#1e3a8a", fontWeight: 800 }}>{line}</div>
+                  ))}
+                  {extraCount > 0 && <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 900 }}>+{extraCount}</div>}
+                </div>
+              ) : (
+                <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}> </div>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      <div style={{ marginTop: 14 }}>
+        <div style={{ fontSize: 14, color: "#64748b", marginBottom: 8 }}>
+          {selectedPlanDay ? `Plan fyrir ${formatLongDate(selectedPlanDay)}` : "Veldu dag í dagatalinu"}
+        </div>
+        <textarea
+          style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
+          placeholder={"T.d. Kaldbakur\nStebbi\nHalla"}
+          value={selectedPlanText}
+          onChange={(e) => {
+            if (!selectedPlanDay) return;
+            setPlanEntries((prev) => ({ ...prev, [selectedPlanDay]: e.target.value }));
+          }}
+          disabled={!selectedPlanDay}
+        />
+      </div>
+    </div>
+
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna custom kúnnum</div>
+      <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.</div>
+      <div style={{ display: "grid", gap: 10 }}>
+        {customCustomers.length === 0 && <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>}
+        {customCustomers.map((c) => (
+          <div
+            key={c.id}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "1fr auto auto",
+              gap: 10,
+              alignItems: "center",
+              background: "#fff",
+              border: "1px solid #e2e8f0",
+              borderRadius: 18,
+              padding: 12,
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 900 }}>{c.name}</div>
+              <div style={{ color: "#64748b", fontSize: 13 }}>
+                {c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}
               </div>
             </div>
+            <button style={buttonStyle(false)} onClick={() => updateCustomCustomer(c.id)}>Edit</button>
+            <button style={buttonStyle(false)} onClick={() => deleteCustomCustomer(c.id)}>Eyða</button>
           </div>
-          </div>
-          )}
-          </div>
-          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+
       <div
         style={{
           position: "fixed",
@@ -2537,4 +2823,6 @@ const cancelDayTimerEdit = () => {
       </div>
     </div>
   );
-}
+}```
+
+
