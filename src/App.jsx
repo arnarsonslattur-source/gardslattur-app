@@ -1061,7 +1061,7 @@ const todayPlanLines = todayPlan
   });
 };
 
-  const stopDayTimer = () => {
+  const pauseDayTimer = () => {
   if (!dayTimerState.startTime) return;
 
   const now = Date.now();
@@ -1072,11 +1072,33 @@ const todayPlanLines = todayPlan
     startTime: null,
     running: false,
     accumulatedMs: (prev.accumulatedMs || 0) + elapsed,
-    dayEndedAt: now,
     lastStoppedAt: now,
   }));
 };
 
+const finishDayTimer = () => {
+  const now = Date.now();
+
+  if (dayTimerState.running && dayTimerState.startTime) {
+    const elapsed = Math.max(0, now - dayTimerState.startTime);
+
+    setDayTimerState((prev) => ({
+      ...prev,
+      startTime: null,
+      running: false,
+      accumulatedMs: (prev.accumulatedMs || 0) + elapsed,
+      dayEndedAt: now,
+      lastStoppedAt: null,
+    }));
+  } else {
+    setDayTimerState((prev) => ({
+      ...prev,
+      dayEndedAt: now,
+      lastStoppedAt: null,
+    }));
+  }
+};
+  
   const resumeDayTimer = () => {
   const now = Date.now();
   setTimerNow(now);
@@ -1312,7 +1334,13 @@ const cancelDayTimerEdit = () => {
           <div style={{ color: "#64748b", marginTop: 4 }}>{formatLongDate(todayDate)}</div>
         </div>
         <div style={{ fontWeight: 900, fontSize: 18, color: "#1d4ed8" }}>
-          {dayTimerState.running ? "Dagur í gangi" : dayTimerState.accumulatedMs > 0 ? "Pása" : "Ekki byrjað"}
+          {dayTimerState.running
+  ? "Dagur í gangi"
+  : dayTimerState.dayEndedAt
+  ? "Degi lokið"
+  : dayTimerState.dayStartedAt
+  ? "Í pásu"
+  : "Ekki byrjað"}
         </div>
       </div>
 
@@ -1320,16 +1348,23 @@ const cancelDayTimerEdit = () => {
         <div style={{ fontSize: 14, opacity: 0.8 }}>Dagstimer</div>
         <div style={{ fontSize: 34, fontWeight: 900, marginTop: 6 }}>{minsToText(dayTimerMinutes)}</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
-          {dayTimerState.accumulatedMs === 0 && !dayTimerState.running ? (
-            <button style={buttonStyle(true)} onClick={startDayTimer}>Byrja dag</button>
-          ) : dayTimerState.running ? (
-            <button style={buttonStyle(true)} onClick={stopDayTimer}>Stoppa dag</button>
-          ) : (
-            <button style={buttonStyle(true)} onClick={resumeDayTimer}>Halda áfram</button>
-          )}
-          {(dayTimerState.running || dayTimerState.accumulatedMs > 0) && (
-            <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>
-          )}
+          {dayTimerState.accumulatedMs === 0 && !dayTimerState.running && !dayTimerState.dayStartedAt ? (
+  <button style={buttonStyle(true)} onClick={startDayTimer}>Byrja dag</button>
+) : dayTimerState.running ? (
+  <>
+    <button style={buttonStyle(true)} onClick={pauseDayTimer}>Pása</button>
+    <button style={buttonStyle(false)} onClick={finishDayTimer}>Klára dag</button>
+  </>
+) : (
+  <>
+    <button style={buttonStyle(true)} onClick={resumeDayTimer}>Halda áfram</button>
+    <button style={buttonStyle(false)} onClick={finishDayTimer}>Klára dag</button>
+  </>
+)}
+
+{(dayTimerState.running || dayTimerState.accumulatedMs > 0 || dayTimerState.dayStartedAt) && (
+  <button style={buttonStyle(false)} onClick={resetDayTimer}>Endurstilla</button>
+)}
                   </div>
       </div>
           
