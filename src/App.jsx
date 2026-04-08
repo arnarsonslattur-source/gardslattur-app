@@ -1920,17 +1920,7 @@ const cancelDayTimerEdit = () => {
 </select>
 
       <div style={{ display: "grid", gap: 10 }}>
-        {statsMonths.map((month) => {
-          const isOpen = expandedStatsMonth === month.monthKey;
-
-          return (
-            <div key={month.monthKey} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, overflow: "hidden" }}>
-              <button
-                onClick={() => setExpandedStatsMonth(isOpen ? null : month.monthKey)}
-                style={{
-                  width: "100%",
-                  border: "none",
-                  background: "transparent",
+        
                   textAlign: "left",
                   padding: 14,
                   cursor: "pointer",
@@ -2002,10 +1992,10 @@ const cancelDayTimerEdit = () => {
         ))
       ) : (
         <div style={{ color: "#64748b" }}>Engar færslur í þessum mánuði.</div>
-      )}
-    </div>
-  </div>
-)}
+            )}
+           </div>
+           </div>
+            )}
             </div>
           );
         })}
@@ -2500,9 +2490,9 @@ const cancelDayTimerEdit = () => {
               </div>
             </div>
           </div>
-        )}
-      </div>
+          </div>
 
+        )}
       <div
         style={{
           position: "fixed",
