@@ -1199,6 +1199,29 @@ const cancelDayTimerEdit = () => {
     };
   });
 
+  const statsMonths = useMemo(() => {
+  const months = Array.from({ length: 12 }, (_, index) => {
+    const monthNumber = index + 1;
+    const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+
+    const monthLogs = logs.filter((log) => log.date.startsWith(monthKey));
+    const monthEarned = monthLogs.reduce((sum, log) => sum + log.earned, 0);
+    const monthMinutes = monthLogs.reduce((sum, log) => sum + log.minutes, 0);
+    const monthCount = monthLogs.length;
+
+    return {
+      monthKey,
+      monthLabel: MONTHS[index],
+      logs: monthLogs,
+      earned: monthEarned,
+      minutes: monthMinutes,
+      count: monthCount,
+    };
+  });
+
+  return months;
+}, [logs, selectedStatsYear]);
+
   const allCustomers = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
       list.map((customer) => ({ ...customer, area, key: makeCustomerKey({ ...customer, area }) }))
@@ -1848,6 +1871,79 @@ const cancelDayTimerEdit = () => {
 
 {screen === "Tölur" && (
   <div style={{ display: "grid", gap: 16 }}>
+        <div style={cardStyle()}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+        <div>
+          <div style={{ fontSize: 24, fontWeight: 900 }}>Ár → mánuðir</div>
+          <div style={{ color: "#64748b", marginTop: 4 }}>
+            Ýttu á mánuð til að opna hann
+          </div>
+        </div>
+
+        <button style={buttonStyle(false)} onClick={() => setSelectedStatsYear("2026")}>
+          {selectedStatsYear}
+        </button>
+      </div>
+
+      <div style={{ display: "grid", gap: 10 }}>
+        {statsMonths.map((month) => {
+          const isOpen = expandedStatsMonth === month.monthKey;
+
+          return (
+            <div key={month.monthKey} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, overflow: "hidden" }}>
+              <button
+                onClick={() => setExpandedStatsMonth(isOpen ? null : month.monthKey)}
+                style={{
+                  width: "100%",
+                  border: "none",
+                  background: "transparent",
+                  textAlign: "left",
+                  padding: 14,
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontSize: 22, fontWeight: 900 }}>{month.monthLabel}</div>
+                    <div style={{ color: "#64748b", marginTop: 4 }}>
+                      {month.count} slættir • {minsToText(month.minutes)}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontWeight: 900, fontSize: 20 }}>{kr(month.earned)}</div>
+                    <div style={{ color: "#1d4ed8", fontWeight: 800, marginTop: 4 }}>
+                      {isOpen ? "Loka" : "Opna"}
+                    </div>
+                  </div>
+                </div>
+              </button>
+
+              {isOpen && (
+                <div style={{ padding: "0 14px 14px", display: "grid", gap: 10 }}>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
+                      <div style={{ fontWeight: 900 }}>{kr(month.earned)}</div>
+                    </div>
+
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
+                      <div style={{ fontWeight: 900 }}>{minsToText(month.minutes)}</div>
+                    </div>
+
+                    <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+                      <div style={{ color: "#64748b", fontSize: 13 }}>Fjöldi verka</div>
+                      <div style={{ fontWeight: 900 }}>{month.count}</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
     <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
       <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}>
         <div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div>
