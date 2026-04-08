@@ -567,6 +567,8 @@ export default function App() {
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date(2026, 3, 1)));
   const [editingLogId, setEditingLogId] = useState(null);
   const [selectedPlanDay, setSelectedPlanDay] = useState(null);
+  const [selectedStatsYear, setSelectedStatsYear] = useState("2026");
+const [expandedStatsMonth, setExpandedStatsMonth] = useState(null);
 
   const [planEntries, setPlanEntries] = useState(() => {
     try {
