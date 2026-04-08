@@ -2638,7 +2638,13 @@ const cancelDayTimerEdit = () => {
   <div style={{ display: "grid", gap: 16 }}>
     <button
       onClick={() => setScreen("Kort")}
-      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+      style={{
+        ...cardStyle(),
+        cursor: "pointer",
+        textAlign: "left",
+        border: "1px solid #dbeafe",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+      }}
     >
       <div style={{ fontSize: 26, fontWeight: 900 }}>🗺️ Kort</div>
       <div style={{ color: "#64748b", marginTop: 6 }}>Sjá alla kúnna á korti og setja pinna</div>
@@ -2646,7 +2652,13 @@ const cancelDayTimerEdit = () => {
 
     <button
       onClick={() => setScreen("Kostnaður")}
-      style={{ ...cardStyle(), cursor: "pointer", textAlign: "left", border: "1px solid #dbeafe", background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))" }}
+      style={{
+        ...cardStyle(),
+        cursor: "pointer",
+        textAlign: "left",
+        border: "1px solid #dbeafe",
+        background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+      }}
     >
       <div style={{ fontSize: 26, fontWeight: 900 }}>⛽ Kostnaður</div>
       <div style={{ color: "#64748b", marginTop: 6 }}>Skrá, skanna og skoða kostnað</div>
@@ -2654,20 +2666,50 @@ const cancelDayTimerEdit = () => {
 
     <div style={cardStyle()}>
       <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
-        <input style={inputStyle()} placeholder="Nafn" value={newCustomerForm.name} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })} />
-        <select style={inputStyle()} value={newCustomerForm.area} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}>
-          {AREA_ORDER.map((area) => <option key={area} value={area}>{area}</option>)}
+        <input
+          style={inputStyle()}
+          placeholder="Nafn"
+          value={newCustomerForm.name}
+          onChange={(e) => setNewCustomerForm({ ...newCustomerForm, name: e.target.value })}
+        />
+
+        <select
+          style={inputStyle()}
+          value={newCustomerForm.area}
+          onChange={(e) => setNewCustomerForm({ ...newCustomerForm, area: e.target.value })}
+        >
+          {AREA_ORDER.map((area) => (
+            <option key={area} value={area}>
+              {area}
+            </option>
+          ))}
         </select>
-        <select style={inputStyle()} value={newCustomerForm.pricing} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}>
+
+        <select
+          style={inputStyle()}
+          value={newCustomerForm.pricing}
+          onChange={(e) => setNewCustomerForm({ ...newCustomerForm, pricing: e.target.value })}
+        >
           <option value="fixed">Fast verð</option>
           <option value="hourly">Tímakaup</option>
         </select>
-        <input style={inputStyle()} type="number" placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"} value={newCustomerForm.price} onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })} />
+
+        <input
+          style={inputStyle()}
+          type="number"
+          placeholder={newCustomerForm.pricing === "hourly" ? "Kr./klst" : "Verð"}
+          value={newCustomerForm.price}
+          onChange={(e) => setNewCustomerForm({ ...newCustomerForm, price: e.target.value })}
+        />
       </div>
+
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 12 }}>
         <div style={{ color: "#64748b" }}>Bætir nýjum kúnna í appið.</div>
-        <button style={buttonStyle(true)} onClick={addCustomer}>Bæta við kúnna</button>
+        <button style={buttonStyle(true)} onClick={addCustomer}>
+          Bæta við kúnna
+        </button>
       </div>
     </div>
 
@@ -2677,20 +2719,46 @@ const cancelDayTimerEdit = () => {
           <div style={{ fontSize: 26, fontWeight: 900 }}>Mánaðarplan</div>
           <div style={{ color: "#64748b", marginTop: 6 }}>Ýttu á dag og skrifaðu plan fyrir þann dag.</div>
         </div>
-        <select style={{ ...inputStyle(), maxWidth: 220 }} value={selectedMonth} onChange={(e) => { setSelectedMonth(e.target.value); setSelectedPlanDay(null); }}>
-          {monthOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+
+        <select
+          style={{ ...inputStyle(), maxWidth: 220 }}
+          value={selectedMonth}
+          onChange={(e) => {
+            setSelectedMonth(e.target.value);
+            setSelectedPlanDay(null);
+          }}
+        >
+          {monthOptions.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
-        {WEEK_DAYS.map((d) => <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>{d}</div>)}
+        {WEEK_DAYS.map((d) => (
+          <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>
+            {d}
+          </div>
+        ))}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6 }}>
         {monthCells.map((cell, i) => {
-          if (!cell) return <div key={i} style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }} />;
+          if (!cell) {
+            return (
+              <div
+                key={i}
+                style={{ minHeight: 86, borderRadius: 18, background: "rgba(226,232,240,0.45)" }}
+              />
+            );
+          }
+
           const hasPlan = !!planEntries[cell.dateStr];
-          const allLines = hasPlan ? String(planEntries[cell.dateStr]).split("\n").map((line) => line.trim()).filter(Boolean) : [];
+          const allLines = hasPlan
+            ? String(planEntries[cell.dateStr]).split("\n").map((line) => line.trim()).filter(Boolean)
+            : [];
           const previewShort = allLines.slice(0, 3).map((name) => name.slice(0, 3));
           const extraCount = allLines.length - 3;
 
@@ -2713,13 +2781,23 @@ const cancelDayTimerEdit = () => {
                 overflow: "hidden",
               }}
             >
-              <div style={{ fontWeight: 900, fontSize: 22, color: hasPlan ? "#1d4ed8" : "#111827" }}>{cell.day}</div>
+              <div style={{ fontWeight: 900, fontSize: 22, color: hasPlan ? "#1d4ed8" : "#111827" }}>
+                {cell.day}
+              </div>
+
               {hasPlan ? (
                 <div style={{ marginTop: 6, display: "grid", gap: 2 }}>
                   {previewShort.map((line, idx) => (
-                    <div key={idx} style={{ fontSize: 11, lineHeight: 1.15, color: "#1e3a8a", fontWeight: 800 }}>{line}</div>
+                    <div
+                      key={idx}
+                      style={{ fontSize: 11, lineHeight: 1.15, color: "#1e3a8a", fontWeight: 800 }}
+                    >
+                      {line}
+                    </div>
                   ))}
-                  {extraCount > 0 && <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 900 }}>+{extraCount}</div>}
+                  {extraCount > 0 && (
+                    <div style={{ fontSize: 10, color: "#1d4ed8", fontWeight: 900 }}>+{extraCount}</div>
+                  )}
                 </div>
               ) : (
                 <div style={{ fontSize: 11, color: "#94a3b8", fontWeight: 700 }}> </div>
@@ -2733,6 +2811,7 @@ const cancelDayTimerEdit = () => {
         <div style={{ fontSize: 14, color: "#64748b", marginBottom: 8 }}>
           {selectedPlanDay ? `Plan fyrir ${formatLongDate(selectedPlanDay)}` : "Veldu dag í dagatalinu"}
         </div>
+
         <textarea
           style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
           placeholder={"T.d. Kaldbakur\nStebbi\nHalla"}
@@ -2748,9 +2827,15 @@ const cancelDayTimerEdit = () => {
 
     <div style={cardStyle()}>
       <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna custom kúnnum</div>
-      <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.</div>
+      <div style={{ color: "#64748b", marginBottom: 12 }}>
+        Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.
+      </div>
+
       <div style={{ display: "grid", gap: 10 }}>
-        {customCustomers.length === 0 && <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>}
+        {customCustomers.length === 0 && (
+          <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>
+        )}
+
         {customCustomers.map((c) => (
           <div
             key={c.id}
@@ -2771,15 +2856,21 @@ const cancelDayTimerEdit = () => {
                 {c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}
               </div>
             </div>
-            <button style={buttonStyle(false)} onClick={() => updateCustomCustomer(c.id)}>Edit</button>
-            <button style={buttonStyle(false)} onClick={() => deleteCustomCustomer(c.id)}>Eyða</button>
+
+            <button style={buttonStyle(false)} onClick={() => updateCustomCustomer(c.id)}>
+              Edit
+            </button>
+
+            <button style={buttonStyle(false)} onClick={() => deleteCustomCustomer(c.id)}>
+              Eyða
+            </button>
           </div>
         ))}
       </div>
     </div>
   </div>
 )}
-
+        
       <div
         style={{
           position: "fixed",
@@ -2823,6 +2914,6 @@ const cancelDayTimerEdit = () => {
       </div>
     </div>
   );
-}```
+}
 
 
