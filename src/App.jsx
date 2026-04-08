@@ -1019,6 +1019,12 @@ const todayPlanLines = todayPlan
   .split("\n")
   .map((line) => line.trim())
   .filter(Boolean);
+
+  const todayPlan = planEntries[todayDate] || "";
+const todayPlanLines = todayPlan
+  .split("\n")
+  .map((line) => line.trim())
+  .filter(Boolean);
   
   const dayTimerMinutes = useMemo(() => {
     const runningMs = dayTimerState.running && dayTimerState.startTime ? Math.max(0, timerNow - dayTimerState.startTime) : 0;
@@ -1304,6 +1310,35 @@ const todayPlanLines = todayPlan
   </div>
 </div>
 
+            <div style={cardStyle({ marginTop: 16 })}>
+        <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 10 }}>
+          Plan dagsins
+        </div>
+
+        {todayPlanLines.length > 0 ? (
+          <div style={{ display: "grid", gap: 8 }}>
+            {todayPlanLines.map((item, index) => (
+              <div
+                key={`${item}-${index}`}
+                style={{
+                  background: "#f8fafc",
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 18,
+                  padding: 12,
+                  fontWeight: 800,
+                }}
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ color: "#64748b" }}>
+            Ekkert plan skráð í dag.
+          </div>
+        )}
+      </div>
+      
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
         <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}>
           <div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div>
