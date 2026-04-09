@@ -222,6 +222,42 @@ function formatWeekRange(days) {
   const first = new Date(`${sortedDays[0].date}T00:00:00`);
   const last = new Date(`${sortedDays[sortedDays.length - 1].date}T00:00:00`);
 
+  function getWeekStartMonday(dateInput) {
+  const date = new Date(dateInput);
+  const day = date.getDay(); // Sun = 0, Mon = 1, ...
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function getWeekEndSunday(dateInput) {
+  const monday = getWeekStartMonday(dateInput);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(0, 0, 0, 0);
+  return sunday;
+}
+
+function formatWeekRangeFromDates(startDateStr, endDateStr) {
+  if (!startDateStr || !endDateStr) return "";
+
+  const start = new Date(`${startDateStr}T00:00:00`);
+  const end = new Date(`${endDateStr}T00:00:00`);
+
+  const startDay = start.getDate();
+  const endDay = end.getDate();
+  const startMonth = start.toLocaleDateString("is-IS", { month: "long" });
+  const endMonth = end.toLocaleDateString("is-IS", { month: "long" });
+
+  if (startMonth === endMonth) {
+    return `${startDay}–${endDay} ${startMonth}`;
+  }
+
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
+}
+
   const firstDay = first.getDate();
   const lastDay = last.getDate();
   const firstMonth = first.toLocaleDateString("is-IS", { month: "long" });
@@ -1410,75 +1446,84 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     };
   });
 
-  const statsMonths = useMemo(() => {
-    const months = Array.from({ length: 12 }, (_, index) => {
-      const monthNumber = index + 1;
-      const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+ const statsMonths = useMemo(() => {
+  const months = Array.from({ length: 12 }, (_, index) => {
+    const monthNumber = index + 1;
+    const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
 
-      const monthLogsLocal = logs.filter((log) => log.date.startsWith(monthKey));
-      const monthEarnedLocal = monthLogsLocal.reduce((sum, log) => sum + log.earned, 0);
-      const monthMinutesLocal = monthLogsLocal.reduce((sum, log) => sum + log.minutes, 0);
-      const monthCountLocal = monthLogsLocal.length;
+    const monthLogsLocal = logs.filter((log) => log.date.startsWith(monthKey));
+    const monthEarnedLocal = monthLogsLocal.reduce((sum, log) => sum + log.earned, 0);
+    const monthMinutesLocal = monthLogsLocal.reduce((sum, log) => sum + log.minutes, 0);
+    const monthCountLocal = monthLogsLocal.length;
 
-      const weeksMap = {};
+    const weeksMap = {};
 
-      monthLogsLocal.forEach((log) => {
-        const day = new Date(`${log.date}T00:00:00`);
-        const firstDayOfMonth = new Date(day.getFullYear(), day.getMonth(), 1);
-        const weekNumber = Math.ceil((day.getDate() + firstDayOfMonth.getDay()) / 7);
-        const weekKey = `${monthKey}-vika-${weekNumber}`;
+    monthLogsLocal.forEach((log) => {
+      const day = new Date(`${log.date}T00:00:00`);
+      const weekStart = getWeekStartMonday(day);
+      const weekEnd = getWeekEndSunday(day);
+      const weekKey = weekStart.toISOString().slice(0, 10);
 
-        if (!weeksMap[weekKey]) {
-          weeksMap[weekKey] = {
-            weekKey,
-            weekLabel: `Vika ${weekNumber}`,
-            logs: [],
-            earned: 0,
-            minutes: 0,
-            count: 0,
-            daysMap: {},
-          };
-        }
+      const yearStart = new Date(day.getFullYear(), 0, 1);
+      const yearStartMonday = getWeekStartMonday(yearStart);
+      const weekNumber =
+        Math.floor((weekStart - yearStartMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
 
-        weeksMap[weekKey].logs.push(log);
-        weeksMap[weekKey].earned += log.earned;
-        weeksMap[weekKey].minutes += log.minutes;
-        weeksMap[weekKey].count += 1;
+      if (!weeksMap[weekKey]) {
+        weeksMap[weekKey] = {
+          weekKey,
+          weekLabel: `Vika ${weekNumber}`,
+          weekStart: weekStart.toISOString().slice(0, 10),
+          weekEnd: weekEnd.toISOString().slice(0, 10),
+          logs: [],
+          earned: 0,
+          minutes: 0,
+          count: 0,
+          daysMap: {},
+        };
+      }
 
-        if (!weeksMap[weekKey].daysMap[log.date]) {
-          weeksMap[weekKey].daysMap[log.date] = {
-            date: log.date,
-            logs: [],
-            earned: 0,
-            minutes: 0,
-            count: 0,
-          };
-        }
+      weeksMap[weekKey].logs.push(log);
+      weeksMap[weekKey].earned += log.earned;
+      weeksMap[weekKey].minutes += log.minutes;
+      weeksMap[weekKey].count += 1;
 
-        weeksMap[weekKey].daysMap[log.date].logs.push(log);
-        weeksMap[weekKey].daysMap[log.date].earned += log.earned;
-        weeksMap[weekKey].daysMap[log.date].minutes += log.minutes;
-        weeksMap[weekKey].daysMap[log.date].count += 1;
-      });
+      if (!weeksMap[weekKey].daysMap[log.date]) {
+        weeksMap[weekKey].daysMap[log.date] = {
+          date: log.date,
+          logs: [],
+          earned: 0,
+          minutes: 0,
+          count: 0,
+        };
+      }
 
-      const weeks = Object.values(weeksMap).map((week) => ({
-        ...week,
-        days: Object.values(week.daysMap).sort((a, b) => a.date.localeCompare(b.date)),
-      }));
-
-      return {
-        monthKey,
-        monthLabel: MONTHS[index],
-        logs: monthLogsLocal,
-        earned: monthEarnedLocal,
-        minutes: monthMinutesLocal,
-        count: monthCountLocal,
-        weeks,
-      };
+      weeksMap[weekKey].daysMap[log.date].logs.push(log);
+      weeksMap[weekKey].daysMap[log.date].earned += log.earned;
+      weeksMap[weekKey].daysMap[log.date].minutes += log.minutes;
+      weeksMap[weekKey].daysMap[log.date].count += 1;
     });
 
-    return months;
-  }, [logs, selectedStatsYear]);
+    const weeks = Object.values(weeksMap)
+      .map((week) => ({
+        ...week,
+        days: Object.values(week.daysMap).sort((a, b) => a.date.localeCompare(b.date)),
+      }))
+      .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+
+    return {
+      monthKey,
+      monthLabel: MONTHS[index],
+      logs: monthLogsLocal,
+      earned: monthEarnedLocal,
+      minutes: monthMinutesLocal,
+      count: monthCountLocal,
+      weeks,
+    };
+  });
+
+  return months;
+}, [logs, selectedStatsYear]);
 
   const allCustomers = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
@@ -2893,7 +2938,10 @@ const selectedStatsDayEarned = useMemo(() => {
         {selectedStatsMonthData.monthLabel} • {selectedStatsWeekData.weekLabel}
       </div>
       <div style={{ color: "#78716c", marginTop: 6 }}>
-        {formatWeekRange(selectedStatsWeekData.days || [])}
+        {formatWeekRangeFromDates(
+  selectedStatsWeekData.weekStart,
+  selectedStatsWeekData.weekEnd
+)}
       </div>
       <div style={{ color: "#78716c", marginTop: 6 }}>
         {selectedStatsWeekData.count} verk • {minsToText(selectedStatsWeekData.minutes)} • {kr(selectedStatsWeekData.earned)}
