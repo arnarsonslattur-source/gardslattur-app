@@ -605,8 +605,6 @@ const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
   const [editingLogId, setEditingLogId] = useState(null);
   const [selectedPlanDay, setSelectedPlanDay] = useState(null);
   const [selectedStatsYear, setSelectedStatsYear] = useState(String(new Date().getFullYear()));
-  const [expandedStatsMonth, setExpandedStatsMonth] = useState(null);
-  const [expandedStatsWeek, setExpandedStatsWeek] = useState(null);
 
   const [planEntries, setPlanEntries] = useState(() => {
     try {
@@ -2550,95 +2548,419 @@ const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
 
         {screen === "Tölur" && (
   <div style={{ display: "grid", gap: 16 }}>
+    {statsScreen === "overview" && (
+      <>
+        <div style={cardStyle()}>
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 10,
+              flexWrap: "wrap",
+              marginBottom: 12,
+            }}
+          >
+            <div>
+              <div style={{ fontSize: 24, fontWeight: 900 }}>Tölur</div>
+              <div style={{ color: "#64748b", marginTop: 4 }}>
+                Yfirlit yfir reksturinn og mánuði
+              </div>
+            </div>
 
-    {/* HEADER */}
-    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-      {statsView !== "year" && (
+            <select
+              style={{ ...inputStyle(), maxWidth: 140 }}
+              value={selectedStatsYear}
+              onChange={(e) => {
+                setSelectedStatsYear(e.target.value);
+                setStatsScreen("overview");
+                setSelectedStatsMonthKey(null);
+                setSelectedStatsWeekKey(null);
+                setSelectedStatsDayKey(null);
+              }}
+            >
+              <option value={String(new Date().getFullYear() - 1)}>{new Date().getFullYear() - 1}</option>
+              <option value={String(new Date().getFullYear())}>{new Date().getFullYear()}</option>
+              <option value={String(new Date().getFullYear() + 1)}>{new Date().getFullYear() + 1}</option>
+            </select>
+          </div>
+
+          <button
+            style={{
+              ...buttonStyle(false),
+              width: "100%",
+              padding: "16px 18px",
+              fontSize: 16,
+              fontWeight: 800,
+            }}
+            onClick={() => {
+              setStatsScreen("months");
+              setSelectedStatsMonthKey(null);
+              setSelectedStatsWeekKey(null);
+              setSelectedStatsDayKey(null);
+            }}
+          >
+            Opna mánuði →
+          </button>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
+          <div style={cardStyle({ background: "linear-gradient(135deg,#f5f5f4 0%, #e7e5e4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Heildartekjur</div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
+          </div>
+          <div style={cardStyle({ background: "linear-gradient(135deg,#f5f5f4 0%, #e7e5e4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Heildartími</div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
+          </div>
+          <div style={cardStyle({ background: "linear-gradient(135deg,#ecfdf5 0%, #d1fae5 100%)" })}>
+            <div style={{ color: "#065f46", fontSize: 13 }}>Greitt</div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
+          </div>
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fef2f2 0%, #fecaca 100%)" })}>
+            <div style={{ color: "#991b1b", fontSize: 13 }}>Ógreitt</div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fafaf9 0%, #f5f5f4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Meðaltal per slátt</div>
+            <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+              {logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}
+            </div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fafaf9 0%, #f5f5f4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Meðaltími per slátt</div>
+            <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+              {logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}
+            </div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fafaf9 0%, #f5f5f4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Meðal tímakaup</div>
+            <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
+              {allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}
+            </div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fffbeb 0%, #fde68a 100%)" })}>
+            <div style={{ color: "#92400e", fontSize: 13 }}>Heildarkostnaður</div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fffbeb 0%, #fde68a 100%)" })}>
+            <div style={{ color: "#92400e", fontSize: 13 }}>Eldsneyti samtals</div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#ecfdf5 0%, #bbf7d0 100%)" })}>
+            <div style={{ color: "#166534", fontSize: 13 }}>Hagnaður eftir kostnað</div>
+            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fefce8 0%, #fde68a 100%)" })}>
+            <div style={{ color: "#854d0e", fontSize: 13 }}>🏆 Besti dagur</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
+              {bestDay ? formatLongDate(bestDay.date) : "-"}
+            </div>
+            <div style={{ marginTop: 4 }}>{bestDay ? kr(bestDay.earned) : "0 kr."}</div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#ecfdf5 0%, #bbf7d0 100%)" })}>
+            <div style={{ color: "#166534", fontSize: 13 }}>💸 Hæsta greiðsla</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
+              {highestJob ? kr(highestJob.earned) : "0 kr."}
+            </div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#f5f3ff 0%, #ddd6fe 100%)" })}>
+            <div style={{ color: "#5b21b6", fontSize: 13 }}>⏱️ Lengsti dagur</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
+              {longestDay ? formatLongDate(longestDay.date) : "-"}
+            </div>
+            <div style={{ marginTop: 4 }}>{longestDay ? minsToText(longestDay.minutes) : "0 mín"}</div>
+          </div>
+        </div>
+
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hverfi</div>
+          <div style={{ display: "grid", gap: 10 }}>
+            {areaSummary.map((row) => {
+              const areaMinutes = logs
+                .filter((l) => l.area === row.area)
+                .reduce((sum, l) => sum + l.minutes, 0);
+              const areaHourly = areaMinutes > 0 ? Math.round(row.earned / (areaMinutes / 60)) : 0;
+
+              return (
+                <div
+                  key={row.area}
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "1.2fr 1fr 1fr 1fr",
+                    gap: 10,
+                    background: "#fff",
+                    border: "1px solid #e7e5e4",
+                    borderRadius: 18,
+                    padding: 12,
+                  }}
+                >
+                  <div style={{ fontWeight: 800 }}>{row.area}</div>
+                  <div>Tekjur: {kr(row.earned)}</div>
+                  <div>Tími: {minsToText(areaMinutes)}</div>
+                  <div>Tímakaup: {areaMinutes > 0 ? `${kr(areaHourly)}/klst` : "0 kr./klst"}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </>
+    )}
+
+    {statsScreen === "months" && (
+      <div style={{ display: "grid", gap: 16 }}>
         <button
-          onClick={() => setStatsView("year")}
-          style={buttonStyle(false)}
+          style={{ ...buttonStyle(false), width: "fit-content" }}
+          onClick={() => setStatsScreen("overview")}
         >
           ← Til baka
         </button>
-      )}
-      <div style={{ fontSize: 26, fontWeight: 900 }}>
-        Tölur
-      </div>
-    </div>
 
-    {/* YEAR VIEW */}
-    {statsView === "year" && (
-      <div style={cardStyle()}>
-        <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>
-          Veldu mánuð
-        </div>
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Veldu mánuð</div>
 
-        <div style={{ display: "grid", gap: 10 }}>
-          {statsMonths.map((month) => (
-            <button
-              key={month.monthKey}
-              onClick={() => {
-                setSelectedStatsMonthKey(month.monthKey);
-                setStatsView("month");
-              }}
-              style={{
-                background: "#fff",
-                border: "1px solid #e2e8f0",
-                borderRadius: 20,
-                padding: 14,
-                textAlign: "left",
-                cursor: "pointer",
-              }}
-            >
-              <div style={{ fontWeight: 900, fontSize: 18 }}>
-                {month.monthLabel}
-              </div>
-              <div style={{ color: "#64748b", marginTop: 4 }}>
-                {month.count} slættir • {kr(month.earned)}
-              </div>
-            </button>
-          ))}
+          <div style={{ display: "grid", gap: 10 }}>
+            {statsMonths.map((month) => (
+              <button
+                key={month.monthKey}
+                onClick={() => {
+                  setSelectedStatsMonthKey(month.monthKey);
+                  setSelectedStatsWeekKey(null);
+                  setSelectedStatsDayKey(null);
+                  setStatsScreen("month");
+                }}
+                style={{
+                  background: "#fff",
+                  border: "1px solid #e7e5e4",
+                  borderRadius: 20,
+                  padding: 14,
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontWeight: 900, fontSize: 18 }}>{month.monthLabel}</div>
+                    <div style={{ color: "#78716c", marginTop: 4 }}>
+                      {month.count} slættir • {minsToText(month.minutes)}
+                    </div>
+                  </div>
+                  <div style={{ fontWeight: 900 }}>{kr(month.earned)}</div>
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     )}
 
-    {/* MONTH VIEW */}
-    {statsView === "month" && (
-      <div style={cardStyle()}>
-        {statsMonths
-          .filter((m) => m.monthKey === selectedStatsMonthKey)
-          .map((month) => (
-            <div key={month.monthKey} style={{ display: "grid", gap: 10 }}>
-              
-              <div style={{ fontSize: 22, fontWeight: 900 }}>
-                {month.monthLabel}
-              </div>
+    {statsScreen === "month" && selectedStatsMonthData && (
+      <div style={{ display: "grid", gap: 16 }}>
+        <button
+          style={{ ...buttonStyle(false), width: "fit-content" }}
+          onClick={() => setStatsScreen("months")}
+        >
+          ← Til baka
+        </button>
 
-              <div style={{ color: "#64748b" }}>
-                {month.count} slættir • {minsToText(month.minutes)} • {kr(month.earned)}
-              </div>
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 24, fontWeight: 900 }}>{selectedStatsMonthData.monthLabel}</div>
+          <div style={{ color: "#78716c", marginTop: 6 }}>
+            {selectedStatsMonthData.count} slættir • {minsToText(selectedStatsMonthData.minutes)} • {kr(selectedStatsMonthData.earned)}
+          </div>
+        </div>
 
-              <div style={{ display: "grid", gap: 10 }}>
-                {month.weeks.map((week) => (
-                  <div
-                    key={week.weekKey}
-                    style={{
-                      background: "#f8fafc",
-                      borderRadius: 18,
-                      padding: 12,
-                    }}
-                  >
-                    <div style={{ fontWeight: 900 }}>
-                      {week.weekLabel}
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>Vikur</div>
+
+          <div style={{ display: "grid", gap: 10 }}>
+            {selectedStatsMonthData.weeks.length > 0 ? (
+              selectedStatsMonthData.weeks.map((week) => (
+                <button
+                  key={week.weekKey}
+                  onClick={() => {
+                    setSelectedStatsWeekKey(week.weekKey);
+                    setSelectedStatsDayKey(null);
+                    setStatsScreen("week");
+                  }}
+                  style={{
+                    background: "#f8fafc",
+                    border: "1px solid #e7e5e4",
+                    borderRadius: 18,
+                    padding: 14,
+                    textAlign: "left",
+                    cursor: "pointer",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                    <div>
+                      <div style={{ fontWeight: 900 }}>{week.weekLabel}</div>
+                      <div style={{ color: "#78716c", marginTop: 4 }}>
+                        {week.count} verk • {minsToText(week.minutes)}
+                      </div>
                     </div>
-                    <div style={{ color: "#64748b", marginTop: 4 }}>
-                      {week.count} verk • {minsToText(week.minutes)} • {kr(week.earned)}
+                    <div style={{ fontWeight: 900 }}>{kr(week.earned)}</div>
+                  </div>
+                </button>
+              ))
+            ) : (
+              <div style={{ color: "#64748b" }}>Engar færslur í þessum mánuði.</div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {statsScreen === "week" && selectedStatsWeekData && selectedStatsMonthData && (
+      <div style={{ display: "grid", gap: 16 }}>
+        <button
+          style={{ ...buttonStyle(false), width: "fit-content" }}
+          onClick={() => setStatsScreen("month")}
+        >
+          ← Til baka
+        </button>
+
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 24, fontWeight: 900 }}>
+            {selectedStatsMonthData.monthLabel} • {selectedStatsWeekData.weekLabel}
+          </div>
+          <div style={{ color: "#78716c", marginTop: 6 }}>
+            {selectedStatsWeekData.count} verk • {minsToText(selectedStatsWeekData.minutes)} • {kr(selectedStatsWeekData.earned)}
+          </div>
+        </div>
+
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>Dagar</div>
+
+          <div style={{ display: "grid", gap: 10 }}>
+            {selectedStatsWeekData.days.map((day) => (
+              <button
+                key={day.date}
+                onClick={() => {
+                  setSelectedStatsDayKey(day.date);
+                  setStatsScreen("day");
+                }}
+                style={{
+                  border: "1px solid #e7e5e4",
+                  background: "#fff",
+                  borderRadius: 18,
+                  padding: 14,
+                  textAlign: "left",
+                  cursor: "pointer",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontWeight: 900 }}>{formatLongDate(day.date)}</div>
+                    <div style={{ color: "#78716c", marginTop: 4 }}>
+                      {day.count} verk • {minsToText(day.minutes)}
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontWeight: 900 }}>{kr(day.earned)}</div>
+                    <div style={{ color: "#78716c", marginTop: 4 }}>
+                      Dagstími {minsToText(dayHistory[day.date]?.workedMinutes || 0)}
+                    </div>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    )}
+
+    {statsScreen === "day" && selectedStatsDayKey && (
+      <div style={{ display: "grid", gap: 16 }}>
+        <button
+          style={{ ...buttonStyle(false), width: "fit-content" }}
+          onClick={() => setStatsScreen("week")}
+        >
+          ← Til baka
+        </button>
+
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 24, fontWeight: 900 }}>{formatLongDate(selectedStatsDayKey)}</div>
+          <div style={{ color: "#78716c", marginTop: 6 }}>
+            {selectedStatsDayLogs.length} færslur • {minsToText(selectedStatsDayMinutes)} • {kr(selectedStatsDayEarned)}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit,minmax(180px,1fr))",
+            gap: 10,
+          }}
+        >
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fafaf9 0%, #f5f5f4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Tekjur</div>
+            <div style={{ fontSize: 24, fontWeight: 900, marginTop: 6 }}>{kr(selectedStatsDayEarned)}</div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fafaf9 0%, #f5f5f4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Skráður tími</div>
+            <div style={{ fontSize: 24, fontWeight: 900, marginTop: 6 }}>{minsToText(selectedStatsDayMinutes)}</div>
+          </div>
+
+          <div style={cardStyle({ background: "linear-gradient(135deg,#fafaf9 0%, #f5f5f4 100%)" })}>
+            <div style={{ color: "#57534e", fontSize: 13 }}>Dagstími</div>
+            <div style={{ fontSize: 24, fontWeight: 900, marginTop: 6 }}>
+              {minsToText(dayHistory[selectedStatsDayKey]?.workedMinutes || 0)}
             </div>
-          ))}
+          </div>
+        </div>
+
+        <div style={cardStyle()}>
+          <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>Færslur dagsins</div>
+
+          <div style={{ display: "grid", gap: 10 }}>
+            {selectedStatsDayLogs.length === 0 && <div style={{ color: "#64748b" }}>Engar færslur þennan dag.</div>}
+
+            {selectedStatsDayLogs.map((log) => (
+              <div
+                key={log.id}
+                style={{
+                  background: "#fff",
+                  border: "1px solid #e7e5e4",
+                  borderRadius: 18,
+                  padding: 14,
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+                  <div>
+                    <div style={{ fontWeight: 900, fontSize: 18 }}>{log.customer}</div>
+                    <div style={{ color: "#78716c", marginTop: 4 }}>
+                      {log.area} • {log.startTime} – {log.endTime}
+                    </div>
+                  </div>
+
+                  <div style={{ textAlign: "right" }}>
+                    <div style={{ fontWeight: 900 }}>{kr(log.earned)}</div>
+                    <div style={{ color: "#78716c", marginTop: 4 }}>{minsToText(log.minutes)}</div>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: 8, fontWeight: 700 }}>{log.note || "Garðsláttur"}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     )}
   </div>
