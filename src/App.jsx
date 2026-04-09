@@ -2880,26 +2880,69 @@ const selectedStatsDayEarned = useMemo(() => {
     )}
 
     {statsScreen === "week" && selectedStatsWeekData && selectedStatsMonthData && (
-      <div style={{ display: "grid", gap: 16 }}>
-        <button
-          style={{ ...buttonStyle(false), width: "fit-content" }}
-          onClick={() => setStatsScreen("month")}
-        >
-          ← Til baka
-        </button>
+  <div style={{ display: "grid", gap: 16 }}>
+    <button
+      style={{ ...buttonStyle(false), width: "fit-content" }}
+      onClick={() => setStatsScreen("month")}
+    >
+      ← Til baka
+    </button>
 
-        <div style={cardStyle()}>
-          <div style={{ fontSize: 24, fontWeight: 900 }}>
-            {selectedStatsMonthData.monthLabel} • {selectedStatsWeekData.weekLabel}
-          </div>
-          <div style={{ color: "#78716c", marginTop: 6 }}>
-          {formatWeekRange(selectedStatsWeekData.days)}
-          </div>
-          <div style={{ color: "#78716c", marginTop: 6 }}>
-            {selectedStatsWeekData.count} verk • {minsToText(selectedStatsWeekData.minutes)} • {kr(selectedStatsWeekData.earned)}
-          </div>
-        </div>
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 24, fontWeight: 900 }}>
+        {selectedStatsMonthData.monthLabel} • {selectedStatsWeekData.weekLabel}
+      </div>
+      <div style={{ color: "#78716c", marginTop: 6 }}>
+        {formatWeekRange(selectedStatsWeekData.days || [])}
+      </div>
+      <div style={{ color: "#78716c", marginTop: 6 }}>
+        {selectedStatsWeekData.count} verk • {minsToText(selectedStatsWeekData.minutes)} • {kr(selectedStatsWeekData.earned)}
+      </div>
+    </div>
 
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>Dagar</div>
+
+      <div style={{ display: "grid", gap: 10 }}>
+        {(selectedStatsWeekData.days || []).map((day) => (
+          <button
+            key={day.date}
+            onClick={() => {
+              setSelectedStatsDayKey(day.date);
+              setStatsScreen("day");
+            }}
+            style={{
+              border: "1px solid #e7e5e4",
+              background: "#fff",
+              borderRadius: 18,
+              padding: 14,
+              textAlign: "left",
+              cursor: "pointer",
+            }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+              <div>
+                <div style={{ fontWeight: 900 }}>
+                  {formatDayWithWeekday(day.date)}
+                </div>
+                <div style={{ color: "#78716c", marginTop: 4 }}>
+                  {day.count} verk • {minsToText(day.minutes)}
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <div style={{ fontWeight: 900 }}>{kr(day.earned)}</div>
+                <div style={{ color: "#78716c", marginTop: 4 }}>
+                  Dagstími {minsToText(dayHistory[day.date]?.workedMinutes || 0)}
+                </div>
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+    </div>
+  </div>
+)}
+ 
         <div style={cardStyle()}>
           <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>Dagar</div>
 
@@ -2922,7 +2965,7 @@ const selectedStatsDayEarned = useMemo(() => {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                   <div>
-                    <div style={{ fontWeight: 900 }}>{formatdayWithWeekday(day.date)}</div>
+                    <div style={{ fontWeight: 900 }}>{formatLongDate(day.date)}</div>
                     <div style={{ color: "#78716c", marginTop: 4 }}>
                       {day.count} verk • {minsToText(day.minutes)}
                     </div>
