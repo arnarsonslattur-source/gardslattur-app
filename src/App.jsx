@@ -557,6 +557,10 @@ function getCalendarDayBackground(dayLogs, history) {
 
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
+  const [statsView, setStatsView] = useState("year"); 
+// "year" | "month" | "week" | "day"
+
+const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
 
   const [logs, setLogs] = useState(() => {
     try {
@@ -2545,326 +2549,100 @@ export default function App() {
         )}
 
         {screen === "Tölur" && (
-          <div style={{ display: "grid", gap: 16 }}>
-            <div style={cardStyle()}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: 10,
-                  flexWrap: "wrap",
-                  marginBottom: 12,
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 24, fontWeight: 900 }}>Ár → mánuðir</div>
-                  <div style={{ color: "#64748b", marginTop: 4 }}>Ýttu á mánuð til að opna hann</div>
-                </div>
+  <div style={{ display: "grid", gap: 16 }}>
 
-                <select
-                  style={{ ...inputStyle(), maxWidth: 140 }}
-                  value={selectedStatsYear}
-                  onChange={(e) => {
-                    setSelectedStatsYear(e.target.value);
-                    setExpandedStatsMonth(null);
-                    setExpandedStatsWeek(null);
-                  }}
-                >
-                  <option value={String(new Date().getFullYear() - 1)}>{new Date().getFullYear() - 1}</option>
-                  <option value={String(new Date().getFullYear())}>{new Date().getFullYear()}</option>
-                  <option value={String(new Date().getFullYear() + 1)}>{new Date().getFullYear() + 1}</option>
-                </select>
+    {/* HEADER */}
+    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+      {statsView !== "year" && (
+        <button
+          onClick={() => setStatsView("year")}
+          style={buttonStyle(false)}
+        >
+          ← Til baka
+        </button>
+      )}
+      <div style={{ fontSize: 26, fontWeight: 900 }}>
+        Tölur
+      </div>
+    </div>
+
+    {/* YEAR VIEW */}
+    {statsView === "year" && (
+      <div style={cardStyle()}>
+        <div style={{ fontSize: 22, fontWeight: 900, marginBottom: 12 }}>
+          Veldu mánuð
+        </div>
+
+        <div style={{ display: "grid", gap: 10 }}>
+          {statsMonths.map((month) => (
+            <button
+              key={month.monthKey}
+              onClick={() => {
+                setSelectedStatsMonthKey(month.monthKey);
+                setStatsView("month");
+              }}
+              style={{
+                background: "#fff",
+                border: "1px solid #e2e8f0",
+                borderRadius: 20,
+                padding: 14,
+                textAlign: "left",
+                cursor: "pointer",
+              }}
+            >
+              <div style={{ fontWeight: 900, fontSize: 18 }}>
+                {month.monthLabel}
+              </div>
+              <div style={{ color: "#64748b", marginTop: 4 }}>
+                {month.count} slættir • {kr(month.earned)}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {/* MONTH VIEW */}
+    {statsView === "month" && (
+      <div style={cardStyle()}>
+        {statsMonths
+          .filter((m) => m.monthKey === selectedStatsMonthKey)
+          .map((month) => (
+            <div key={month.monthKey} style={{ display: "grid", gap: 10 }}>
+              
+              <div style={{ fontSize: 22, fontWeight: 900 }}>
+                {month.monthLabel}
+              </div>
+
+              <div style={{ color: "#64748b" }}>
+                {month.count} slættir • {minsToText(month.minutes)} • {kr(month.earned)}
               </div>
 
               <div style={{ display: "grid", gap: 10 }}>
-                {statsMonths.map((month) => {
-                  const isMonthOpen = expandedStatsMonth === month.monthKey;
-
-                  return (
-                    <div
-                      key={month.monthKey}
-                      style={{
-                        background: "#fff",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: 22,
-                        overflow: "hidden",
-                      }}
-                    >
-                      <button
-                        onClick={() => {
-                          setExpandedStatsMonth(isMonthOpen ? null : month.monthKey);
-                          setExpandedStatsWeek(null);
-                        }}
-                        style={{
-                          width: "100%",
-                          border: "none",
-                          background: "transparent",
-                          textAlign: "left",
-                          padding: 14,
-                          cursor: "pointer",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            gap: 10,
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <div>
-                            <div style={{ fontSize: 22, fontWeight: 900 }}>{month.monthLabel}</div>
-                            <div style={{ color: "#64748b", marginTop: 4 }}>
-                              {month.count} slættir • {minsToText(month.minutes)}
-                            </div>
-                          </div>
-
-                          <div style={{ textAlign: "right" }}>
-                            <div style={{ fontWeight: 900, fontSize: 20 }}>{kr(month.earned)}</div>
-                            <div style={{ color: "#1d4ed8", fontWeight: 800, marginTop: 4 }}>
-                              {isMonthOpen ? "Loka" : "Opna"}
-                            </div>
-                          </div>
-                        </div>
-                      </button>
-
-                      {isMonthOpen && (
-                        <div style={{ padding: "0 14px 14px", display: "grid", gap: 10 }}>
-                          <div
-                            style={{
-                              display: "grid",
-                              gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
-                              gap: 10,
-                            }}
-                          >
-                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                              <div style={{ color: "#64748b", fontSize: 13 }}>Tekjur</div>
-                              <div style={{ fontWeight: 900 }}>{kr(month.earned)}</div>
-                            </div>
-
-                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                              <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-                              <div style={{ fontWeight: 900 }}>{minsToText(month.minutes)}</div>
-                            </div>
-
-                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                              <div style={{ color: "#64748b", fontSize: 13 }}>Fjöldi verka</div>
-                              <div style={{ fontWeight: 900 }}>{month.count}</div>
-                            </div>
-                          </div>
-
-                          <div style={{ display: "grid", gap: 8 }}>
-                            {month.weeks.length > 0 ? (
-                              month.weeks.map((week) => {
-                                const isWeekOpen = expandedStatsWeek === week.weekKey;
-
-                                return (
-                                  <div
-                                    key={week.weekKey}
-                                    style={{
-                                      background: "#fff",
-                                      border: "1px solid #e2e8f0",
-                                      borderRadius: 18,
-                                      overflow: "hidden",
-                                    }}
-                                  >
-                                    <button
-                                      onClick={() => setExpandedStatsWeek(isWeekOpen ? null : week.weekKey)}
-                                      style={{
-                                        width: "100%",
-                                        border: "none",
-                                        background: "transparent",
-                                        textAlign: "left",
-                                        padding: 12,
-                                        cursor: "pointer",
-                                      }}
-                                    >
-                                      <div
-                                        style={{
-                                          display: "grid",
-                                          gridTemplateColumns: "1fr auto",
-                                          gap: 10,
-                                          alignItems: "center",
-                                        }}
-                                      >
-                                        <div>
-                                          <div style={{ fontWeight: 900 }}>{week.weekLabel}</div>
-                                          <div style={{ color: "#64748b", marginTop: 4 }}>
-                                            {week.count} verk • {minsToText(week.minutes)}
-                                          </div>
-                                        </div>
-
-                                        <div style={{ fontWeight: 900 }}>{kr(week.earned)}</div>
-                                      </div>
-                                    </button>
-
-                                    {isWeekOpen && (
-                                      <div style={{ padding: "0 12px 12px", display: "grid", gap: 8 }}>
-                                        {week.days.map((day) => (
-                                          <button
-                                            key={day.date}
-                                            onClick={() => {
-                                              setSelectedDay(day.date);
-                                              setSelectedMonth(day.date.slice(0, 7));
-                                              setScreen("Dagatal");
-                                            }}
-                                            style={{
-                                              border: "1px solid #dbe2ea",
-                                              background: "#f8fafc",
-                                              borderRadius: 14,
-                                              padding: 12,
-                                              textAlign: "left",
-                                              cursor: "pointer",
-                                            }}
-                                          >
-                                            <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
-                                              <div>
-                                                <div style={{ fontWeight: 900 }}>{formatLongDate(day.date)}</div>
-                                                <div style={{ color: "#64748b", marginTop: 4 }}>
-                                                  {day.count} verk • {minsToText(day.minutes)}
-                                                </div>
-                                              </div>
-                                              <div style={{ textAlign: "right" }}>
-                                                <div style={{ fontWeight: 900 }}>{kr(day.earned)}</div>
-                                                <div style={{ color: "#64748b", marginTop: 4 }}>
-                                                  Dagstími {minsToText(dayHistory[day.date]?.workedMinutes || 0)}
-                                                </div>
-                                              </div>
-                                            </div>
-                                          </button>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                );
-                              })
-                            ) : (
-                              <div style={{ color: "#64748b" }}>Engar færslur í þessum mánuði.</div>
-                            )}
-                          </div>
-                        </div>
-                      )}
+                {month.weeks.map((week) => (
+                  <div
+                    key={week.weekKey}
+                    style={{
+                      background: "#f8fafc",
+                      borderRadius: 18,
+                      padding: 12,
+                    }}
+                  >
+                    <div style={{ fontWeight: 900 }}>
+                      {week.weekLabel}
                     </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #bfdbfe 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildartekjur</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#ede9fe 0%, #ddd6fe 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildartími</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Greitt</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fee2e2 0%, #fecaca 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Ógreitt</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltal per slátt</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
-                  {logs.length > 0 ? kr(Math.round(allTotal / logs.length)) : "0 kr."}
-                </div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðaltími per slátt</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
-                  {logs.length > 0 ? minsToText(Math.round(allMinutes / logs.length)) : "0 mín"}
-                </div>
-              </div>
-              <div style={cardStyle()}>
-                <div style={{ color: "#64748b", fontSize: 13 }}>Meðal tímakaup</div>
-                <div style={{ fontSize: 26, fontWeight: 900, marginTop: 6 }}>
-                  {allMinutes > 0 ? `${kr(Math.round(allTotal / (allMinutes / 60)))}/klst` : "0 kr./klst"}
-                </div>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fff7ed 0%, #ffedd5 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Heildarkostnaður</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(totalExpenses)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fef3c7 0%, #fde68a 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Eldsneyti samtals</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(fuelExpenses)}</div>
-              </div>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>Hagnaður eftir kostnað</div>
-                <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(profitAfterExpenses)}</div>
-              </div>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(220px,1fr))", gap: 12 }}>
-              <div style={cardStyle({ background: "linear-gradient(135deg,#fef9c3 0%, #fde68a 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>🏆 Besti dagur</div>
-                <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
-                  {bestDay ? formatLongDate(bestDay.date) : "-"}
-                </div>
-                <div style={{ marginTop: 4 }}>{bestDay ? kr(bestDay.earned) : "0 kr."}</div>
-              </div>
-
-              <div style={cardStyle({ background: "linear-gradient(135deg,#dcfce7 0%, #bbf7d0 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>💸 Hæsta greiðsla</div>
-                <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
-                  {highestJob ? kr(highestJob.earned) : "0 kr."}
-                </div>
-              </div>
-
-              <div style={cardStyle({ background: "linear-gradient(135deg,#e0e7ff 0%, #c7d2fe 100%)" })}>
-                <div style={{ color: "#475569", fontSize: 13 }}>⏱️ Lengsti dagur</div>
-                <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
-                  {longestDay ? formatLongDate(longestDay.date) : "-"}
-                </div>
-                <div style={{ marginTop: 4 }}>{longestDay ? minsToText(longestDay.minutes) : "0 mín"}</div>
-              </div>
-            </div>
-
-            <div style={cardStyle()}>
-              <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hverfi</div>
-              <div style={{ display: "grid", gap: 10 }}>
-                {areaSummary.map((row) => {
-                  const areaMinutes = logs
-                    .filter((l) => l.area === row.area)
-                    .reduce((sum, l) => sum + l.minutes, 0);
-                  const areaHourly = areaMinutes > 0 ? Math.round(row.earned / (areaMinutes / 60)) : 0;
-
-                  return (
-                    <div
-                      key={row.area}
-                      style={{
-                        display: "grid",
-                        gridTemplateColumns: "1.2fr 1fr 1fr 1fr",
-                        gap: 10,
-                        background: "#fff",
-                        border: "1px solid #e2e8f0",
-                        borderRadius: 18,
-                        padding: 12,
-                      }}
-                    >
-                      <div style={{ fontWeight: 800 }}>{row.area}</div>
-                      <div>Tekjur: {kr(row.earned)}</div>
-                      <div>Tími: {minsToText(areaMinutes)}</div>
-                      <div>Tímakaup: {areaMinutes > 0 ? `${kr(areaHourly)}/klst` : "0 kr./klst"}</div>
+                    <div style={{ color: "#64748b", marginTop: 4 }}>
+                      {week.count} verk • {minsToText(week.minutes)} • {kr(week.earned)}
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
             </div>
-          </div>
-        )}
+          ))}
+      </div>
+    )}
+  </div>
+)}
 
         {screen === "Kort" && (
           <div style={{ display: "grid", gap: 16 }}>
