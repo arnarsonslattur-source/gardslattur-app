@@ -557,8 +557,12 @@ function getCalendarDayBackground(dayLogs, history) {
 
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
-  const [statsView, setStatsView] = useState("year"); 
-// "year" | "month" | "week" | "day"
+
+const [selectedStatsYear, setSelectedStatsYear] = useState(String(new Date().getFullYear()));
+const [statsScreen, setStatsScreen] = useState("overview");
+const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
+const [selectedStatsWeekKey, setSelectedStatsWeekKey] = useState(null);
+const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
 
 const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
 
