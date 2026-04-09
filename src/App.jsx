@@ -564,8 +564,6 @@ const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
 const [selectedStatsWeekKey, setSelectedStatsWeekKey] = useState(null);
 const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
 
-const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
-
   const [logs, setLogs] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -608,7 +606,6 @@ const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date()));
   const [editingLogId, setEditingLogId] = useState(null);
   const [selectedPlanDay, setSelectedPlanDay] = useState(null);
-  const [selectedStatsYear, setSelectedStatsYear] = useState(String(new Date().getFullYear()));
 
   const [planEntries, setPlanEntries] = useState(() => {
     try {
@@ -1520,6 +1517,30 @@ const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
   }, [logs]);
 
   const highestJob = logs.length > 0 ? [...logs].sort((a, b) => b.earned - a.earned)[0] : null;
+  
+  const selectedStatsMonthData = useMemo(() => {
+  return statsMonths.find((month) => month.monthKey === selectedStatsMonthKey) || null;
+}, [statsMonths, selectedStatsMonthKey]);
+
+const selectedStatsWeekData = useMemo(() => {
+  if (!selectedStatsMonthData) return null;
+  return selectedStatsMonthData.weeks.find((week) => week.weekKey === selectedStatsWeekKey) || null;
+}, [selectedStatsMonthData, selectedStatsWeekKey]);
+
+const selectedStatsDayLogs = useMemo(() => {
+  if (!selectedStatsDayKey) return [];
+  return logs
+    .filter((log) => log.date === selectedStatsDayKey)
+    .sort((a, b) => a.startTime.localeCompare(b.startTime));
+}, [logs, selectedStatsDayKey]);
+
+const selectedStatsDayMinutes = useMemo(() => {
+  return selectedStatsDayLogs.reduce((sum, log) => sum + log.minutes, 0);
+}, [selectedStatsDayLogs]);
+
+const selectedStatsDayEarned = useMemo(() => {
+  return selectedStatsDayLogs.reduce((sum, log) => sum + log.earned, 0);
+}, [selectedStatsDayLogs]);
   
     return (
     <div
