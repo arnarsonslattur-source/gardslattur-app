@@ -205,6 +205,34 @@ function formatLongDate(dateStr) {
   const d = new Date(`${dateStr}T00:00:00`);
   return d.toLocaleDateString("is-IS", { day: "numeric", month: "long" });
 }
+function formatDayWithWeekday(dateStr) {
+  if (!dateStr) return "";
+  const d = new Date(`${dateStr}T00:00:00`);
+  const weekday = d.toLocaleDateString("is-IS", { weekday: "short" });
+  const dayMonth = d.toLocaleDateString("is-IS", {
+    day: "numeric",
+    month: "long",
+  });
+  return `${weekday} ${dayMonth}`;
+}
+
+function formatWeekRange(days) {
+  if (!days || days.length === 0) return "";
+  const sortedDays = [...days].sort((a, b) => a.date.localeCompare(b.date));
+  const first = new Date(`${sortedDays[0].date}T00:00:00`);
+  const last = new Date(`${sortedDays[sortedDays.length - 1].date}T00:00:00`);
+
+  const firstDay = first.getDate();
+  const lastDay = last.getDate();
+  const firstMonth = first.toLocaleDateString("is-IS", { month: "long" });
+  const lastMonth = last.toLocaleDateString("is-IS", { month: "long" });
+
+  if (firstMonth === lastMonth) {
+    return `${firstDay}–${lastDay} ${firstMonth}`;
+  }
+
+  return `${firstDay} ${firstMonth} – ${lastDay} ${lastMonth}`;
+}
 
 function getTodayLocal() {
   const now = new Date();
@@ -2863,6 +2891,9 @@ const selectedStatsDayEarned = useMemo(() => {
         <div style={cardStyle()}>
           <div style={{ fontSize: 24, fontWeight: 900 }}>
             {selectedStatsMonthData.monthLabel} • {selectedStatsWeekData.weekLabel}
+          </div>
+          <div style={{ color: "#78716c", marginTop: 6 }}>
+          {formatWeekRange(selectedStatsWeekData.days)}
           </div>
           <div style={{ color: "#78716c", marginTop: 6 }}>
             {selectedStatsWeekData.count} verk • {minsToText(selectedStatsWeekData.minutes)} • {kr(selectedStatsWeekData.earned)}
