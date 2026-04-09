@@ -1482,7 +1482,7 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     };
   });
 
- const statsMonths = useMemo(() => {
+const statsMonths = useMemo(() => {
   const months = Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
     const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
@@ -1500,15 +1500,9 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
       const weekEnd = getWeekEndSunday(day);
       const weekKey = weekStart.toISOString().slice(0, 10);
 
-      const yearStart = new Date(day.getFullYear(), 0, 1);
-      const yearStartMonday = getWeekStartMonday(yearStart);
-      const weekNumber =
-        Math.floor((weekStart - yearStartMonday) / (7 * 24 * 60 * 60 * 1000)) + 1;
-
       if (!weeksMap[weekKey]) {
         weeksMap[weekKey] = {
           weekKey,
-          weekLabel: `Vika ${weekNumber}`,
           weekStart: weekStart.toISOString().slice(0, 10),
           weekEnd: weekEnd.toISOString().slice(0, 10),
           logs: [],
@@ -1545,7 +1539,11 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
         ...week,
         days: Object.values(week.daysMap).sort((a, b) => a.date.localeCompare(b.date)),
       }))
-      .sort((a, b) => a.weekStart.localeCompare(b.weekStart));
+      .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+      .map((week, weekIndex) => ({
+        ...week,
+        weekLabel: `Vika ${weekIndex + 1}`,
+      }));
 
     return {
       monthKey,
