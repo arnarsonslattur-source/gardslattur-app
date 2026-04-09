@@ -2922,7 +2922,7 @@ const selectedStatsDayEarned = useMemo(() => {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
                   <div>
-                    <div style={{ fontWeight: 900 }}>{formatLongDate(day.date)}</div>
+                    <div style={{ fontWeight: 900 }}>{formatdayWithWeekday(day.date)}</div>
                     <div style={{ color: "#78716c", marginTop: 4 }}>
                       {day.count} verk • {minsToText(day.minutes)}
                     </div>
