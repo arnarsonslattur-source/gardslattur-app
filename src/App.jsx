@@ -619,6 +619,42 @@ function getCalendarDayBackground(dayLogs, history) {
   return "#fff";
 }
 
+function getWeekStartMonday(dateInput) {
+  const date = new Date(dateInput);
+  const day = date.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  const monday = new Date(date);
+  monday.setDate(date.getDate() + diff);
+  monday.setHours(0, 0, 0, 0);
+  return monday;
+}
+
+function getWeekEndSunday(dateInput) {
+  const monday = getWeekStartMonday(dateInput);
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(0, 0, 0, 0);
+  return sunday;
+}
+
+function formatWeekRangeFromDates(startDateStr, endDateStr) {
+  if (!startDateStr || !endDateStr) return "";
+
+  const start = new Date(`${startDateStr}T00:00:00`);
+  const end = new Date(`${endDateStr}T00:00:00`);
+
+  const startDay = start.getDate();
+  const endDay = end.getDate();
+  const startMonth = start.toLocaleDateString("is-IS", { month: "long" });
+  const endMonth = end.toLocaleDateString("is-IS", { month: "long" });
+
+  if (startMonth === endMonth) {
+    return `${startDay}–${endDay} ${startMonth}`;
+  }
+
+  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
+}
+
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
