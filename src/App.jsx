@@ -973,11 +973,13 @@ earned: ${entry.earned}`
     .select()
     .single();
 
-  if (error) {
-    console.error("Supabase addLog error:", error);
-    alert("Það kom villa við að vista færslu.");
-    return;
-  }
+  alert("insert búið");
+
+if (error) {
+  alert("Supabase villa: " + error.message);
+  console.error("Supabase addLog error:", error);
+  return;
+}
 
   const savedLog = {
     id: data.id,
