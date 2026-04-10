@@ -964,7 +964,6 @@ const addLog = async () => {
     earned: Number(entry.earned),
     paid: entry.paid,
     note: jobNote || "Garðsláttur",
-  };
 
   alert("4: að fara í insert");
 
