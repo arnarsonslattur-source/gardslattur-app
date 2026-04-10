@@ -953,94 +953,78 @@ const addLog = async () => {
     return;
   }
 
-  const mins = minutesBetween(entry.startTime, entry.endTime);
-  const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
-
-  const logToInsert = {
-    date: entry.date,
-    customer: entry.customer,
-    area: entry.area,
-    pricing: picked?.pricing || "fixed",
-    hourly_rate: picked?.pricing === "hourly" ? picked.price : null,
-    start_time: entry.startTime,
-    end_time: entry.endTime,
-    minutes: mins,
-    earned: Number(entry.earned),
-    paid: entry.paid,
-    note: jobNote || "Garðsláttur",
-  };
-
   alert("3");
 
   try {
-  const mins = minutesBetween(entry.startTime, entry.endTime);
-  const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
+    const mins = minutesBetween(entry.startTime, entry.endTime);
+    const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
 
-  const logToInsert = {
-    date: entry.date,
-    customer: entry.customer,
-    area: entry.area,
-    pricing: picked?.pricing || "fixed",
-    hourly_rate: picked?.pricing === "hourly" ? picked.price : null,
-    start_time: entry.startTime,
-    end_time: entry.endTime,
-    minutes: mins,
-    earned: Number(entry.earned),
-    paid: entry.paid,
-    note: jobNote || "Garðsláttur",
-  };
+    const logToInsert = {
+      date: entry.date,
+      customer: entry.customer,
+      area: entry.area,
+      pricing: picked?.pricing || "fixed",
+      hourly_rate: picked?.pricing === "hourly" ? picked.price : null,
+      start_time: entry.startTime,
+      end_time: entry.endTime,
+      minutes: mins,
+      earned: Number(entry.earned),
+      paid: entry.paid,
+      note: jobNote || "Garðsláttur",
+    };
 
-  alert("4");
+    alert("4");
 
-  const { data, error } = await supabase
-    .from("logs")
-    .insert([logToInsert])
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from("logs")
+      .insert([logToInsert])
+      .select()
+      .single();
 
-  alert("5");
+    alert("5");
 
-  if (error) {
-    alert("Villa: " + error.message);
-    console.error(error);
-    return;
+    if (error) {
+      alert("Villa: " + error.message);
+      console.error(error);
+      return;
+    }
+
+    alert("6");
+
+    const savedLog = {
+      id: data.id,
+      date: data.date,
+      customer: data.customer,
+      area: data.area,
+      pricing: data.pricing,
+      hourlyRate: data.hourly_rate,
+      startTime: data.start_time,
+      endTime: data.end_time,
+      minutes: Number(data.minutes || 0),
+      earned: Number(data.earned || 0),
+      paid: !!data.paid,
+      note: data.note || "Garðsláttur",
+    };
+
+    setLogs((prev) => [savedLog, ...prev]);
+
+    setJobNote("");
+    setEntry((prev) => ({
+      ...prev,
+      date: getTodayLocal(),
+      startTime: "12:00",
+      endTime: "13:00",
+      earned:
+        picked?.pricing === "hourly"
+          ? String(Math.round(picked?.price || 0))
+          : String(picked?.price || ""),
+      paid: false,
+    }));
+  } catch (err) {
+    alert("Catch villa: " + (err?.message || String(err)));
+    console.error(err);
   }
-
-  alert("6");
-
-  const savedLog = {
-    id: data.id,
-    date: data.date,
-    customer: data.customer,
-    area: data.area,
-    pricing: data.pricing,
-    hourlyRate: data.hourly_rate,
-    startTime: data.start_time,
-    endTime: data.end_time,
-    minutes: Number(data.minutes || 0),
-    earned: Number(data.earned || 0),
-    paid: !!data.paid,
-    note: data.note || "Garðsláttur",
-  };
-
-  setLogs((prev) => [savedLog, ...prev]);
-
-  setJobNote("");
-  setEntry((prev) => ({
-    ...prev,
-    date: getTodayLocal(),
-    startTime: "12:00",
-    endTime: "13:00",
-    earned:
-      picked?.pricing === "hourly"
-        ? String(Math.round(picked?.price || 0))
-        : String(picked?.price || ""),
-    paid: false,
-  }));
-} catch (err) {
-  alert("Catch villa: " + (err?.message || String(err)));
-  console.error(err);
-}
+};
 
 const addCustomer = () => {
   if (!newCustomerForm.name || !newCustomerForm.price) return;
