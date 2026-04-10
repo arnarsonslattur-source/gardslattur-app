@@ -1017,7 +1017,6 @@ const addLog = async () => {
   }));
 
   alert("9: allt búið");
-};
   
   const addCustomer = () => {
     if (!newCustomerForm.name || !newCustomerForm.price) return;
