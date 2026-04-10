@@ -1042,49 +1042,6 @@ const addLog = async () => {
   console.error(err);
 }
 
-  alert("4");
-
-  if (error) {
-    alert("Villa: " + error.message);
-    console.error(error);
-    return;
-  }
-
-  alert("5");
-
-  const savedLog = {
-    id: data.id,
-    date: data.date,
-    customer: data.customer,
-    area: data.area,
-    pricing: data.pricing,
-    hourlyRate: data.hourly_rate,
-    startTime: data.start_time,
-    endTime: data.end_time,
-    minutes: Number(data.minutes || 0),
-    earned: Number(data.earned || 0),
-    paid: !!data.paid,
-    note: data.note || "Garðsláttur",
-  };
-
-  setLogs((prev) => [savedLog, ...prev]);
-
-  alert("6");
-
-  setJobNote("");
-  setEntry((prev) => ({
-    ...prev,
-    date: getTodayLocal(),
-    startTime: "12:00",
-    endTime: "13:00",
-    earned:
-      picked?.pricing === "hourly"
-        ? String(Math.round(picked?.price || 0))
-        : String(picked?.price || ""),
-    paid: false,
-  }));
-};
-
 const addCustomer = () => {
   if (!newCustomerForm.name || !newCustomerForm.price) return;
 
