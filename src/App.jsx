@@ -940,14 +940,7 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   };
   
 const addLog = async () => {
-  alert("1: addLog byrjaði");
-
-  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) {
-    alert("2: required check stoppaði");
-    return;
-  }
-
-  alert("3: required check fór í gegn");
+  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
 
   const mins = minutesBetween(entry.startTime, entry.endTime);
   const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
@@ -964,8 +957,7 @@ const addLog = async () => {
     earned: Number(entry.earned),
     paid: entry.paid,
     note: jobNote || "Garðsláttur",
-
-  alert("4: að fara í insert");
+  };
 
   const { data, error } = await supabase
     .from("logs")
@@ -973,15 +965,11 @@ const addLog = async () => {
     .select()
     .single();
 
-  alert("5: insert búið");
-
   if (error) {
-    alert("6: Supabase villa: " + error.message);
     console.error("Supabase addLog error:", error);
+    alert("Það kom villa við að vista færsluna: " + error.message);
     return;
   }
-
-  alert("7: engin villa");
 
   const savedLog = {
     id: data.id,
@@ -1000,8 +988,6 @@ const addLog = async () => {
 
   setLogs((prev) => [savedLog, ...prev]);
 
-  alert("8: setLogs búið");
-
   setJobNote("");
   setEntry((prev) => ({
     ...prev,
@@ -1014,28 +1000,27 @@ const addLog = async () => {
         : String(picked?.price || ""),
     paid: false,
   }));
+};
 
-  alert("9: allt búið");
-  
-  const addCustomer = () => {
-    if (!newCustomerForm.name || !newCustomerForm.price) return;
+const addCustomer = () => {
+  if (!newCustomerForm.name || !newCustomerForm.price) return;
 
-    const newCustomer = {
-      id: Date.now(),
-      name: newCustomerForm.name,
-      area: newCustomerForm.area,
-      pricing: newCustomerForm.pricing,
-      price: Number(newCustomerForm.price),
-    };
-
-    setCustomCustomers((prev) => [...prev, newCustomer]);
-    setNewCustomerForm({
-      name: "",
-      area: "Brekkan",
-      pricing: "fixed",
-      price: "",
-    });
+  const newCustomer = {
+    id: Date.now(),
+    name: newCustomerForm.name,
+    area: newCustomerForm.area,
+    pricing: newCustomerForm.pricing,
+    price: Number(newCustomerForm.price),
   };
+
+  setCustomCustomers((prev) => [...prev, newCustomer]);
+  setNewCustomerForm({
+    name: "",
+    area: "Brekkan",
+    pricing: "fixed",
+    price: "",
+  });
+};
 
   const readReceipt = async () => {
     if (!receiptImage) return;
