@@ -831,6 +831,41 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     } catch {}
   }, [logs]);
 
+useEffect(() => {
+  const loadLogs = async () => {
+    const { data, error } = await supabase
+      .from("logs")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error("Villa að sækja logs:", error);
+      return;
+    }
+
+    if (data) {
+      const formatted = data.map((log) => ({
+        id: log.id,
+        date: log.date,
+        customer: log.customer,
+        area: log.area,
+        pricing: log.pricing,
+        hourlyRate: log.hourly_rate,
+        startTime: log.start_time,
+        endTime: log.end_time,
+        minutes: Number(log.minutes || 0),
+        earned: Number(log.earned || 0),
+        paid: !!log.paid,
+        note: log.note || "Garðsláttur",
+      }));
+
+      setLogs(formatted);
+    }
+  };
+
+  loadLogs();
+}, []);
+  
   useEffect(() => {
     try {
       localStorage.setItem(CUSTOMER_STORAGE_KEY, JSON.stringify(customCustomers));
