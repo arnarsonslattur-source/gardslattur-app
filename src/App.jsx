@@ -1018,12 +1018,6 @@ const addLog = async () => {
 
   alert("9: allt búið");
 };
-  
-  const { data, error } = await supabase
-    .from("logs")
-    .insert([logToInsert])
-    .select()
-    .single();
 
   alert("insert búið");
 
