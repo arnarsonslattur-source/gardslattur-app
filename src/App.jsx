@@ -663,6 +663,7 @@ function formatWeekRangeFromDates(startDateStr, endDateStr) {
 export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
+const [savingLog, setSavingLog] = useState(false);  
 const [selectedStatsYear, setSelectedStatsYear] = useState(String(new Date().getFullYear()));
 const [statsScreen, setStatsScreen] = useState("overview");
 const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
@@ -2531,7 +2532,9 @@ const selectedStatsDayEarned = useMemo(() => {
                 <div style={{ color: "#64748b", maxWidth: 520 }}>
                   Toyota tímakaup fær auto verð. Þú getur samt alltaf yfirskrifað upphæðina.
                 </div>
-                <button style={buttonStyle(true)} onClick={addLog}>Bæta við færslu</button>
+                <button type="button" style={buttonStyle(true)} onClick={addLog}>
+  Bæta við færslu
+</button>
               </div>
             </div>
           </div>
