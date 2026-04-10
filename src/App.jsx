@@ -940,6 +940,7 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   };
   
 const addLog = async () => {
+  alert("addLog byrjaði");
   if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
 
   const mins = minutesBetween(entry.startTime, entry.endTime);
