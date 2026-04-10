@@ -1019,21 +1019,21 @@ const addLog = async () => {
   alert("9: allt búið");
 };
 
-  alert("4: að fara í insert");
+  setJobNote("");
+setEntry((prev) => ({
+  ...prev,
+  date: getTodayLocal(),
+  startTime: "12:00",
+  endTime: "13:00",
+  earned:
+    picked?.pricing === "hourly"
+      ? String(Math.round(picked?.price || 0))
+      : String(picked?.price || ""),
+  paid: false,
+}));
 
-  const { data, error } = await supabase
-    .from("logs")
-    .insert([logToInsert])
-    .select()
-    .single();
-
-  alert("5: insert búið");
-
-  if (error) {
-    alert("6: Supabase villa: " + error.message);
-    console.error("Supabase addLog error:", error);
-    return;
-  }
+alert("9: allt búið");
+};
 
   alert("7: engin villa");
 
