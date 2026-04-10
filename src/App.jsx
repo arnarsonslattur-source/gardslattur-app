@@ -946,14 +946,7 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   };
   
 const addLog = async () => {
-  alert("1");
-
-  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) {
-    alert("2");
-    return;
-  }
-
-  alert("3");
+  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
 
   try {
     const mins = minutesBetween(entry.startTime, entry.endTime);
@@ -973,23 +966,17 @@ const addLog = async () => {
       note: jobNote || "Garðsláttur",
     };
 
-    alert("4");
-
     const { data, error } = await supabase
       .from("logs")
       .insert([logToInsert])
       .select()
       .single();
 
-    alert("5");
-
     if (error) {
       alert("Villa: " + error.message);
       console.error(error);
       return;
     }
-
-    alert("6");
 
     const savedLog = {
       id: data.id,
