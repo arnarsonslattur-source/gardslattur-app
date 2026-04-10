@@ -939,44 +939,69 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     return Math.max(0, worked - logged);
   };
   
-    const addLog = () => {
-    if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
+const addLog = async () => {
+  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
 
-    const mins = minutesBetween(entry.startTime, entry.endTime);
-    const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
+  const mins = minutesBetween(entry.startTime, entry.endTime);
+  const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
 
-    setLogs((prev) => [
-      {
-        id: Date.now(),
-        date: entry.date,
-        customer: entry.customer,
-        area: entry.area,
-        pricing: picked?.pricing || "fixed",
-        hourlyRate: picked?.pricing === "hourly" ? picked.price : null,
-        startTime: entry.startTime,
-        endTime: entry.endTime,
-        minutes: mins,
-        earned: Number(entry.earned),
-        paid: entry.paid,
-        note: jobNote || "Garðsláttur",
-      },
-      ...prev,
-    ]);
-
-    setJobNote("");
-    setEntry((prev) => ({
-      ...prev,
-      date: getTodayLocal(),
-      startTime: "12:00",
-      endTime: "13:00",
-      earned:
-        picked?.pricing === "hourly"
-          ? String(Math.round(picked?.price || 0))
-          : String(picked?.price || ""),
-      paid: false,
-    }));
+  const logToInsert = {
+    date: entry.date,
+    customer: entry.customer,
+    area: entry.area,
+    pricing: picked?.pricing || "fixed",
+    hourly_rate: picked?.pricing === "hourly" ? picked.price : null,
+    start_time: entry.startTime,
+    end_time: entry.endTime,
+    minutes: mins,
+    earned: Number(entry.earned),
+    paid: entry.paid,
+    note: jobNote || "Garðsláttur",
   };
 
+  const { data, error } = await supabase
+    .from("logs")
+    .insert([logToInsert])
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Supabase addLog error:", error);
+    alert("Það kom villa við að vista færslu.");
+    return;
+  }
+
+  const savedLog = {
+    id: data.id,
+    date: data.date,
+    customer: data.customer,
+    area: data.area,
+    pricing: data.pricing,
+    hourlyRate: data.hourly_rate,
+    startTime: data.start_time,
+    endTime: data.end_time,
+    minutes: Number(data.minutes || 0),
+    earned: Number(data.earned || 0),
+    paid: !!data.paid,
+    note: data.note || "Garðsláttur",
+  };
+
+  setLogs((prev) => [savedLog, ...prev]);
+
+  setJobNote("");
+  setEntry((prev) => ({
+    ...prev,
+    date: getTodayLocal(),
+    startTime: "12:00",
+    endTime: "13:00",
+    earned:
+      picked?.pricing === "hourly"
+        ? String(Math.round(picked?.price || 0))
+        : String(picked?.price || ""),
+    paid: false,
+  }));
+};
+  
   const addCustomer = () => {
     if (!newCustomerForm.name || !newCustomerForm.price) return;
 
