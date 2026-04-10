@@ -940,16 +940,15 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   };
   
 const addLog = async () => {
-  alert(
-    `customer: ${entry.customer}
-date: ${entry.date}
-start: ${entry.startTime}
-end: ${entry.endTime}
-earned: ${entry.earned}`
-  );
+  alert("1: addLog byrjaði");
 
-  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
-  
+  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) {
+    alert("2: required check stoppaði");
+    return;
+  }
+
+  alert("3: required check fór í gegn");
+
   const mins = minutesBetween(entry.startTime, entry.endTime);
   const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
 
@@ -967,6 +966,59 @@ earned: ${entry.earned}`
     note: jobNote || "Garðsláttur",
   };
 
+  alert("4: að fara í insert");
+
+  const { data, error } = await supabase
+    .from("logs")
+    .insert([logToInsert])
+    .select()
+    .single();
+
+  alert("5: insert búið");
+
+  if (error) {
+    alert("6: Supabase villa: " + error.message);
+    console.error("Supabase addLog error:", error);
+    return;
+  }
+
+  alert("7: engin villa");
+
+  const savedLog = {
+    id: data.id,
+    date: data.date,
+    customer: data.customer,
+    area: data.area,
+    pricing: data.pricing,
+    hourlyRate: data.hourly_rate,
+    startTime: data.start_time,
+    endTime: data.end_time,
+    minutes: Number(data.minutes || 0),
+    earned: Number(data.earned || 0),
+    paid: !!data.paid,
+    note: data.note || "Garðsláttur",
+  };
+
+  setLogs((prev) => [savedLog, ...prev]);
+
+  alert("8: setLogs búið");
+
+  setJobNote("");
+  setEntry((prev) => ({
+    ...prev,
+    date: getTodayLocal(),
+    startTime: "12:00",
+    endTime: "13:00",
+    earned:
+      picked?.pricing === "hourly"
+        ? String(Math.round(picked?.price || 0))
+        : String(picked?.price || ""),
+    paid: false,
+  }));
+
+  alert("9: allt búið");
+};
+  
   const { data, error } = await supabase
     .from("logs")
     .insert([logToInsert])
