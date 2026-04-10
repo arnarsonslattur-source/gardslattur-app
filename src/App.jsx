@@ -940,9 +940,16 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   };
   
 const addLog = async () => {
-  alert("addLog byrjaði");
-  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
+  alert(
+    `customer: ${entry.customer}
+date: ${entry.date}
+start: ${entry.startTime}
+end: ${entry.endTime}
+earned: ${entry.earned}`
+  );
 
+  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
+  
   const mins = minutesBetween(entry.startTime, entry.endTime);
   const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
 
