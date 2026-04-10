@@ -6,6 +6,10 @@ import { createClient } from "@supabase/supabase-js";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
+const supabaseUrl = "https://raffveiqgzghorxhptbn.supabase.co";
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJhZmZ2ZWlxZ3pnaG9yeGhwdGJuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU4Mjg1MzUsImV4cCI6MjA5MTQwNDUzNX0.JmiVX6V5tYxeW_-f87UrywEUlnJBaszF-Er1WHAv1UA";
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
+
 const baseCustomersByArea = {
   Brekkan: [
     { id: 1, name: "Haukur", price: 10000, pricing: "fixed" },
