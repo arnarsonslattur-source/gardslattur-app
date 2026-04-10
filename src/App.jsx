@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+simport React, vo s{ useEffect, useMemo, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaflet";
 import { Html5Qrcode } from "html5-qrcode";
 import { createWorker } from "tesseract.js";
@@ -940,7 +940,12 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   };
   
 const addLog = async () => {
-  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) return;
+  alert("1");
+
+  if (!entry.customer || !entry.date || !entry.startTime || !entry.endTime || !entry.earned) {
+    alert("2");
+    return;
+  }
 
   const mins = minutesBetween(entry.startTime, entry.endTime);
   const picked = (customersByArea[entry.area] || []).find((c) => c.name === entry.customer);
@@ -959,17 +964,23 @@ const addLog = async () => {
     note: jobNote || "Garðsláttur",
   };
 
+  alert("3");
+
   const { data, error } = await supabase
     .from("logs")
     .insert([logToInsert])
     .select()
     .single();
 
+  alert("4");
+
   if (error) {
-    console.error("Supabase addLog error:", error);
-    alert("Það kom villa við að vista færsluna: " + error.message);
+    alert("Villa: " + error.message);
+    console.error(error);
     return;
   }
+
+  alert("5");
 
   const savedLog = {
     id: data.id,
@@ -987,6 +998,8 @@ const addLog = async () => {
   };
 
   setLogs((prev) => [savedLog, ...prev]);
+
+  alert("6");
 
   setJobNote("");
   setEntry((prev) => ({
