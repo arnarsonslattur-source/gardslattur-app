@@ -1221,10 +1221,21 @@ const addCustomer = () => {
   const togglePaid = (id) =>
     setLogs((prev) => prev.map((log) => (log.id === id ? { ...log, paid: !log.paid } : log)));
 
-  const deleteLog = (id) => {
-    setLogs((prev) => prev.filter((log) => log.id !== id));
-    if (editingLogId === id) setEditingLogId(null);
-  };
+  const deleteLog = async (id) => {
+  const { error } = await supabase
+    .from("logs")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Villa við að eyða færslu: " + error.message);
+    console.error("Supabase deleteLog error:", error);
+    return;
+  }
+
+  setLogs((prev) => prev.filter((log) => log.id !== id));
+  if (editingLogId === id) setEditingLogId(null);
+};
 
   const startEditLog = (log) => {
     setEditingLogId(log.id);
