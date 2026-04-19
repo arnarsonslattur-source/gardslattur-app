@@ -1378,28 +1378,8 @@ const startDayTimer = () => {
     ),
   });
 };
-  
-    const now = Date.now();
-    const elapsed = Math.max(0, now - dayTimerState.startTime);
 
-    const nextState = {
-      ...dayTimerState,
-      startTime: null,
-      running: false,
-      accumulatedMs: (dayTimerState.accumulatedMs || 0) + elapsed,
-      lastStoppedAt: now,
-    };
-
-    setDayTimerState(nextState);
-    saveDayHistory(nextState.currentDate || getTodayLocal(), {
-      startTime: nextState.dayStartedAt,
-      endTime: nextState.dayEndedAt,
-      breakMs: nextState.breakMs || 0,
-      workedMinutes: Math.floor((nextState.accumulatedMs || 0) / 60000),
-    });
-  };
-
- const finishDayTimer = () => {
+const finishDayTimer = () => {
   if (!dayTimerState.dayStartedAt) return;
 
   const now = Date.now();
@@ -1433,42 +1413,6 @@ const startDayTimer = () => {
   });
 };
 
-    if (dayTimerState.running && dayTimerState.startTime) {
-      const elapsed = Math.max(0, now - dayTimerState.startTime);
-
-      const nextState = {
-        ...dayTimerState,
-        startTime: null,
-        running: false,
-        accumulatedMs: (dayTimerState.accumulatedMs || 0) + elapsed,
-        dayEndedAt: now,
-        lastStoppedAt: null,
-      };
-
-      setDayTimerState(nextState);
-      saveDayHistory(dateKey, {
-        startTime: nextState.dayStartedAt,
-        endTime: nextState.dayEndedAt,
-        breakMs: nextState.breakMs || 0,
-        workedMinutes: Math.floor((nextState.accumulatedMs || 0) / 60000),
-      });
-    } else {
-      const nextState = {
-        ...dayTimerState,
-        dayEndedAt: now,
-        lastStoppedAt: null,
-      };
-
-      setDayTimerState(nextState);
-      saveDayHistory(dateKey, {
-        startTime: nextState.dayStartedAt,
-        endTime: nextState.dayEndedAt,
-        breakMs: nextState.breakMs || 0,
-        workedMinutes: Math.floor((nextState.accumulatedMs || 0) / 60000),
-      });
-    }
-  };
-
   const resumeDayTimer = () => {
   if (dayTimerState.running || !dayTimerState.lastStoppedAt) return;
 
@@ -1489,20 +1433,6 @@ const startDayTimer = () => {
 
   setDayTimerState(nextState);
 };
-
-    const nextState = {
-      ...dayTimerState,
-      startTime: now,
-      running: true,
-      breakMs:
-        (dayTimerState.breakMs || 0) +
-        (dayTimerState.lastStoppedAt ? Math.max(0, now - dayTimerState.lastStoppedAt) : 0),
-      dayEndedAt: null,
-      lastStoppedAt: null,
-    };
-
-    setDayTimerState(nextState);
-  };
 
   const resetDayTimer = () => {
     setDayTimerState({
