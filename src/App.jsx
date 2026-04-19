@@ -2083,40 +2083,51 @@ const selectedStatsDayEarned = useMemo(() => {
                         </div>
                       ) : (
                         <>
+                        
                           <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10, marginBottom: 12 }}>
-                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                              <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
-                              <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
-                            </div>
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Tími</div>
+    <div style={{ fontWeight: 900 }}>{minsToText(log.minutes)}</div>
+  </div>
 
-                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                              <div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div>
-                              <div style={{ fontWeight: 900 }}>{kr(log.earned)}</div>
-                            </div>
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Græddi</div>
+    <div style={{ fontWeight: 900 }}>{kr(log.earned)}</div>
+  </div>
 
-                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                              <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
-                              <div style={{ fontWeight: 900 }}>
-                                {log.pricing === "hourly"
-                                  ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}`
-                                  : "Fast verð"}
-                              </div>
-                            </div>
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Tegund</div>
+    <div style={{ fontWeight: 900 }}>
+      {log.pricing === "hourly"
+        ? `Tímakaup ${log.hourlyRate ? `(${kr(log.hourlyRate)}/klst)` : ""}`
+        : "Fast verð"}
+    </div>
+  </div>
 
-                            <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
-                              <div style={{ color: "#64748b", fontSize: 13 }}>Verk</div>
-                              <div style={{ fontWeight: 900 }}>
-                                {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
-                                  ? "🧹"
-                                  : (log.note || "").toLowerCase().includes("blóm")
-                                  ? "🌸"
-                                  : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
-                                  ? "✂️"
-                                  : "🌿"}{" "}
-                                {log.note || "Garðsláttur"}
-                              </div>
-                            </div>
-                          </div>
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Verk</div>
+    <div style={{ fontWeight: 900 }}>
+      {(log.note || "").toLowerCase().includes("sópa") || (log.note || "").toLowerCase().includes("þrif")
+        ? "🧹"
+        : (log.note || "").toLowerCase().includes("blóm")
+        ? "🌸"
+        : (log.note || "").toLowerCase().includes("slátt") || (log.note || "").toLowerCase().includes("gras")
+        ? "✂️"
+        : "🌿"}{" "}
+      {log.note || "Garðsláttur"}
+    </div>
+  </div>
+
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Frá</div>
+    <div style={{ fontWeight: 900 }}>{log.startTime || "--:--"}</div>
+  </div>
+
+  <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
+    <div style={{ color: "#64748b", fontSize: 13 }}>Til</div>
+    <div style={{ fontWeight: 900 }}>{log.endTime || "--:--"}</div>
+  </div>
+</div>
 
                           <div style={{ display: "flex", justifyContent: "space-between", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
                             <label style={{ display: "flex", alignItems: "center", gap: 10, fontWeight: 700, color: "#334155" }}>
