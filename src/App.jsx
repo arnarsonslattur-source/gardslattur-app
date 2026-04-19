@@ -221,60 +221,6 @@ function formatDayWithWeekday(dateStr) {
   return `${weekday} ${dayMonth}`;
 }
 
-function formatWeekRange(days) {
-  if (!days || days.length === 0) return "";
-  const sortedDays = [...days].sort((a, b) => a.date.localeCompare(b.date));
-  const first = new Date(`${sortedDays[0].date}T00:00:00`);
-  const last = new Date(`${sortedDays[sortedDays.length - 1].date}T00:00:00`);
-
-  function getWeekStartMonday(dateInput) {
-  const date = new Date(dateInput);
-  const day = date.getDay(); // Sun = 0, Mon = 1, ...
-  const diff = day === 0 ? -6 : 1 - day;
-  const monday = new Date(date);
-  monday.setDate(date.getDate() + diff);
-  monday.setHours(0, 0, 0, 0);
-  return monday;
-}
-
-function getWeekEndSunday(dateInput) {
-  const monday = getWeekStartMonday(dateInput);
-  const sunday = new Date(monday);
-  sunday.setDate(monday.getDate() + 6);
-  sunday.setHours(0, 0, 0, 0);
-  return sunday;
-}
-
-function formatWeekRangeFromDates(startDateStr, endDateStr) {
-  if (!startDateStr || !endDateStr) return "";
-
-  const start = new Date(`${startDateStr}T00:00:00`);
-  const end = new Date(`${endDateStr}T00:00:00`);
-
-  const startDay = start.getDate();
-  const endDay = end.getDate();
-  const startMonth = start.toLocaleDateString("is-IS", { month: "long" });
-  const endMonth = end.toLocaleDateString("is-IS", { month: "long" });
-
-  if (startMonth === endMonth) {
-    return `${startDay}–${endDay} ${startMonth}`;
-  }
-
-  return `${startDay} ${startMonth} – ${endDay} ${endMonth}`;
-}
-
-  const firstDay = first.getDate();
-  const lastDay = last.getDate();
-  const firstMonth = first.toLocaleDateString("is-IS", { month: "long" });
-  const lastMonth = last.toLocaleDateString("is-IS", { month: "long" });
-
-  if (firstMonth === lastMonth) {
-    return `${firstDay}–${lastDay} ${firstMonth}`;
-  }
-
-  return `${firstDay} ${firstMonth} – ${lastDay} ${lastMonth}`;
-}
-
 function getTodayLocal() {
   const now = new Date();
   const offset = now.getTimezoneOffset() * 60000;
