@@ -903,6 +903,59 @@ useEffect(() => {
   }, [expenses]);
 
   useEffect(() => {
+  try {
+    localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses));
+  } catch {}
+}, [expenses]);
+
+useEffect(() => {
+  const todayKey = getTodayLocal();
+
+  if (!dayTimerState.currentDate || dayTimerState.currentDate === todayKey) return;
+
+  const oldDateKey = dayTimerState.currentDate;
+
+  let finalEndTime = dayTimerState.dayEndedAt || dayTimerState.lastStoppedAt || null;
+
+  if (dayTimerState.running) {
+    finalEndTime = Date.now();
+  }
+
+  if (dayTimerState.dayStartedAt && finalEndTime) {
+    const workedMinutes = Math.max(
+      0,
+      Math.round(
+        (finalEndTime - dayTimerState.dayStartedAt - (dayTimerState.breakMs || 0)) / 60000
+      )
+    );
+
+    saveDayHistory(oldDateKey, {
+      startTime: dayTimerState.dayStartedAt,
+      endTime: finalEndTime,
+      breakMs: dayTimerState.breakMs || 0,
+      workedMinutes,
+    });
+  }
+
+  setDayTimerState({
+    startTime: null,
+    running: false,
+    accumulatedMs: 0,
+    dayStartedAt: null,
+    dayEndedAt: null,
+    breakMs: 0,
+    lastStoppedAt: null,
+    currentDate: todayKey,
+  });
+}, [dayTimerState.currentDate]);
+
+useEffect(() => {
+  if (!dayTimerState.running) return;
+  const interval = setInterval(() => setTimerNow(Date.now()), 1000);
+  return () => clearInterval(interval);
+}, [dayTimerState.running]);
+
+  useEffect(() => {
     if (!dayTimerState.running) return;
     const interval = setInterval(() => setTimerNow(Date.now()), 1000);
     return () => clearInterval(interval);
@@ -1418,9 +1471,46 @@ const addCustomer = () => {
   };
 
   const saveDayTimerEdit = () => {
-    const dateKey = selectedDay || getTodayLocal();
-    const history = dayHistory[dateKey];
-    if (!history?.startTime || !dayTimerEditForm.start) return;
+  const dateKey = selectedDay || getTodayLocal();
+  const history = dayHistory[dateKey];
+  if (!history?.startTime || !dayTimerEditForm.start) return;
+
+  const newStartedAt = setTimestampTime(history.startTime, dayTimerEditForm.start);
+
+  const endBase = history.endTime || history.startTime;
+  const newEndedAt = dayTimerEditForm.end
+    ? setTimestampTime(endBase, dayTimerEditForm.end)
+    : null;
+
+  const breakMs = Number(dayTimerEditForm.pauseMinutes || 0) * 60000;
+
+  const workedMinutes =
+    newStartedAt && newEndedAt
+      ? Math.max(0, Math.round((newEndedAt - newStartedAt - breakMs) / 60000))
+      : 0;
+
+  saveDayHistory(dateKey, {
+    startTime: newStartedAt,
+    endTime: newEndedAt,
+    breakMs,
+    workedMinutes,
+  });
+
+  if ((dayTimerState.currentDate || getTodayLocal()) === dateKey) {
+    setDayTimerState((prev) => ({
+      ...prev,
+      dayStartedAt: newStartedAt,
+      dayEndedAt: newEndedAt,
+      breakMs,
+      running: false,
+      startTime: null,
+      lastStoppedAt: null,
+      accumulatedMs: 0,
+    }));
+  }
+
+  setEditingDayTimer(false);
+};
 
     const newStartedAt = setTimestampTime(history.startTime, dayTimerEditForm.start);
     const baseEnd = history.endTime || history.startTime;
@@ -1521,10 +1611,19 @@ const addCustomer = () => {
     .filter(Boolean);
 
   const dayTimerMinutes = useMemo(() => {
-    const runningMs =
-      dayTimerState.running && dayTimerState.startTime ? Math.max(0, timerNow - dayTimerState.startTime) : 0;
-    return Math.floor(((dayTimerState.accumulatedMs || 0) + runningMs) / 60000);
-  }, [dayTimerState, timerNow]);
+  if (!dayTimerState.dayStartedAt) return 0;
+
+  const effectiveEnd = dayTimerState.running
+    ? timerNow
+    : dayTimerState.dayEndedAt || dayTimerState.lastStoppedAt || timerNow;
+
+  return Math.max(
+    0,
+    Math.round(
+      (effectiveEnd - dayTimerState.dayStartedAt - (dayTimerState.breakMs || 0)) / 60000
+    )
+  );
+}, [dayTimerState, timerNow]);
 
   const logsByDate = useMemo(() => {
     const map = {};
