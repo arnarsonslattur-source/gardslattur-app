@@ -1336,35 +1336,61 @@ const addCustomer = () => {
     const diffMinutes = (endTime - timerState.dayStartedAt) / 60000;
     return Math.max(0, Math.round(diffMinutes - (timerState.breakMs || 0) / 60000));
   };
+const startDayTimer = () => {
+  const now = Date.now();
+  const todayKey = getTodayLocal();
+  setTimerNow(now);
 
-  const startDayTimer = () => {
-    const now = Date.now();
-    const todayKey = getTodayLocal();
-    setTimerNow(now);
-
-    const nextState = {
-      startTime: now,
-      running: true,
-      accumulatedMs: 0,
-      dayStartedAt: now,
-      dayEndedAt: null,
-      breakMs: 0,
-      lastStoppedAt: null,
-      currentDate: todayKey,
-    };
-
-    setDayTimerState(nextState);
-    saveDayHistory(todayKey, {
-      startTime: now,
-      endTime: null,
-      breakMs: 0,
-      workedMinutes: 0,
-    });
+  const nextState = {
+    startTime: now,
+    running: true,
+    accumulatedMs: 0,
+    dayStartedAt: now,
+    dayEndedAt: null,
+    breakMs: 0,
+    lastStoppedAt: null,
+    currentDate: todayKey,
   };
 
-  const pauseDayTimer = () => {
-    if (!dayTimerState.startTime) return;
+  setDayTimerState(nextState);
 
+  saveDayHistory(todayKey, {
+    startTime: now,
+    endTime: null,
+    breakMs: 0,
+    workedMinutes: 0,
+  });
+};
+  
+  const pauseDayTimer = () => {
+  if (!dayTimerState.running || !dayTimerState.startTime) return;
+
+  const now = Date.now();
+
+  const nextState = {
+    ...dayTimerState,
+    running: false,
+    startTime: null,
+    lastStoppedAt: now,
+    dayEndedAt: null,
+    accumulatedMs: 0,
+  };
+
+  setDayTimerState(nextState);
+
+  saveDayHistory(nextState.currentDate || getTodayLocal(), {
+    startTime: nextState.dayStartedAt,
+    endTime: now,
+    breakMs: nextState.breakMs || 0,
+    workedMinutes: Math.max(
+      0,
+      Math.round(
+        (now - nextState.dayStartedAt - (nextState.breakMs || 0)) / 60000
+      )
+    ),
+  });
+};
+  
     const now = Date.now();
     const elapsed = Math.max(0, now - dayTimerState.startTime);
 
@@ -1385,9 +1411,39 @@ const addCustomer = () => {
     });
   };
 
-  const finishDayTimer = () => {
-    const now = Date.now();
-    const dateKey = dayTimerState.currentDate || getTodayLocal();
+ const finishDayTimer = () => {
+  if (!dayTimerState.dayStartedAt) return;
+
+  const now = Date.now();
+  const dateKey = dayTimerState.currentDate || getTodayLocal();
+
+  const endTime = dayTimerState.running
+    ? now
+    : dayTimerState.lastStoppedAt || now;
+
+  const nextState = {
+    ...dayTimerState,
+    running: false,
+    startTime: null,
+    dayEndedAt: endTime,
+    lastStoppedAt: null,
+    accumulatedMs: 0,
+  };
+
+  setDayTimerState(nextState);
+
+  saveDayHistory(dateKey, {
+    startTime: nextState.dayStartedAt,
+    endTime,
+    breakMs: nextState.breakMs || 0,
+    workedMinutes: Math.max(
+      0,
+      Math.round(
+        (endTime - nextState.dayStartedAt - (nextState.breakMs || 0)) / 60000
+      )
+    ),
+  });
+};
 
     if (dayTimerState.running && dayTimerState.startTime) {
       const elapsed = Math.max(0, now - dayTimerState.startTime);
@@ -1426,8 +1482,25 @@ const addCustomer = () => {
   };
 
   const resumeDayTimer = () => {
-    const now = Date.now();
-    setTimerNow(now);
+  if (dayTimerState.running || !dayTimerState.lastStoppedAt) return;
+
+  const now = Date.now();
+  setTimerNow(now);
+
+  const extraBreak = Math.max(0, now - dayTimerState.lastStoppedAt);
+
+  const nextState = {
+    ...dayTimerState,
+    startTime: now,
+    running: true,
+    breakMs: (dayTimerState.breakMs || 0) + extraBreak,
+    dayEndedAt: null,
+    lastStoppedAt: null,
+    accumulatedMs: 0,
+  };
+
+  setDayTimerState(nextState);
+};
 
     const nextState = {
       ...dayTimerState,
