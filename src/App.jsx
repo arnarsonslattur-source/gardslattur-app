@@ -897,12 +897,6 @@ useEffect(() => {
   }, [dayHistory]);
 
   useEffect(() => {
-    try {
-      localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses));
-    } catch {}
-  }, [expenses]);
-
-  useEffect(() => {
   try {
     localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses));
   } catch {}
@@ -955,10 +949,6 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [dayTimerState.running]);
 
-  useEffect(() => {
-    if (!dayTimerState.running) return;
-    const interval = setInterval(() => setTimerNow(Date.now()), 1000);
-    return () => clearInterval(interval);
   }, [dayTimerState.running]);
 
   useEffect(() => {
