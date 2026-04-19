@@ -3,7 +3,6 @@ import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaf
 import { Html5Qrcode } from "html5-qrcode";
 import { createWorker } from "tesseract.js";
 import { createClient } from "@supabase/supabase-js";
-import React, { useEffect, useMemo, useState } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 
