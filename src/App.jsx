@@ -1381,18 +1381,27 @@ const finishDayTimer = () => {
 };
 
   const resetDayTimer = () => {
-    setDayTimerState({
-      startTime: null,
-      running: false,
-      accumulatedMs: 0,
-      dayStartedAt: null,
-      dayEndedAt: null,
-      breakMs: 0,
-      lastStoppedAt: null,
-      currentDate: getTodayLocal(),
-    });
-    setTimerNow(Date.now());
-  };
+  const todayKey = getTodayLocal();
+
+  setDayTimerState({
+    startTime: null,
+    running: false,
+    accumulatedMs: 0,
+    dayStartedAt: null,
+    dayEndedAt: null,
+    breakMs: 0,
+    lastStoppedAt: null,
+    currentDate: todayKey,
+  });
+
+  setDayHistory((prev) => {
+    const next = { ...prev };
+    delete next[todayKey];
+    return next;
+  });
+
+  setTimerNow(Date.now());
+};
 
   const startEditDayTimer = (dateKey) => {
     const history = dayHistory[dateKey];
