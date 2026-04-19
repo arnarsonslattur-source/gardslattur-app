@@ -3,8 +3,8 @@ import { MapContainer, Marker, Popup, TileLayer, useMapEvents } from "react-leaf
 import { Html5Qrcode } from "html5-qrcode";
 import { createWorker } from "tesseract.js";
 import { createClient } from "@supabase/supabase-js";
+import React, { useEffect, useMemo, useState } from "react";
 import L from "leaflet";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import "leaflet/dist/leaflet.css";
 
 const supabaseUrl = "https://raffveiqgzghorxhptbn.supabase.co";
@@ -2974,16 +2974,25 @@ const selectedStatsDayEarned = useMemo(() => {
     Tekjur eftir mánuðum
   </div>
 
-  <div style={{ width: "100%", height: 260 }}>
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={monthlyChartData}>
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip formatter={(value) => kr(value)} />
-        <Bar dataKey="tekjur" radius={[8, 8, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
+  <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 180 }}>
+    {monthlyChartData.map((m, i) => {
+      const max = Math.max(...monthlyChartData.map(x => x.tekjur), 1);
+      const height = (m.tekjur / max) * 100;
+
+      return (
+        <div key={i} style={{ flex: 1, textAlign: "center" }}>
+          <div
+            style={{
+              height: `${height}%`,
+              background: "#3b82f6",
+              borderRadius: 6,
+              transition: "0.3s",
+            }}
+          />
+          <div style={{ fontSize: 11, marginTop: 6 }}>{m.name}</div>
+        </div>
+      );
+    })}
   </div>
 </div>
         
