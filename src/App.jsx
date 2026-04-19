@@ -4,6 +4,7 @@ import { Html5Qrcode } from "html5-qrcode";
 import { createWorker } from "tesseract.js";
 import { createClient } from "@supabase/supabase-js";
 import L from "leaflet";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import "leaflet/dist/leaflet.css";
 
 const supabaseUrl = "https://raffveiqgzghorxhptbn.supabase.co";
@@ -624,6 +625,22 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
       return starterLogs;
     }
   });
+
+  const monthlyChartData = useMemo(() => {
+  return Array.from({ length: 12 }, (_, index) => {
+    const monthNumber = index + 1;
+    const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+
+    const total = logs
+      .filter((log) => log.date.startsWith(monthKey))
+      .reduce((sum, log) => sum + log.earned, 0);
+
+    return {
+      name: MONTHS[index].slice(0, 3),
+      tekjur: total,
+    };
+  });
+}, [logs, selectedStatsYear]);
 
   const [customCustomers, setCustomCustomers] = useState(() => {
     try {
@@ -2952,6 +2969,24 @@ const selectedStatsDayEarned = useMemo(() => {
           </div>
         </div>
 
+       <div style={cardStyle()}>
+  <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
+    Tekjur eftir mánuðum
+  </div>
+
+  <div style={{ width: "100%", height: 260 }}>
+    <ResponsiveContainer width="100%" height="100%">
+      <BarChart data={monthlyChartData}>
+        <CartesianGrid strokeDasharray="3 3" />
+        <XAxis dataKey="name" />
+        <YAxis />
+        <Tooltip formatter={(value) => kr(value)} />
+        <Bar dataKey="tekjur" radius={[8, 8, 0, 0]} />
+      </BarChart>
+    </ResponsiveContainer>
+  </div>
+</div>
+        
         <div style={cardStyle()}>
           <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>Hverfi</div>
           <div style={{ display: "grid", gap: 10 }}>
