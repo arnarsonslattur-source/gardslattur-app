@@ -1449,38 +1449,6 @@ const finishDayTimer = () => {
   setEditingDayTimer(false);
 };
 
-    const newStartedAt = setTimestampTime(history.startTime, dayTimerEditForm.start);
-    const baseEnd = history.endTime || history.startTime;
-    const newEndedAt = dayTimerEditForm.end
-      ? setTimestampTime(baseEnd, dayTimerEditForm.end)
-      : null;
-
-    const breakMs = Number(dayTimerEditForm.pauseMinutes || 0) * 60000;
-    const workedMinutes = newEndedAt
-      ? Math.max(0, Math.round((newEndedAt - newStartedAt - breakMs) / 60000))
-      : 0;
-
-    saveDayHistory(dateKey, {
-      startTime: newStartedAt,
-      endTime: newEndedAt,
-      breakMs,
-      workedMinutes,
-    });
-
-    if ((dayTimerState.currentDate || getTodayLocal()) === dateKey) {
-      setDayTimerState((prev) => ({
-        ...prev,
-        dayStartedAt: newStartedAt,
-        dayEndedAt: newEndedAt,
-        breakMs,
-        accumulatedMs: workedMinutes * 60000,
-        startTime: prev.running ? newStartedAt : null,
-      }));
-    }
-
-    setEditingDayTimer(false);
-  };
-
   const cancelDayTimerEdit = () => {
     setEditingDayTimer(false);
   };
