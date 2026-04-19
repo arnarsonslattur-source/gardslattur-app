@@ -949,8 +949,6 @@ useEffect(() => {
   return () => clearInterval(interval);
 }, [dayTimerState.running]);
 
-  }, [dayTimerState.running]);
-
   useEffect(() => {
     if (screen !== "Skrá") return;
     setEntry((prev) => ({
