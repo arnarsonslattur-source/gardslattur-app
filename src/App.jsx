@@ -3066,7 +3066,8 @@ const selectedStatsDayEarned = useMemo(() => {
   </div>
 </div>
 
-       <div style={cardStyle()}>
+       {/* 
+<div style={cardStyle()}>
   <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
     Tekjur eftir mánuðum
   </div>
@@ -3111,7 +3112,8 @@ const selectedStatsDayEarned = useMemo(() => {
     })}
   </div>
 </div>
-
+*/}
+      
         <div style={cardStyle()}>
   <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
     Tími eftir mánuðum
