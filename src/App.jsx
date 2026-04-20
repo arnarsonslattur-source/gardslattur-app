@@ -2973,22 +2973,41 @@ const selectedStatsDayEarned = useMemo(() => {
     Tekjur eftir mánuðum
   </div>
 
-  <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 180 }}>
+  <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 220 }}>
     {monthlyChartData.map((m, i) => {
-      const max = Math.max(...monthlyChartData.map(x => x.tekjur), 1);
-      const height = (m.tekjur / max) * 100;
+      const max = Math.max(...monthlyChartData.map((x) => x.tekjur), 1);
+      const barHeight = Math.max((m.tekjur / max) * 140, m.tekjur > 0 ? 10 : 0);
 
       return (
-        <div key={i} style={{ flex: 1, textAlign: "center" }}>
+        <div
+          key={i}
+          style={{
+            flex: 1,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#334155", marginBottom: 6 }}>
+            {m.tekjur > 0 ? `${Math.round(m.tekjur / 1000)}k` : ""}
+          </div>
+
           <div
             style={{
-              height: `${height}%`,
-              background: "#3b82f6",
-              borderRadius: 6,
+              width: "100%",
+              maxWidth: 26,
+              height: `${barHeight}px`,
+              background: "linear-gradient(180deg, #60a5fa 0%, #2563eb 100%)",
+              borderRadius: "8px 8px 0 0",
               transition: "0.3s",
             }}
           />
-          <div style={{ fontSize: 11, marginTop: 6 }}>{m.name}</div>
+
+          <div style={{ fontSize: 11, marginTop: 8, fontWeight: 700 }}>
+            {m.name}
+          </div>
         </div>
       );
     })}
