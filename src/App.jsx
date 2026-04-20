@@ -652,7 +652,7 @@ const worstCustomers = useMemo(() => {
   return [...clientCards]
     .filter((client) => client.totalMinutes > 0)
     .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
-    .slice(0, 3);
+    .slice(0, 5);
 }, [clientCards]);
 
   const monthlyTimeChartData = useMemo(() => {
