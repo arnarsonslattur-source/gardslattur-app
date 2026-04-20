@@ -641,6 +641,22 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   });
 }, [logs, selectedStatsYear]);
 
+  const monthlyTimeChartData = useMemo(() => {
+  return Array.from({ length: 12 }, (_, index) => {
+    const monthNumber = index + 1;
+    const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+
+    const totalMinutes = logs
+      .filter((log) => log.date.startsWith(monthKey))
+      .reduce((sum, log) => sum + log.minutes, 0);
+
+    return {
+      name: MONTHS[index].slice(0, 3),
+      minutes: totalMinutes,
+    };
+  });
+}, [logs, selectedStatsYear]);
+
   const [customCustomers, setCustomCustomers] = useState(() => {
     try {
       const saved = localStorage.getItem(CUSTOMER_STORAGE_KEY);
@@ -3000,6 +3016,52 @@ const selectedStatsDayEarned = useMemo(() => {
               maxWidth: 26,
               height: `${barHeight}px`,
               background: "linear-gradient(180deg, #60a5fa 0%, #2563eb 100%)",
+              borderRadius: "8px 8px 0 0",
+              transition: "0.3s",
+            }}
+          />
+
+          <div style={{ fontSize: 11, marginTop: 8, fontWeight: 700 }}>
+            {m.name}
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+        <div style={cardStyle()}>
+  <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
+    Tími eftir mánuðum
+  </div>
+
+  <div style={{ display: "flex", alignItems: "flex-end", gap: 8, height: 220 }}>
+    {monthlyTimeChartData.map((m, i) => {
+      const max = Math.max(...monthlyTimeChartData.map((x) => x.minutes), 1);
+      const barHeight = Math.max((m.minutes / max) * 140, m.minutes > 0 ? 10 : 0);
+
+      return (
+        <div
+          key={i}
+          style={{
+            flex: 1,
+            height: "100%",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "flex-end",
+            alignItems: "center",
+          }}
+        >
+          <div style={{ fontSize: 10, fontWeight: 800, color: "#334155", marginBottom: 6 }}>
+            {m.minutes > 0 ? minsToText(m.minutes) : ""}
+          </div>
+
+          <div
+            style={{
+              width: "100%",
+              maxWidth: 26,
+              height: `${barHeight}px`,
+              background: "linear-gradient(180deg, #a78bfa 0%, #7c3aed 100%)",
               borderRadius: "8px 8px 0 0",
               transition: "0.3s",
             }}
