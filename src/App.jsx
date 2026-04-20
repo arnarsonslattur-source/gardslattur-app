@@ -641,20 +641,6 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   });
 }, [logs, selectedStatsYear]);
 
-const bestCustomers = useMemo(() => {
-  return [...clientCards]
-    .filter((client) => client.totalMinutes > 0)
-    .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
-    .slice(0, 5);
-}, [clientCards]);
-
-const worstCustomers = useMemo(() => {
-  return [...clientCards]
-    .filter((client) => client.totalMinutes > 0)
-    .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
-    .slice(0, 5);
-}, [clientCards]);
-
   const monthlyTimeChartData = useMemo(() => {
   return Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
@@ -1537,6 +1523,20 @@ const finishDayTimer = () => {
       })
     );
   }, [logs, customersByArea]);
+  
+  const bestCustomers = useMemo(() => {
+  return [...clientCards]
+    .filter((client) => client.totalMinutes > 0)
+    .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
+    .slice(0, 5);
+}, [clientCards]);
+
+const worstCustomers = useMemo(() => {
+  return [...clientCards]
+    .filter((client) => client.totalMinutes > 0)
+    .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
+    .slice(0, 5);
+}, [clientCards]);
 
   const clientsByArea = useMemo(() => {
     return AREA_ORDER.map((area) => {
