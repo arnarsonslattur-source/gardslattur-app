@@ -641,6 +641,20 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   });
 }, [logs, selectedStatsYear]);
 
+const bestCustomers = useMemo(() => {
+  return [...clientCards]
+    .filter((client) => client.totalMinutes > 0)
+    .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
+    .slice(0, 5);
+}, [clientCards]);
+
+const worstCustomers = useMemo(() => {
+  return [...clientCards]
+    .filter((client) => client.totalMinutes > 0)
+    .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
+    .slice(0, 3);
+}, [clientCards]);
+
   const monthlyTimeChartData = useMemo(() => {
   return Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
@@ -2983,6 +2997,68 @@ const selectedStatsDayEarned = useMemo(() => {
             <div style={{ marginTop: 4 }}>{longestDay ? minsToText(longestDay.minutes) : "0 mín"}</div>
           </div>
         </div>
+
+<div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(260px,1fr))", gap: 12 }}>
+  <div style={cardStyle()}>
+    <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
+      🏆 Bestu kúnnarnir
+    </div>
+
+    <div style={{ display: "grid", gap: 10 }}>
+      {bestCustomers.length === 0 && <div style={{ color: "#64748b" }}>Engin gögn enn.</div>}
+
+      {bestCustomers.map((client, index) => (
+        <div
+          key={client.key}
+          style={{
+            background: "#f8fafc",
+            borderRadius: 18,
+            padding: 12,
+            border: "1px solid #e2e8f0",
+          }}
+        >
+          <div style={{ fontWeight: 900 }}>
+            #{index + 1} {client.name}
+          </div>
+          <div style={{ color: "#64748b", marginTop: 4 }}>{client.area}</div>
+          <div style={{ marginTop: 6, fontWeight: 800 }}>
+            {kr(client.calculatedHourly)}/klst
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+
+  <div style={cardStyle()}>
+    <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
+      📉 Verstu kúnnarnir
+    </div>
+
+    <div style={{ display: "grid", gap: 10 }}>
+      {worstCustomers.length === 0 && <div style={{ color: "#64748b" }}>Engin gögn enn.</div>}
+
+      {worstCustomers.map((client, index) => (
+        <div
+          key={client.key}
+          style={{
+            background: "#f8fafc",
+            borderRadius: 18,
+            padding: 12,
+            border: "1px solid #e2e8f0",
+          }}
+        >
+          <div style={{ fontWeight: 900 }}>
+            #{index + 1} {client.name}
+          </div>
+          <div style={{ color: "#64748b", marginTop: 4 }}>{client.area}</div>
+          <div style={{ marginTop: 6, fontWeight: 800 }}>
+            {kr(client.calculatedHourly)}/klst
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</div>
 
        <div style={cardStyle()}>
   <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
