@@ -3018,8 +3018,11 @@ const selectedStatsDayEarned = useMemo(() => {
           }}
         >
           <div style={{ fontWeight: 900 }}>
-            #{index + 1} {client.name}
-          </div>
+  {index === 0 && "🥇 "}
+  {index === 1 && "🥈 "}
+  {index === 2 && "🥉 "}
+  #{index + 1} {client.name}
+</div>
           <div style={{ color: "#64748b", marginTop: 4 }}>{client.area}</div>
           <div style={{ marginTop: 6, fontWeight: 800 }}>
             {kr(client.calculatedHourly)}/klst
@@ -3048,8 +3051,11 @@ const selectedStatsDayEarned = useMemo(() => {
           }}
         >
           <div style={{ fontWeight: 900 }}>
-            #{index + 1} {client.name}
-          </div>
+  {index === 0 && "😬 "}
+  {index === 1 && "⚠️ "}
+  {index === 2 && "📉 "}
+  #{index + 1} {client.name}
+</div>
           <div style={{ color: "#64748b", marginTop: 4 }}>{client.area}</div>
           <div style={{ marginTop: 6, fontWeight: 800 }}>
             {kr(client.calculatedHourly)}/klst
