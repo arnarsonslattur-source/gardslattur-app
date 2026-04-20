@@ -1528,14 +1528,14 @@ const finishDayTimer = () => {
   return [...clientCards]
     .filter((client) => client.totalMinutes > 0)
     .sort((a, b) => b.calculatedHourly - a.calculatedHourly)
-    .slice(0, 5);
+    .slice(0, 3);
 }, [clientCards]);
 
 const worstCustomers = useMemo(() => {
   return [...clientCards]
     .filter((client) => client.totalMinutes > 0)
     .sort((a, b) => a.calculatedHourly - b.calculatedHourly)
-    .slice(0, 5);
+    .slice(0, 3);
 }, [clientCards]);
 
   const clientsByArea = useMemo(() => {
