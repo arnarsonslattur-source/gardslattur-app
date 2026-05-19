@@ -1495,6 +1495,12 @@ const finishDayTimer = () => {
   };
 
   const allTotal = logs.reduce((sum, log) => sum + log.earned, 0);
+  const oneRoundTotal = useMemo(() => {
+  return Object.values(customersByArea)
+    .flat()
+    .filter((customer) => customer.pricing !== "hourly")
+    .reduce((sum, customer) => sum + customer.price, 0);
+}, [customersByArea]);
   const unpaidTotal = logs.filter((log) => !log.paid).reduce((sum, log) => sum + log.earned, 0);
   const paidTotal = logs.filter((log) => log.paid).reduce((sum, log) => sum + log.earned, 0);
   const allMinutes = logs.reduce((sum, log) => sum + log.minutes, 0);
@@ -2988,6 +2994,18 @@ const selectedStatsDayEarned = useMemo(() => {
               {highestJob ? kr(highestJob.earned) : "0 kr."}
             </div>
           </div>
+
+<div style={cardStyle({ background: "linear-gradient(135deg,#dbeafe 0%, #93c5fd 100%)" })}>
+  <div style={{ color: "#1e3a8a", fontSize: 13 }}>🔄 1 Sláttur hringur</div>
+
+  <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>
+    {kr(oneRoundTotal)}
+  </div>
+
+  <div style={{ marginTop: 4 }}>
+    Allir fastir kúnnar 1x
+  </div>
+</div>
 
           <div style={cardStyle({ background: "linear-gradient(135deg,#f5f3ff 0%, #ddd6fe 100%)" })}>
             <div style={{ color: "#5b21b6", fontSize: 13 }}>⏱️ Lengsti dagur</div>
