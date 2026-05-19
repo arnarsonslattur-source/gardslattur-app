@@ -23,7 +23,6 @@ const baseCustomersByArea = {
     { id: 7, name: "Frikki", price: 5000, pricing: "fixed" },
     { id: 8, name: "Stebbi", price: 5000, pricing: "fixed" },
     { id: 9, name: "Mamma", price: 5000, pricing: "fixed" },
-    { id: 10, name: "Júlia", price: 20000, pricing: "fixed" },
     { id: 11, name: "Dóri", price: 20000, pricing: "fixed" },
   ],
   Miðbær: [
@@ -37,6 +36,7 @@ const baseCustomersByArea = {
     { id: 17, name: "Símon", price: 6000, pricing: "fixed" },
   ],
   Baldursnes: [{ id: 18, name: "Þórður", price: 12000, pricing: "fixed" }],
+  Síðuhverfi: [],
   Toyota: [{ id: 19, name: "Toyota", price: 2000, pricing: "hourly" }],
 };
 
@@ -46,6 +46,7 @@ const AREA_ORDER = [
   "Miðbær",
   "Glerárhverfi",
   "Baldursnes",
+  "Síðuhverfi",
   "Toyota",
 ];
 
