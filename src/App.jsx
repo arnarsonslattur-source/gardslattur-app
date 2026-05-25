@@ -2655,7 +2655,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         
                 {screen === "Viðskiptavinir" && (
           <div style={{ display: "grid", gap: 16 }}>
-            {!selectedClient && clientsByArea.map((group) => {
+            {!selectedClient && (clientsByArea || []).map((group) => {
               const isOpen = expandedArea === group.area;
               return (
                 <div key={group.area} style={cardStyle({ padding: 0, overflow: "hidden" })}>
@@ -2676,7 +2676,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
 
                   {isOpen && (
                     <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
-                      {group.clients.map((client, index) => (
+                      {(group.clients || []).map((client, index) => (
                         <div key={client.key} style={{ display: "grid", gap: 10 }}>
                           {index > 0 && (
                             <div
@@ -2750,7 +2750,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               );
             })}
 
-            {selectedClientCard && (
+            {!!selectedClientCard && (
               <div style={{ display: "grid", gap: 16 }}>
                 <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>
                   ← Til baka
