@@ -532,6 +532,22 @@ async function preprocessImage(imageSrc) {
 
 function getSuggestedPrice(client) {
   if (!client.totalMinutes || client.totalMinutes === 0) return null;
+  
+  function getClientStatus(hourly) {
+  if (!hourly || hourly === 0) {
+    return { label: "Engir slættir", emoji: "•", bg: "#f1f5f9", color: "#475569" };
+  }
+  if (hourly >= 10000) {
+    return { label: "Frábært", emoji: "🟢", bg: "#dcfce7", color: "#166534" };
+  }
+  if (hourly >= 7000) {
+    return { label: "Gott", emoji: "🔵", bg: "#dbeafe", color: "#1d4ed8" };
+  }
+  if (hourly >= 4500) {
+    return { label: "Í lagi", emoji: "🟡", bg: "#fef3c7", color: "#92400e" };
+  }
+  return { label: "Of lágt", emoji: "🔴", bg: "#fee2e2", color: "#991b1b" };
+}
 
   const hourly = client.calculatedHourly;
   if (hourly >= 12000) return null;
