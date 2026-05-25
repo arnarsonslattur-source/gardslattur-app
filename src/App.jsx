@@ -1947,7 +1947,8 @@ const selectedStatsDayEarned = useMemo(() => {
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
                 {WEEK_DAYS.map((d) => (
-                  <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: "6px 0" }}>
+                  <div key={d} style={{ textAlign: "center", fontWeight: 800, color: "#64748b", padding: window.innerWidth < 768 ? "2px 0" : "6px 0",
+fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                     {d}
                   </div>
                 ))}
@@ -1966,44 +1967,91 @@ const selectedStatsDayEarned = useMemo(() => {
 
                   return (
                     <button
-                      key={cell.dateStr}
-                      onClick={() => setSelectedDay(cell.dateStr)}
-                      style={{
-                        minHeight: 104,
-                        borderRadius: 20,
-                        border: selectedDay === cell.dateStr ? "2px solid #1d4ed8" : cell.dateStr === todayDate ? "2px solid #0f172a" : "1px solid #dbe2ea",
-                        background: bg,
-                        textAlign: "left",
-                        padding: 10,
-                        cursor: "pointer",
-                      }}
-                    >
-                      <div style={{ fontWeight: 900, fontSize: 24 }}>{cell.day}</div>
+  key={cell.dateStr}
+  onClick={() => setSelectedDay(cell.dateStr)}
+  style={{
+    minHeight: isMobile ? 82 : 104,
+    aspectRatio: "1 / 1",
+    minWidth: 0,
+    overflow: "hidden",
 
-                                           <div
-                        style={{
-                          marginTop: 10,
-                          display: "flex",
-                          flexDirection: "column",
-                          gap: 4,
-                        }}
-                      >
-                        {dayLogs.map((log, i) => (
-                          <div
-                            key={log.id ?? i}
-                            style={{
-                              fontSize: 14,
-                              fontWeight: 800,
-                              color: "#0f172a",
-                              whiteSpace: "nowrap",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                            }}
-                          >
-                            {log.customer} – {log.earned.toLocaleString("is-IS")} kr.
-                          </div>
-                        ))}
-                      </div>
+    borderRadius: isMobile ? 14 : 20,
+
+    border:
+      selectedDay === cell.dateStr
+        ? "2px solid #1d4ed8"
+        : cell.dateStr === todayDate
+        ? "2px solid #0f172a"
+        : "1px solid #dbe2ea",
+
+    background: bg,
+    textAlign: "left",
+
+    padding: isMobile ? 6 : 10,
+
+    cursor: "pointer",
+  }}
+>
+                     
+                    <div
+  style={{
+    fontWeight: 900,
+    fontSize: isMobile ? 18 : 24,
+    color: "#0f172a",
+  }}
+>
+  {cell.day}
+</div>
+                    
+  style={{
+    marginTop: 8,
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    minWidth: 0,
+  }}
+>
+  {dayLogs.slice(0, window.innerWidth < 768 ? 2 : 4).map((log, i) => (
+    <div
+      key={log.id ?? i}
+      style={{
+        fontSize: window.innerWidth < 768 ? 11 : 13,
+        fontWeight: 700,
+        color: "#0f172a",
+        whiteSpace: "nowrap",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {log.customer}
+    </div>
+  ))}
+
+  {dayLogs.length > (window.innerWidth < 768 ? 2 : 4) && (
+    <div
+      style={{
+        fontSize: 11,
+        color: "#64748b",
+        fontWeight: 700,
+      }}
+    >
+      +{dayLogs.length - (window.innerWidth < 768 ? 2 : 4)}
+    </div>
+  )}
+
+  {dayLogs.length > 0 && (
+    <div
+      style={{
+        marginTop: 4,
+        fontSize: window.innerWidth < 768 ? 11 : 13,
+        fontWeight: 900,
+        color: "#2563eb",
+      }}
+    >
+      {total.toLocaleString("is-IS")} kr.
+    </div>
+  )}
+</div>
 
                     </button>
                   );
@@ -4009,7 +4057,7 @@ const selectedStatsDayEarned = useMemo(() => {
                         border: selectedPlanDay === cell.dateStr ? "2px solid #1d4ed8" : "1px solid #dbe2ea",
                         background: hasPlan ? "#dbeafe" : "#fff",
                         textAlign: "left",
-                        padding: 10,
+                        padding: window.innerWidth < 768 ? 6 : 10,
                         cursor: "pointer",
                         boxShadow: selectedPlanDay === cell.dateStr ? "0 10px 18px rgba(29,78,216,0.12)" : "none",
                         display: "flex",
