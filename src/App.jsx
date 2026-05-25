@@ -1971,8 +1971,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   key={cell.dateStr}
   onClick={() => setSelectedDay(cell.dateStr)}
   style={{
-    minHeight: isMobile ? 82 : 104,
-    aspectRatio: "1 / 1",
+    minHeight: isMobile ? 160 : 104,
     minWidth: 0,
     overflow: "hidden",
 
@@ -1997,7 +1996,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   <div
   style={{
     fontWeight: 900,
-    fontSize: isMobile ? 18 : 24,
+    fontSize: isMobile ? 12 : 13,
     color: "#0f172a",
   }}
 >
@@ -2013,7 +2012,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
     minWidth: 0,
   }}
 >
-  {dayLogs.slice(0, window.innerWidth < 768 ? 2 : 4).map((log, i) => (
+  {dayLogs.slice(0, window.innerWidth < 768 ? 4 : 4).map((log, i) => (
     <div
       key={log.id ?? i}
       style={{
