@@ -2730,7 +2730,7 @@ const selectedStatsDayEarned = useMemo(() => {
                       </div>
                     </div>
 
-                    {selectedClientCard.logs.map((log) => (
+                    {(selectedClientCard?.logs || []).map((log) => (
                       <div key={log.id} style={{ background: "#fff", border: "1px solid #e2e8f0", borderRadius: 22, padding: 14 }}>
                         <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap", alignItems: "center", marginBottom: 10 }}>
                           <div>
