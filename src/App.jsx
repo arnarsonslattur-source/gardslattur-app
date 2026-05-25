@@ -1980,56 +1980,31 @@ const selectedStatsDayEarned = useMemo(() => {
                     >
                       <div style={{ fontWeight: 900, fontSize: 24 }}>{cell.day}</div>
 
-                      <div
-  style={{
-    marginTop: 10,
-    display: "flex",
-    flexDirection: "column",
-    gap: 6,
-  }}
->
-  <div
-    style={{
-      fontSize: 15,
-      fontWeight: 800,
-      color: "#0f172a",
-    }}
-  >
-    {dayLogs.length} slættir
-  </div>
+                                           <div
+                        style={{
+                          marginTop: 10,
+                          display: "flex",
+                          flexDirection: "column",
+                          gap: 4,
+                        }}
+                      >
+                        {dayLogs.map((log, i) => (
+                          <div
+                            key={log.id ?? i}
+                            style={{
+                              fontSize: 14,
+                              fontWeight: 800,
+                              color: "#0f172a",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {log.customer} – {log.earned.toLocaleString("is-IS")} kr.
+                          </div>
+                        ))}
+                      </div>
 
-  <div
-    style={{
-      fontSize: 15,
-      fontWeight: 900,
-      color: "#2563eb",
-    }}
-  >
-    {total.toLocaleString("is-IS")} kr.
-  </div>
-
-  {history?.workedMs > 0 && (
-    <div
-      style={{
-        fontSize: 13,
-        color: "#475569",
-        fontWeight: 700,
-      }}
-    >
-      {minsToText(Math.floor(history.workedMs / 60000))}
-    </div>
-  )}
-</div>
-                      
-                      {dayLogs.length > 0 && (
-                        <div style={{ marginTop: 6, fontSize: 12, fontWeight: 800 }}>{kr(total)}</div>
-                      )}
-
-                      {!!history?.workedMinutes && (
-                        <div style={{ marginTop: 4, fontSize: 11, color: "#475569", fontWeight: 700 }}>
-                          {minsToText(history.workedMinutes)}
-                        </div>
-                      )}
                     </button>
                   );
                 })}
