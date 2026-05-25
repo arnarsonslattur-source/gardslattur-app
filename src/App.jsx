@@ -2678,7 +2678,6 @@ const selectedStatsDayEarned = useMemo(() => {
                                 >
                                   {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
                                 </div>
-                                )}
                               </div>
                             </div>
 
