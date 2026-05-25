@@ -1990,38 +1990,46 @@ const selectedStatsDayEarned = useMemo(() => {
                     >
                       <div style={{ fontWeight: 900, fontSize: 24 }}>{cell.day}</div>
 
-                      {dayLogs.slice(0, 2).map((log) => (
+                      <div
+  style={{
+    marginTop: 10,
+    display: "flex",
+    flexDirection: "column",
+    gap: 6,
+  }}
+>
   <div
-    key={log.id}
     style={{
-      fontSize: 12,
-      color: "#334155",
-      overflow: "hidden",
+      fontSize: 15,
+      fontWeight: 800,
+      color: "#0f172a",
     }}
   >
+    {dayLogs.length} slættir
+  </div>
+
+  <div
+    style={{
+      fontSize: 15,
+      fontWeight: 900,
+      color: "#2563eb",
+    }}
+  >
+    {total.toLocaleString("is-IS")} kr.
+  </div>
+
+  {history?.workedMs > 0 && (
     <div
       style={{
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
+        fontSize: 13,
+        color: "#475569",
         fontWeight: 700,
       }}
     >
-      {log.customer}
+      {minsToText(Math.floor(history.workedMs / 60000))}
     </div>
-    <div
-      style={{
-        fontSize: 11,
-        color: "#64748b",
-        whiteSpace: "nowrap",
-        overflow: "hidden",
-        textOverflow: "ellipsis",
-      }}
-    >
-      {log.startTime}–{log.endTime}
-    </div>
-  </div>
-))}
+  )}
+</div>
                       
                       {dayLogs.length > 0 && (
                         <div style={{ marginTop: 6, fontSize: 12, fontWeight: 800 }}>{kr(total)}</div>
