@@ -598,6 +598,7 @@ function formatWeekRangeFromDates(startDateStr, endDateStr) {
 }
 
 export default function App() {
+  const isMobile = window.innerWidth < 768;
   const [screen, setScreen] = useState("Í dag");
 
 const [savingLog, setSavingLog] = useState(false);  
@@ -1993,7 +1994,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   }}
 >
                      
-                    <div
+  <div
   style={{
     fontWeight: 900,
     fontSize: isMobile ? 18 : 24,
@@ -2003,6 +2004,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   {cell.day}
 </div>
                     
+  <div
   style={{
     marginTop: 8,
     display: "flex",
