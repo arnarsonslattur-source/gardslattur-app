@@ -2667,7 +2667,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                       <div>
                         <div style={{ fontSize: 28, fontWeight: 900 }}>{group.area}</div>
                         <div style={{ color: "#64748b", marginTop: 6 }}>
-                          {group.clients.length} kúnnar • {kr(group.totalEarned)} • {minsToText(group.totalMinutes)}
+                         {(group.clients || []).length} kúnnar  • {kr(group.totalEarned)} • {minsToText(group.totalMinutes)}
                         </div>
                       </div>
                       <div style={{ fontSize: 26, fontWeight: 900, color: "#1d4ed8" }}>{isOpen ? "−" : "+"}</div>
@@ -2677,7 +2677,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                   {isOpen && (
                     <div style={{ padding: "0 18px 18px", display: "grid", gap: 10 }}>
                       {(group.clients || []).map((client, index) => (
-                        <div key={client.key} style={{ display: "grid", gap: 10 }}>
+                        <div key={client.id || client.name} style={{ display: "grid", gap: 10 }}>
                           {index > 0 && (
                             <div
                               style={{
@@ -2760,7 +2760,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                   <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                     <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
                     <div style={{ opacity: 0.9, marginTop: 6 }}>
-                      {selectedClientCard.area} • {selectedClientCard.logs.length} slættir
+                      {selectedClientCard.area} • (selectedClientCard.logs || []).length slættir
                     </div>
                   </div>
 
