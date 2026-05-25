@@ -2678,11 +2678,6 @@ const selectedStatsDayEarned = useMemo(() => {
                                 >
                                   {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
                                 </div>
-
-                                {getSuggestedPrice(client) && (
-                                  <div style={{ color: "#991b1b", fontWeight: 700 }}>
-                                    💰 Mælt verð: {kr(getSuggestedPrice(client))}
-                                  </div>
                                 )}
                               </div>
                             </div>
