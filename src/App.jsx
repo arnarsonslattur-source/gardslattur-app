@@ -2012,14 +2012,14 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   <div
   style={{
     fontWeight: 900,
-    fontSize: isMobile ? 12 : 13,
+    fontSize: isMobile ? 18 : 24,
     color: "#0f172a",
   }}
 >
   {cell.day}
 </div>
-                    
-  <div
+
+<div
   style={{
     marginTop: 8,
     display: "flex",
@@ -2028,11 +2028,11 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
     minWidth: 0,
   }}
 >
-  {dayLogs.slice(0, window.innerWidth < 768 ? 4 : 4).map((log, i) => (
+  {dayLogs.slice(0, isMobile ? 2 : 4).map((log, i) => (
     <div
-      key={log.id ?? i}
+      key={log.id || i}
       style={{
-        fontSize: window.innerWidth < 768 ? 11 : 13,
+        fontSize: isMobile ? 12 : 13,
         fontWeight: 700,
         color: "#0f172a",
         whiteSpace: "nowrap",
@@ -2044,7 +2044,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
     </div>
   ))}
 
-  {dayLogs.length > (window.innerWidth < 768 ? 2 : 4) && (
+  {dayLogs.length > (isMobile ? 2 : 4) && (
     <div
       style={{
         fontSize: 11,
@@ -2052,7 +2052,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         fontWeight: 700,
       }}
     >
-      +{dayLogs.length - (window.innerWidth < 768 ? 2 : 4)}
+      +{dayLogs.length - (isMobile ? 2 : 4)}
     </div>
   )}
 
@@ -2060,7 +2060,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
     <div
       style={{
         marginTop: 4,
-        fontSize: window.innerWidth < 768 ? 11 : 13,
+        fontSize: isMobile ? 11 : 13,
         fontWeight: 900,
         color: "#2563eb",
       }}
