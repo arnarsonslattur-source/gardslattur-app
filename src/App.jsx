@@ -2711,12 +2711,12 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                                   style={{
                                     padding: "8px 12px",
                                     borderRadius: 999,
-                                    background: getClientStatus(client.calculatedHourly).bg,
-                                    color: getClientStatus(client.calculatedHourly).color,
+                                    background: getClientStatus(client.calculatedHourly || 0).bg,
+                                    color: getClientStatus(client.calculatedHourly || 0).color,
                                     fontWeight: 800,
                                   }}
                                 >
-                                  {getClientStatus(client.calculatedHourly).emoji} {getClientStatus(client.calculatedHourly).label}
+                                 {getClientStatus(client.calculatedHourly || 0).emoji} {getClientStatus(client.calculatedHourly || 0).label}
                                 </div>
                               </div>
                             </div>
