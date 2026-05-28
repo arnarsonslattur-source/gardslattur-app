@@ -646,6 +646,55 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   return Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
     const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+    
+    const longestSinceMowed = useMemo(() => {
+  const allCustomers = [];
+
+  Object.entries(customersByArea).forEach(([area, customers]) => {
+    customers.forEach((customer) => {
+      const customerLogs = logs
+        .filter(
+          (log) =>
+            log.customer === customer.name &&
+            log.area === area
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.date) - new Date(a.date)
+        );
+
+      const lastLog = customerLogs[0];
+
+      if (!lastLog) {
+        allCustomers.push({
+          name: customer.name,
+          area,
+          daysSince: -1,
+          lastDate: null,
+        });
+        return;
+      }
+
+      const daysSince = Math.floor(
+        (Date.now() - new Date(lastLog.date)) /
+          (1000 * 60 * 60 * 24)
+      );
+
+      allCustomers.push({
+        name: customer.name,
+        area,
+        daysSince,
+        lastDate: lastLog.date,
+      });
+    });
+  });
+
+  return allCustomers.sort((a, b) => {
+    if (a.daysSince === -1) return 1;
+    if (b.daysSince === -1) return -1;
+    return b.daysSince - a.daysSince;
+  });
+}, [logs, customersByArea]);
 
     const totalMinutes = logs
       .filter((log) => log.date.startsWith(monthKey))
@@ -3107,6 +3156,86 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         </div>
       ))}
     </div>
+  </div>
+</div>
+
+<div style={cardStyle()}>
+  <h2 style={{ marginBottom: 16 }}>
+    ⏳ Lengst síðan slegið
+  </h2>
+
+  <div
+    style={{
+      display: "grid",
+      gap: 12,
+      maxHeight: 500,
+      overflowY: "auto",
+      paddingRight: 4,
+    }}
+  >
+    {longestSinceMowed.map((client, index) => (
+      <div
+        key={`${client.area}-${client.name}`}
+        style={cardStyle({
+          borderRadius: 20,
+          padding: 16,
+        })}
+      >
+        <div
+          style={{
+            fontSize: 18,
+            fontWeight: 800,
+          }}
+        >
+          #{index + 1} {client.name}
+        </div>
+
+        <div
+          style={{
+            color: "#64748b",
+            marginTop: 4,
+          }}
+        >
+          {client.area}
+        </div>
+
+        {client.lastDate ? (
+          <>
+            <div
+              style={{
+                marginTop: 12,
+                fontWeight: 700,
+                color: "#ef4444",
+                fontSize: 24,
+              }}
+            >
+              {client.daysSince} dagar síðan
+            </div>
+
+            <div
+              style={{
+                color: "#64748b",
+                marginTop: 4,
+              }}
+            >
+              Síðast slegið:
+              {" "}
+              {formatLongDate(client.lastDate)}
+            </div>
+          </>
+        ) : (
+          <div
+            style={{
+              marginTop: 12,
+              color: "#64748b",
+              fontWeight: 700,
+            }}
+          >
+            Ekki búið að slá enn
+          </div>
+        )}
+      </div>
+    ))}
   </div>
 </div>
 
