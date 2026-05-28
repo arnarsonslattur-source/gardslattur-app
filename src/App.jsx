@@ -3365,10 +3365,8 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                 </div>
               );
             })}
-          </div>
-        </div>
-      </>
-    )}
+         </div>
+)}
 
     {statsScreen === "months" && (
       <div style={{ display: "grid", gap: 16 }}>
@@ -3617,9 +3615,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             ))}
           </div>
         </div>
-      </div>
     )}
-  </div>
 )}
 
         {screen === "Kort" && (
