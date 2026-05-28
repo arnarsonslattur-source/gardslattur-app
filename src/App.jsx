@@ -3109,141 +3109,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   </div>
 </div>
 
-<h2 style={{ marginBottom: 16 }}>
-  ⏳ Lengst síðan slegið
-</h2>
-
-<div
-  style={{
-    display: "grid",
-    gap: 12,
-    maxHeight: 320,
-    overflowY: "auto",
-    paddingRight: 4,
-  }}
->
- {clients
-  .map((client) => {
-    const clientLogs = logs
-      .filter((log) => log.customer === client.name)
-      .sort((a, b) => new Date(b.date) - new Date(a.date));
-
-    const latestLog = clientLogs[0];
-
-    if (!latestLog) {
-      return {
-        ...client,
-        neverMowed: true,
-      };
-    }
-
-    const lastDate = new Date(latestLog.date);
-    const now = new Date();
-
-    const diffDays = Math.floor(
-      (now - lastDate) / (1000 * 60 * 60 * 24)
-    );
-
-    return {
-      ...client,
-      neverMowed: false,
-      diffDays,
-      lastDate,
-    };
-  })
-  .sort((a, b) => {
-    if (a.neverMowed) return 1;
-    if (b.neverMowed) return -1;
-    return b.diffDays - a.diffDays;
-  })
-  .map((client, i) => (
-    <div
-      key={client.name}
-      style={{
-        background: "#fff",
-        border: "1px solid #e2e8f0",
-        borderRadius: 24,
-        padding: 18,
-      }}
-    >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          gap: 16,
-          alignItems: "center",
-        }}
-      >
-        <div>
-          <div style={{ fontSize: 30, fontWeight: 900 }}>
-            {client.neverMowed ? "⚪" : "⏳"} #{i + 1} {client.name}
-          </div>
-
-          <div
-            style={{
-              color: "#64748b",
-              marginTop: 4,
-              fontSize: 20,
-            }}
-          >
-            {client.area}
-          </div>
-
-          <div
-            style={{
-              color: "#64748b",
-              marginTop: 10,
-              fontSize: 18,
-            }}
-          >
-            {client.neverMowed
-              ? "Ekki slegið enn"
-              : `Síðast slegið ${client.lastDate.toLocaleDateString(
-                  "is-IS",
-                  {
-                    day: "numeric",
-                    month: "long",
-                  }
-                )}`}
-          </div>
-        </div>
-
-        <div
-          style={{
-            textAlign: "right",
-          }}
-        >
-          <div
-            style={{
-              fontSize: 42,
-              fontWeight: 900,
-              color: client.neverMowed ? "#94a3b8" : "#dc2626",
-            }}
-          >
-            {client.neverMowed
-              ? "—"
-              : `${client.diffDays} dagar`}
-          </div>
-
-          {!client.neverMowed && (
-            <div
-              style={{
-                color: "#64748b",
-                marginTop: 4,
-                fontSize: 18,
-              }}
-            >
-              {client.lastDate.toLocaleDateString("is-IS", {
-                day: "numeric",
-                month: "long",
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
-))}
-
        <div style={cardStyle()}>
   <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
     Tekjur eftir mánuðum
@@ -3365,8 +3230,10 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                 </div>
               );
             })}
-         </div>
-)}
+          </div>
+        </div>
+      </>
+    )}
 
     {statsScreen === "months" && (
       <div style={{ display: "grid", gap: 16 }}>
@@ -3615,7 +3482,9 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             ))}
           </div>
         </div>
+      </div>
     )}
+  </div>
 )}
 
         {screen === "Kort" && (
@@ -4318,6 +4187,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
           </div>
         </div>
       </div>
+    </div>
   );
 }
         
