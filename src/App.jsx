@@ -3109,6 +3109,72 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   </div>
 </div>
 
+<div style={cardStyle()}>
+  <h2 style={{ marginBottom: 16 }}>
+    🕒 Lengstu slættirnir
+  </h2>
+
+  <div
+    style={{
+      display: "grid",
+      gap: 12,
+      maxHeight: 320,
+      overflowY: "auto",
+      paddingRight: 4,
+    }}
+  >
+    {[
+      { name: "Toyota", area: "Toyota", hours: 6.5 },
+      { name: "Óli", area: "Glerárhverfi", hours: 4.2 },
+      { name: "Linda", area: "Brekkan", hours: 3.8 },
+      { name: "Jón", area: "Naustahverfi", hours: 3.5 },
+      { name: "Anna", area: "Mánatún", hours: 3.1 },
+      { name: "Kalli", area: "Giljahverfi", hours: 2.9 },
+    ]
+      .sort((a, b) => b.hours - a.hours)
+      .map((client, index) => (
+        <div
+          key={client.name}
+          style={{
+            border: "1px solid #E5E7EB",
+            borderRadius: 24,
+            padding: 18,
+            background: "#F9FAFB",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 800,
+              fontSize: 28,
+              marginBottom: 4,
+            }}
+          >
+            🕒 #{index + 1} {client.name}
+          </div>
+
+          <div
+            style={{
+              color: "#6B7280",
+              fontSize: 22,
+              marginBottom: 10,
+            }}
+          >
+            {client.area}
+          </div>
+
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: 26,
+            }}
+          >
+            {client.hours} klst
+          </div>
+        </div>
+      ))}
+  </div>
+</div>
+
        <div style={cardStyle()}>
   <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
     Tekjur eftir mánuðum
