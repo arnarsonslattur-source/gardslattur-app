@@ -2751,9 +2751,9 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                 <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
                   <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                     <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
-                    <div style={{ opacity: 0.9, marginTop: 6 }}>
-                      {selectedClientCard.area} • (selectedClientCard.logs || []).length slættir
-                    </div>
+                   <div style={{ opacity: 0.9, marginTop: 6 }}>
+  {selectedClientCard.area} • {(selectedClientCard.logs || []).length} slættir
+</div>
                   </div>
 
                   <div style={{ padding: 14, display: "grid", gap: 12 }}>
