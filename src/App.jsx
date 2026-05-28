@@ -4311,7 +4311,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                   <div style={{ fontSize: 13, fontWeight: active ? 800 : 600, marginTop: 6 }}>
                     {item}
                   </div>
-                  </div>
                 </button>
               );
             })}
