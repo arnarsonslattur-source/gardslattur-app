@@ -3293,6 +3293,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               );
             })}
           </div>
+          </>
     )}
 
     {statsScreen === "months" && (
