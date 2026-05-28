@@ -3107,7 +3107,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
       ))}
     </div>
   </div>
-</div>
 
 <div style={cardStyle()}>
   <h2 style={{ marginBottom: 16 }}>
@@ -3123,7 +3122,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
       paddingRight: 4,
     }}
   >
-    {[...clients]
+    {[...(clients || [])]
       .map((client) => {
         const lastDate = client.lastMowed
           ? new Date(client.lastMowed)
@@ -3181,10 +3180,12 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               color: "#9CA3AF",
             }}
           >
-            {client.lastDate?.toLocaleDateString("is-IS", {
-              day: "numeric",
-              month: "long",
-            })}
+            {client.lastDate
+  ? client.lastDate.toLocaleDateString("is-IS", {
+      day: "numeric",
+      month: "long",
+    })
+  : "Aldrei"}
           </div>
         </div>
       ))}
