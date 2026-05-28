@@ -3109,21 +3109,25 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   </div>
 
 <div style={cardStyle()}>
-  <h2 style={{ marginBottom: 16 }}>
+  <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
     ⏳ Lengst síðan slegið
-  </h2>
+  </div>
 
-  <div
-    style={{
-      display: "grid",
-      gap: 12,
-      maxHeight: 320,
-      overflowY: "auto",
-      paddingRight: 4,
-    }}
-  >
-    {[...(clients || [])]
-      .map((client) => {
+  <div style={{ display: "grid", gap: 10 }}>
+    {(clients || [])
+      .sort((a, b) => {
+        const aTime = a.lastMowed
+          ? new Date(a.lastMowed).getTime()
+          : 0;
+
+        const bTime = b.lastMowed
+          ? new Date(b.lastMowed).getTime()
+          : 0;
+
+        return aTime - bTime;
+      })
+      .slice(0, 5)
+      .map((client, index) => {
         const lastDate = client.lastMowed
           ? new Date(client.lastMowed)
           : null;
@@ -3131,64 +3135,39 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         const daysAgo = lastDate
           ? Math.floor(
               (Date.now() - lastDate.getTime()) /
-                (1000 * 60 * 60 * 24)
+              (1000 * 60 * 60 * 24)
             )
-          : 999;
+          : 0;
 
-        return {
-          ...client,
-          daysAgo,
-          lastDate,
-        };
-      })
-      .sort((a, b) => b.daysAgo - a.daysAgo)
-      .slice(0, 5)
-      .map((client, index) => (
-        <div
-          key={client.id}
-          style={{
-            border: "1px solid #E5E7EB",
-            borderRadius: 24,
-            padding: 18,
-            background: "#F9FAFB",
-          }}
-        >
+        return (
           <div
+            key={index}
             style={{
-              fontWeight: 800,
-              fontSize: 28,
-              marginBottom: 10,
+              background: "#f8fafc",
+              borderRadius: 18,
+              padding: 12,
+              border: "1px solid #e2e8f0",
             }}
           >
-            ⏳ #{index + 1} {client.name}
-          </div>
+            <div style={{ fontWeight: 900 }}>
+              ⏳ #{index + 1} {client.name}
+            </div>
 
-          <div
-            style={{
-              color: "#6B7280",
-              fontSize: 22,
-              marginBottom: 4,
-            }}
-          >
-            {client.daysAgo} dagar síðan
-          </div>
+            <div style={{ color: "#64748b", marginTop: 4 }}>
+              {daysAgo} dagar síðan
+            </div>
 
-          <div
-            style={{
-              fontWeight: 600,
-              fontSize: 20,
-              color: "#9CA3AF",
-            }}
-          >
-            {client.lastDate
-  ? client.lastDate.toLocaleDateString("is-IS", {
-      day: "numeric",
-      month: "long",
-    })
-  : "Aldrei"}
+            <div style={{ color: "#94a3b8", marginTop: 2 }}>
+              {lastDate
+                ? lastDate.toLocaleDateString("is-IS", {
+                    day: "numeric",
+                    month: "long",
+                  })
+                : "Engin dagsetning"}
+            </div>
           </div>
-        </div>
-      ))}
+        );
+      })}
   </div>
 </div>
 
