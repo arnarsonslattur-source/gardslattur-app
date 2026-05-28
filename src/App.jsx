@@ -3293,7 +3293,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               );
             })}
           </div>
-        </div>
       </>
     )}
 
@@ -3546,7 +3545,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         </div>
       </div>
     )}
-  </div>
 )}
 
         {screen === "Kort" && (
