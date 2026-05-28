@@ -3111,7 +3111,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
 
 <div style={cardStyle()}>
   <h2 style={{ marginBottom: 16 }}>
-    🕒 Lengstu slættirnir
+    ⏳ Lengst síðan slegið
   </h2>
 
   <div
@@ -3123,18 +3123,30 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
       paddingRight: 4,
     }}
   >
-    {[
-      { name: "Toyota", area: "Toyota", hours: 6.5 },
-      { name: "Óli", area: "Glerárhverfi", hours: 4.2 },
-      { name: "Linda", area: "Brekkan", hours: 3.8 },
-      { name: "Jón", area: "Naustahverfi", hours: 3.5 },
-      { name: "Anna", area: "Mánatún", hours: 3.1 },
-      { name: "Kalli", area: "Giljahverfi", hours: 2.9 },
-    ]
-      .sort((a, b) => b.hours - a.hours)
+    {[...clients]
+      .map((client) => {
+        const lastDate = client.lastMowed
+          ? new Date(client.lastMowed)
+          : null;
+
+        const daysAgo = lastDate
+          ? Math.floor(
+              (Date.now() - lastDate.getTime()) /
+                (1000 * 60 * 60 * 24)
+            )
+          : 999;
+
+        return {
+          ...client,
+          daysAgo,
+          lastDate,
+        };
+      })
+      .sort((a, b) => b.daysAgo - a.daysAgo)
+      .slice(0, 5)
       .map((client, index) => (
         <div
-          key={client.name}
+          key={client.id}
           style={{
             border: "1px solid #E5E7EB",
             borderRadius: 24,
@@ -3146,29 +3158,33 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             style={{
               fontWeight: 800,
               fontSize: 28,
-              marginBottom: 4,
+              marginBottom: 10,
             }}
           >
-            🕒 #{index + 1} {client.name}
+            ⏳ #{index + 1} {client.name}
           </div>
 
           <div
             style={{
               color: "#6B7280",
               fontSize: 22,
-              marginBottom: 10,
+              marginBottom: 4,
             }}
           >
-            {client.area}
+            {client.daysAgo} dagar síðan
           </div>
 
           <div
             style={{
-              fontWeight: 700,
-              fontSize: 26,
+              fontWeight: 600,
+              fontSize: 20,
+              color: "#9CA3AF",
             }}
           >
-            {client.hours} klst
+            {client.lastDate?.toLocaleDateString("is-IS", {
+              day: "numeric",
+              month: "long",
+            })}
           </div>
         </div>
       ))}
