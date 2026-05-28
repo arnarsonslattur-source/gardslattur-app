@@ -2742,7 +2742,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               );
             })}
 
-            {!!selectedClientCard && (
+            {selectedClientCard ? (
               <div style={{ display: "grid", gap: 16 }}>
                 <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>
                   ← Til baka
@@ -2752,7 +2752,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                   <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                     <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
                    <div style={{ opacity: 0.9, marginTop: 6 }}>
-  {selectedClientCard.area} • {(selectedClientCard.logs || []).length} slættir
+  {selectedClientCard?.area} • {(selectedClientCard?.logs || []).length} slættir
 </div>
                   </div>
 
@@ -2885,7 +2885,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               </div>
             )}
           </div>
-        )}
+        ) : null}
 
         {screen === "Tölur" && (
   <div style={{ display: "grid", gap: 16 }}>
