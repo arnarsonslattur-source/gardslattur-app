@@ -23,7 +23,8 @@ const baseCustomersByArea = {
     { id: 7, name: "Frikki", price: 5000, pricing: "fixed" },
     { id: 8, name: "Stebbi", price: 5000, pricing: "fixed" },
     { id: 9, name: "Mamma", price: 5000, pricing: "fixed" },
-    { id: 11, name: "Dóri", price: 20000, pricing: "fixed" },
+    { id: 11, name: "Dóri", price: 12000, pricing: "fixed" },
+    { id: 11, name: "Dóri Brekka", price: 15000, pricing: "fixed" },
   ],
   Miðbær: [
     { id: 12, name: "Sólveig", price: 10000, pricing: "fixed" },
