@@ -2742,7 +2742,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               );
             })}
 
-            {selectedClientCard ? (
+            {!!selectedClientCard && (
               <div style={{ display: "grid", gap: 16 }}>
                 <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setSelectedClient(null)}>
                   ← Til baka
@@ -2751,9 +2751,9 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                 <div style={cardStyle({ padding: 0, overflow: "hidden" })}>
                   <div style={{ background: "linear-gradient(135deg,#0f172a 0%, #1d4ed8 100%)", color: "#fff", padding: 18 }}>
                     <div style={{ fontSize: 30, fontWeight: 900 }}>{selectedClientCard.name}</div>
-                   <div style={{ opacity: 0.9, marginTop: 6 }}>
-  {selectedClientCard?.area} • {(selectedClientCard?.logs || []).length} slættir
-</div>
+                    <div style={{ opacity: 0.9, marginTop: 6 }}>
+                      {selectedClientCard.area} • (selectedClientCard.logs || []).length slættir
+                    </div>
                   </div>
 
                   <div style={{ padding: 14, display: "grid", gap: 12 }}>
@@ -2885,7 +2885,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               </div>
             )}
           </div>
-        ) : null}
+        )}
 
         {screen === "Tölur" && (
   <div style={{ display: "grid", gap: 16 }}>
@@ -3107,67 +3107,71 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
       ))}
     </div>
   </div>
+</div>
 
 <div style={cardStyle()}>
-  <div style={{ fontSize: 24, fontWeight: 900, marginBottom: 12 }}>
-    ⏳ Lengst síðan slegið
-  </div>
+  <h2 style={{ marginBottom: 16 }}>
+    🕒 Lengstu slættirnir
+  </h2>
 
-  <div style={{ display: "grid", gap: 10 }}>
-    {(clients || [])
-      .sort((a, b) => {
-        const aTime = a.lastMowed
-          ? new Date(a.lastMowed).getTime()
-          : 0;
-
-        const bTime = b.lastMowed
-          ? new Date(b.lastMowed).getTime()
-          : 0;
-
-        return aTime - bTime;
-      })
-      .slice(0, 5)
-      .map((client, index) => {
-        const lastDate = client.lastMowed
-          ? new Date(client.lastMowed)
-          : null;
-
-        const daysAgo = lastDate
-          ? Math.floor(
-              (Date.now() - lastDate.getTime()) /
-              (1000 * 60 * 60 * 24)
-            )
-          : 0;
-
-        return (
+  <div
+    style={{
+      display: "grid",
+      gap: 12,
+      maxHeight: 320,
+      overflowY: "auto",
+      paddingRight: 4,
+    }}
+  >
+    {[
+      { name: "Toyota", area: "Toyota", hours: 6.5 },
+      { name: "Óli", area: "Glerárhverfi", hours: 4.2 },
+      { name: "Linda", area: "Brekkan", hours: 3.8 },
+      { name: "Jón", area: "Naustahverfi", hours: 3.5 },
+      { name: "Anna", area: "Mánatún", hours: 3.1 },
+      { name: "Kalli", area: "Giljahverfi", hours: 2.9 },
+    ]
+      .sort((a, b) => b.hours - a.hours)
+      .map((client, index) => (
+        <div
+          key={client.name}
+          style={{
+            border: "1px solid #E5E7EB",
+            borderRadius: 24,
+            padding: 18,
+            background: "#F9FAFB",
+          }}
+        >
           <div
-            key={index}
             style={{
-              background: "#f8fafc",
-              borderRadius: 18,
-              padding: 12,
-              border: "1px solid #e2e8f0",
+              fontWeight: 800,
+              fontSize: 28,
+              marginBottom: 4,
             }}
           >
-            <div style={{ fontWeight: 900 }}>
-              ⏳ #{index + 1} {client.name}
-            </div>
-
-            <div style={{ color: "#64748b", marginTop: 4 }}>
-              {daysAgo} dagar síðan
-            </div>
-
-            <div style={{ color: "#94a3b8", marginTop: 2 }}>
-              {lastDate
-                ? lastDate.toLocaleDateString("is-IS", {
-                    day: "numeric",
-                    month: "long",
-                  })
-                : "Engin dagsetning"}
-            </div>
+            🕒 #{index + 1} {client.name}
           </div>
-        );
-      })}
+
+          <div
+            style={{
+              color: "#6B7280",
+              fontSize: 22,
+              marginBottom: 10,
+            }}
+          >
+            {client.area}
+          </div>
+
+          <div
+            style={{
+              fontWeight: 700,
+              fontSize: 26,
+            }}
+          >
+            {client.hours} klst
+          </div>
+        </div>
+      ))}
   </div>
 </div>
 
@@ -3293,7 +3297,8 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               );
             })}
           </div>
-          </>
+        </div>
+      </>
     )}
 
     {statsScreen === "months" && (
@@ -3545,6 +3550,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         </div>
       </div>
     )}
+  </div>
 )}
 
         {screen === "Kort" && (
@@ -4246,9 +4252,9 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             })}
           </div>
         </div>
-        </div>
-  
+      </div>
+    </div>
   );
-};
+}
         
         
