@@ -843,6 +843,42 @@ useEffect(() => {
 
   loadLogs();
 }, []);
+
+  useEffect(() => {
+  const loadCustomers = async () => {
+    const { data, error } = await supabase
+      .from("custom_customers")
+      .select("*");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    if (data) {
+      setCustomCustomers(data);
+    }
+  };
+
+  loadCustomers();
+}, []);
+
+  useEffect(() => {
+  const loadCustomers = async () => {
+    const { data, error } = await supabase
+      .from("custom_customers")
+      .select("*");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setCustomCustomers(data || []);
+  };
+
+  loadCustomers();
+}, []);
   
   useEffect(() => {
     try {
@@ -1067,18 +1103,30 @@ const addLog = async () => {
   }
 };
 
-const addCustomer = () => {
+const addCustomer = async () => {
   if (!newCustomerForm.name || !newCustomerForm.price) return;
 
-  const newCustomer = {
-    id: Date.now(),
+  const customerToInsert = {
     name: newCustomerForm.name,
     area: newCustomerForm.area,
     pricing: newCustomerForm.pricing,
     price: Number(newCustomerForm.price),
   };
 
-  setCustomCustomers((prev) => [...prev, newCustomer]);
+  const { data, error } = await supabase
+    .from("custom_customers")
+    .insert([customerToInsert])
+    .select()
+    .single();
+
+  if (error) {
+    alert("Villa: " + error.message);
+    console.error(error);
+    return;
+  }
+
+  setCustomCustomers((prev) => [...prev, data]);
+
   setNewCustomerForm({
     name: "",
     area: "Brekkan",
