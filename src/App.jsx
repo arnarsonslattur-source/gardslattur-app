@@ -1268,19 +1268,26 @@ const addCustomer = async () => {
     if (mapCustomerKey === oldKey) setMapCustomerKey(newKey);
   };
 
-  const deleteCustomCustomer = (customerId) => {
-    const customer = customCustomers.find((c) => c.id === customerId);
-    if (!customer) return;
-    if (!window.confirm(`Eyða ${customer.name}?`)) return;
+  const deleteCustomCustomer = async (customerId) => {
+  const customer = customCustomers.find((c) => c.id === customerId);
+  if (!customer) return;
 
-    const key = makeCustomerKey(customer);
+  if (!window.confirm(`Eyða ${customer.name}?`)) return;
 
-    setCustomCustomers((prev) => prev.filter((c) => c.id !== customerId));
-    setCustomerLocations((prev) => {
-      const next = { ...prev };
-      delete next[key];
-      return next;
-    });
+  const { error } = await supabase
+    .from("custom_customers")
+    .delete()
+    .eq("id", customerId);
+
+  if (error) {
+    alert("Villa: " + error.message);
+    return;
+  }
+
+  setCustomCustomers((prev) =>
+    prev.filter((c) => c.id !== customerId)
+  );
+};
 
     if (mapCustomerKey === key) setMapCustomerKey("");
   };
