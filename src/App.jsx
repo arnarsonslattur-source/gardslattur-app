@@ -910,12 +910,6 @@ useEffect(() => {
     } catch {}
   }, [dayHistory]);
 
-  useEffect(() => {
-  try {
-    localStorage.setItem(EXPENSE_STORAGE_KEY, JSON.stringify(expenses));
-  } catch {}
-}, [expenses]);
-
 useEffect(() => {
   const todayKey = getTodayLocal();
 
@@ -1187,38 +1181,61 @@ const addCustomer = async () => {
     }
   };
 
-  const addExpense = (source = "manual") => {
-    if (!expenseForm.amount || !expenseForm.date) return;
+const addExpense = async (source = "manual") => {
+  if (!expenseForm.amount || !expenseForm.date) return;
 
-    setExpenses((prev) => [
-      {
-        id: Date.now(),
-        date: expenseForm.date,
-        amount: Number(expenseForm.amount),
-        category: expenseForm.category,
-        fuelType: expenseForm.category === "fuel" ? expenseForm.fuelType : null,
-        note: expenseForm.note,
-        source,
-        createdAt: new Date().toISOString(),
-      },
-      ...prev,
-    ]);
-
-    setExpenseForm((prev) => ({
-      ...prev,
-      date: getTodayLocal(),
-      amount: "",
-      note: "",
-    }));
-    setScanPreview(null);
-    setReceiptText("");
-    setReceiptImage(null);
+  const newExpense = {
+    date: expenseForm.date,
+    amount: Number(expenseForm.amount),
+    category: expenseForm.category,
+    fuel_type: expenseForm.category === "fuel"
+      ? expenseForm.fuelType
+      : null,
+    note: expenseForm.note,
+    source,
   };
 
-  const deleteExpense = (id) => {
-    setExpenses((prev) => prev.filter((expense) => expense.id !== id));
-  };
+  const { data, error } = await supabase
+    .from("expenses")
+    .insert(newExpense)
+    .select()
+    .single();
 
+  if (error) {
+    alert("Villa: " + error.message);
+    return;
+  }
+
+  setExpenses((prev) => [data, ...prev]);
+
+  setExpenseForm((prev) => ({
+    ...prev,
+    date: getTodayLocal(),
+    amount: "",
+    note: "",
+  }));
+
+  setScanPreview(null);
+  setReceiptText("");
+  setReceiptImage(null);
+};
+  
+const deleteExpense = async (id) => {
+  const { error } = await supabase
+    .from("expenses")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert("Villa: " + error.message);
+    return;
+  }
+
+  setExpenses((prev) =>
+    prev.filter((expense) => expense.id !== id)
+  );
+};
+  
   const handleQrDetected = (decodedText) => {
     const parsed = parseIcelandicReceiptQr(decodedText);
     setScanError("");
