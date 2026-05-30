@@ -1255,8 +1255,29 @@ const addCustomer = async () => {
     };
     const newKey = makeCustomerKey(updatedCustomer);
 
-    setCustomCustomers((prev) => prev.map((c) => (c.id === customerId ? updatedCustomer : c)));
+    const saveCustomer = async () => {
+  const { error } = await supabase
+    .from("custom_customers")
+    .update({
+      name: updatedCustomer.name,
+      area: updatedCustomer.area,
+      pricing: updatedCustomer.pricing,
+      price: updatedCustomer.price,
+    })
+    .eq("id", customerId);
 
+  if (error) {
+    alert("Villa: " + error.message);
+    return;
+  }
+
+  setCustomCustomers((prev) =>
+    prev.map((c) => (c.id === customerId ? updatedCustomer : c))
+  );
+};
+
+saveCustomer();
+    
     setCustomerLocations((prev) => {
       if (!prev[oldKey]) return prev;
       const next = { ...prev };
@@ -1289,8 +1310,26 @@ const addCustomer = async () => {
   );
 };
 
-  const togglePaid = (id) =>
-    setLogs((prev) => prev.map((log) => (log.id === id ? { ...log, paid: !log.paid } : log)));
+  const togglePaid = async (id) => {
+  const currentLog = logs.find((log) => log.id === id);
+  if (!currentLog) return;
+
+  const { error } = await supabase
+    .from("logs")
+    .update({ paid: !currentLog.paid })
+    .eq("id", id);
+
+  if (error) {
+    alert("Villa: " + error.message);
+    return;
+  }
+
+  setLogs((prev) =>
+    prev.map((log) =>
+      log.id === id ? { ...log, paid: !log.paid } : log
+    )
+  );
+};
 
   const deleteLog = async (id) => {
   const { error } = await supabase
@@ -1321,30 +1360,51 @@ const addCustomer = async () => {
     });
   };
 
-  const saveEditLog = () => {
-    if (!editingLogId) return;
+const saveEditLog = async () => {
+  if (!editingLogId) return;
 
-    setLogs((prev) =>
-      prev.map((log) =>
-        log.id === editingLogId
-          ? {
-              ...log,
-              customer: editForm.customer,
-              date: editForm.date,
-              startTime: editForm.startTime,
-              endTime: editForm.endTime,
-              minutes: minutesBetween(editForm.startTime, editForm.endTime),
-              earned: Number(editForm.earned),
-              note: editForm.note || "Garðsláttur",
-              paid: editForm.paid,
-            }
-          : log
-      )
-    );
-
-    setEditingLogId(null);
+  const updatedLog = {
+    customer: editForm.customer,
+    date: editForm.date,
+    start_time: editForm.startTime,
+    end_time: editForm.endTime,
+    minutes: minutesBetween(editForm.startTime, editForm.endTime),
+    earned: Number(editForm.earned),
+    note: editForm.note || "Garðsláttur",
+    paid: editForm.paid,
   };
 
+  const { error } = await supabase
+    .from("logs")
+    .update(updatedLog)
+    .eq("id", editingLogId);
+
+  if (error) {
+    alert("Villa: " + error.message);
+    return;
+  }
+
+  setLogs((prev) =>
+    prev.map((log) =>
+      log.id === editingLogId
+        ? {
+            ...log,
+            customer: editForm.customer,
+            date: editForm.date,
+            startTime: editForm.startTime,
+            endTime: editForm.endTime,
+            minutes: minutesBetween(editForm.startTime, editForm.endTime),
+            earned: Number(editForm.earned),
+            note: editForm.note || "Garðsláttur",
+            paid: editForm.paid,
+          }
+        : log
+    )
+  );
+
+  setEditingLogId(null);
+};
+  
   const cancelEdit = () => setEditingLogId(null);
 
   const getLiveWorkedMinutes = (timerState, nowOverride = null) => {
