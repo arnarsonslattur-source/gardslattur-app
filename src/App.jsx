@@ -1192,7 +1192,6 @@ const addExpense = async (source = "manual") => {
       ? expenseForm.fuelType
       : null,
     note: expenseForm.note,
-    source,
   };
 
   const { data, error } = await supabase
