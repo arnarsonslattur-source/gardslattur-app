@@ -1289,9 +1289,6 @@ const addCustomer = async () => {
   );
 };
 
-    if (mapCustomerKey === key) setMapCustomerKey("");
-  };
-
   const togglePaid = (id) =>
     setLogs((prev) => prev.map((log) => (log.id === id ? { ...log, paid: !log.paid } : log)));
 
