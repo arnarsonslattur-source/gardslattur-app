@@ -1319,6 +1319,9 @@ saveCustomer();
     .update({ paid: !currentLog.paid })
     .eq("id", id);
 
+    console.log("togglePaid", id, !currentLog.paid);
+console.log("supabase error", error);
+
   if (error) {
     alert("Villa: " + error.message);
     return;
