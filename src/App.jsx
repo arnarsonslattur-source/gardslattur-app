@@ -886,6 +886,29 @@ useEffect(() => {
     } catch {}
   }, [customCustomers]);
 
+useEffect(() => {
+  const loadPlanEntries = async () => {
+    const { data, error } = await supabase
+      .from("plan_entries")
+      .select("*");
+
+    if (error) {
+      console.error("Villa að sækja plan_entries:", error);
+      return;
+    }
+
+    const plans = {};
+
+    (data || []).forEach((row) => {
+      plans[row.date_key] = row.data?.text || "";
+    });
+
+    setPlanEntries(plans);
+  };
+
+  loadPlanEntries();
+}, []);
+  
   useEffect(() => {
     try {
       localStorage.setItem(PLAN_STORAGE_KEY, JSON.stringify(planEntries));
