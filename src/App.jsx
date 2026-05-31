@@ -1868,13 +1868,31 @@ const statsMonths = useMemo(() => {
 
   const selectedMapCustomer = allCustomers.find((c) => c.key === mapCustomerKey) || null;
 
-  const setCustomerLocation = (latlng) => {
-    if (!selectedMapCustomer) return;
-    setCustomerLocations((prev) => ({
-      ...prev,
-      [selectedMapCustomer.key]: { lat: Number(latlng.lat.toFixed(6)), lng: Number(latlng.lng.toFixed(6)) },
-    }));
+  const setCustomerLocation = async (latlng) => {
+  if (!selectedMapCustomer) return;
+
+  const location = {
+    lat: Number(latlng.lat.toFixed(6)),
+    lng: Number(latlng.lng.toFixed(6)),
   };
+
+  setCustomerLocations((prev) => ({
+    ...prev,
+    [selectedMapCustomer.key]: location,
+  }));
+
+  const { error } = await supabase
+    .from("customer_locations")
+    .upsert({
+      customer_key: selectedMapCustomer.key,
+      lat: location.lat,
+      lng: location.lng,
+    });
+
+  if (error) {
+    console.error(error);
+  }
+};
 
   const clearCustomerLocation = () => {
     if (!selectedMapCustomer) return;
