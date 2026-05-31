@@ -4256,10 +4256,27 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                   style={{ ...inputStyle(), minHeight: 120, resize: "vertical" }}
                   placeholder={"T.d. Kaldbakur\nStebbi\nHalla"}
                   value={selectedPlanText}
-                  onChange={(e) => {
-                    if (!selectedPlanDay) return;
-                    setPlanEntries((prev) => ({ ...prev, [selectedPlanDay]: e.target.value }));
-                  }}
+                  onChange={async (e) => {
+  if (!selectedPlanDay) return;
+
+  const text = e.target.value;
+
+  setPlanEntries((prev) => ({
+    ...prev,
+    [selectedPlanDay]: text,
+  }));
+
+  const { error } = await supabase
+    .from("plan_entries")
+    .upsert({
+      date_key: selectedPlanDay,
+      data: { text },
+    });
+
+  if (error) {
+    console.error(error);
+  }
+}}
                   disabled={!selectedPlanDay}
                 />
               </div>
