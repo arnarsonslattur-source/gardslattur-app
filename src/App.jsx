@@ -879,6 +879,32 @@ useEffect(() => {
 
   loadCustomers();
 }, []);
+
+  useEffect(() => {
+  const loadCustomerLocations = async () => {
+    const { data, error } = await supabase
+      .from("customer_locations")
+      .select("*");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const locations = {};
+
+    (data || []).forEach((row) => {
+      locations[row.customer_key] = {
+        lat: Number(row.lat),
+        lng: Number(row.lng),
+      };
+    });
+
+    setCustomerLocations(locations);
+  };
+
+  loadCustomerLocations();
+}, []);
   
   useEffect(() => {
     try {
