@@ -1997,6 +1997,39 @@ const statsMonths = useMemo(() => {
       .filter((group) => group.items.length > 0);
   }, [expensesSortedNewest]);
 
+const customersToMow = useMemo(() => {
+  const today = new Date();
+
+  return allCustomers
+    .map((customer) => {
+      const customerLogs = logs
+        .filter((log) => log.customer === customer.name)
+        .sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      const lastLog = customerLogs[0];
+
+      if (!lastLog) {
+        return {
+          ...customer,
+          daysSince: 999,
+          lastDate: "Aldrei",
+        };
+      }
+
+      const lastDate = new Date(lastLog.date);
+      const daysSince = Math.floor(
+        (today - lastDate) / (1000 * 60 * 60 * 24)
+      );
+
+      return {
+        ...customer,
+        daysSince,
+        lastDate: lastLog.date,
+      };
+    })
+    .sort((a, b) => b.daysSince - a.daysSince);
+}, [allCustomers, logs]);
+  
   const bestDay = useMemo(() => {
     const grouped = {};
     logs.forEach((log) => {
@@ -3817,6 +3850,48 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
           </div>
         )}
 
+        {screen === "Kúnnar sem þarf að slá" && (
+  <div style={{ display: "grid", gap: 16 }}>
+    <button
+      style={{ ...buttonStyle(false), width: "fit-content" }}
+      onClick={() => setScreen("Meira")}
+    >
+      ← Til baka
+    </button>
+
+    {customersToMow.map((customer) => {
+      const bg =
+        customer.daysSince >= 13
+          ? "#fee2e2"
+          : customer.daysSince >= 9
+          ? "#fef3c7"
+          : "#dcfce7";
+
+      return (
+        <div
+          key={customer.key}
+          style={{
+            ...cardStyle(),
+            background: bg,
+          }}
+        >
+          <div style={{ fontSize: 24, fontWeight: 900 }}>
+            {customer.name}
+          </div>
+
+          <div style={{ color: "#64748b", marginTop: 4 }}>
+            Síðast slegið: {customer.lastDate}
+          </div>
+
+          <div style={{ fontWeight: 900, marginTop: 6 }}>
+            Fyrir {customer.daysSince} dögum
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+
         {screen === "Kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>
@@ -4239,6 +4314,25 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                 background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
               }}
             >
+
+              <button
+  onClick={() => setScreen("Kúnnar sem þarf að slá")}
+  style={{
+    ...cardStyle(),
+    cursor: "pointer",
+    textAlign: "left",
+    border: "1px solid #dbeafe",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+  }}
+>
+  <div style={{ fontSize: 26, fontWeight: 900 }}>
+    🌱 Kúnnar sem þarf að slá
+  </div>
+  <div style={{ color: "#64748b", marginTop: 6 }}>
+    Sjá hvaða kúnna þarf líklega að slá næst
+  </div>
+</button>
+              
               <div style={{ fontSize: 26, fontWeight: 900 }}>⛽ Kostnaður</div>
               <div style={{ color: "#64748b", marginTop: 6 }}>Skrá, skanna og skoða kostnað</div>
             </button>
