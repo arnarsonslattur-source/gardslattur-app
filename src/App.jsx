@@ -1054,18 +1054,33 @@ useEffect(() => {
     }));
   };
 
-  const saveDayHistory = (dateKey, data) => {
-    if (!dateKey) return;
-    setDayHistory((prev) => ({
-      ...prev,
-      [dateKey]: {
+const saveDayHistory = async (dateKey, data) => {
+  if (!dateKey) return;
+
+  setDayHistory((prev) => ({
+    ...prev,
+    [dateKey]: {
+      date: dateKey,
+      ...prev[dateKey],
+      ...data,
+    },
+  }));
+
+  const { error } = await supabase
+    .from("day_history")
+    .upsert({
+      date_key: dateKey,
+      data: {
         date: dateKey,
-        ...prev[dateKey],
         ...data,
       },
-    }));
-  };
+    });
 
+  if (error) {
+    console.error(error);
+  }
+};
+  
   const getWorkedMinutesFromHistory = (dateKey) => {
     return dayHistory[dateKey]?.workedMinutes || 0;
   };
