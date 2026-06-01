@@ -4305,17 +4305,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             </button>
 
             <button
-              onClick={() => setScreen("Kostnaður")}
-              style={{
-                ...cardStyle(),
-                cursor: "pointer",
-                textAlign: "left",
-                border: "1px solid #dbeafe",
-                background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
-              }}
-            >
-
-              <button
   onClick={() => setScreen("Kúnnar sem þarf að slá")}
   style={{
     ...cardStyle(),
@@ -4332,11 +4321,23 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
     Sjá hvaða kúnna þarf líklega að slá næst
   </div>
 </button>
-              
-              <div style={{ fontSize: 26, fontWeight: 900 }}>⛽ Kostnaður</div>
-              <div style={{ color: "#64748b", marginTop: 6 }}>Skrá, skanna og skoða kostnað</div>
-            </button>
 
+<button
+  onClick={() => setScreen("Kostnaður")}
+  style={{
+    ...cardStyle(),
+    cursor: "pointer",
+    textAlign: "left",
+    border: "1px solid #dbeafe",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+  }}
+>
+  <div style={{ fontSize: 26, fontWeight: 900 }}>⛽ Kostnaður</div>
+  <div style={{ color: "#64748b", marginTop: 6 }}>
+    Skrá, skanna og skoða kostnað
+  </div>
+</button>
+            
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Bæta við kúnna</div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12 }}>
