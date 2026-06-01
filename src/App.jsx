@@ -2011,8 +2011,9 @@ const customersToMow = useMemo(() => {
       if (!lastLog) {
         return {
           ...customer,
-          daysSince: 999,
-          lastDate: "Aldrei",
+          daysSince: -1,
+lastDate: "Aldrei",
+neverMowed: true,
         };
       }
 
@@ -2027,7 +2028,11 @@ const customersToMow = useMemo(() => {
         lastDate: lastLog.date,
       };
     })
-    .sort((a, b) => b.daysSince - a.daysSince);
+    .sort((a, b) => {
+  if (a.neverMowed && !b.neverMowed) return 1;
+  if (!a.neverMowed && b.neverMowed) return -1;
+  return b.daysSince - a.daysSince;
+});
 }, [allCustomers, logs]);
   
   const bestDay = useMemo(() => {
@@ -3861,12 +3866,14 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
 
     {customersToMow.map((customer) => {
       const bg =
-        customer.daysSince >= 13
-          ? "#fee2e2"
-          : customer.daysSince >= 9
-          ? "#fef3c7"
-          : "#dcfce7";
-
+  customer.neverMowed
+    ? "#dbeafe"
+    : customer.daysSince >= 13
+    ? "#fee2e2"
+    : customer.daysSince >= 9
+    ? "#fef3c7"
+    : "#dcfce7";
+    
       return (
         <div
           key={customer.key}
@@ -3884,8 +3891,10 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
           </div>
 
           <div style={{ fontWeight: 900, marginTop: 6 }}>
-            Fyrir {customer.daysSince} dögum
-          </div>
+  {customer.neverMowed
+    ? "Aldrei slegið"
+    : `Fyrir ${customer.daysSince} dögum`}
+</div>
         </div>
       );
     })}
