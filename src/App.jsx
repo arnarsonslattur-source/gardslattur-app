@@ -880,7 +880,7 @@ useEffect(() => {
   loadCustomers();
 }, []);
 
-  useEffect(() => {
+ useEffect(() => {
   const loadCustomerLocations = async () => {
     const { data, error } = await supabase
       .from("customer_locations")
@@ -904,6 +904,29 @@ useEffect(() => {
   };
 
   loadCustomerLocations();
+}, []);
+
+useEffect(() => {
+  const loadDayHistory = async () => {
+    const { data, error } = await supabase
+      .from("day_history")
+      .select("*");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    const history = {};
+
+    (data || []).forEach((row) => {
+      history[row.date_key] = row.data;
+    });
+
+    setDayHistory(history);
+  };
+
+  loadDayHistory();
 }, []);
   
   useEffect(() => {
