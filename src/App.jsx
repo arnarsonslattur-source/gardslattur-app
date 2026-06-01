@@ -3822,7 +3822,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                           position={[customerLocations[customer.key].lat, customerLocations[customer.key].lng]}
                           icon={markerIcon}
                         >
-                          <Popup>
+                          <Popup> 
                             <div>
                               <strong>{customer.name}</strong>
                               <br />
