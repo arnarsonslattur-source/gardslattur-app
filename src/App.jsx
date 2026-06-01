@@ -37,7 +37,7 @@ const baseCustomersByArea = {
   ],
   Baldursnes: [{ id: 18, name: "Þórður", price: 12000, pricing: "fixed" }],
   Síðuhverfi: [],
-  Toyota: [{ id: 19, name: "Toyota", price: 2000, pricing: "hourly" }],
+  Toyota: [{ id: 19, name: "Toyota", price: 2700, pricing: "hourly" }],
 };
 
 const AREA_ORDER = [
