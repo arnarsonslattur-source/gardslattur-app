@@ -957,6 +957,23 @@ useEffect(() => {
 
   loadPlanEntries();
 }, []);
+
+  useEffect(() => {
+  const loadExpenses = async () => {
+    const { data, error } = await supabase
+      .from("expenses")
+      .select("*");
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setExpenses(data || []);
+  };
+
+  loadExpenses();
+}, []);
   
   useEffect(() => {
     try {
