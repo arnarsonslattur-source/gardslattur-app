@@ -3855,7 +3855,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
           </div>
         )}
 
-        {screen === "Kúnnar sem þarf að slá" && (
+        {screen === "Næst í garðslátt" && (
   <div style={{ display: "grid", gap: 16 }}>
     <button
       style={{ ...buttonStyle(false), width: "fit-content" }}
@@ -4314,7 +4314,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             </button>
 
             <button
-  onClick={() => setScreen("Kúnnar sem þarf að slá")}
+  onClick={() => setScreen("Næst í garðslátt")}
   style={{
     ...cardStyle(),
     cursor: "pointer",
@@ -4324,7 +4324,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   }}
 >
   <div style={{ fontSize: 26, fontWeight: 900 }}>
-    🌱 Kúnnar sem þarf að slá
+    🌱 Næst í garðslátt
   </div>
   <div style={{ color: "#64748b", marginTop: 6 }}>
     Sjá hvaða kúnna þarf líklega að slá næst
