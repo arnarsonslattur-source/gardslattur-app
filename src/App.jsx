@@ -19,8 +19,8 @@ const baseCustomersByArea = {
     { id: 5, name: "Stekkjartún", price: 28000, pricing: "fixed" },
   ],
   Giljahverfi: [
-    { id: 6, name: "Halla", price: 5000, pricing: "fixed" },
-    { id: 7, name: "Frikki", price: 5000, pricing: "fixed" },
+    { id: 6, name: "Halla", price: 6000, pricing: "fixed" },
+    { id: 7, name: "Frikki", price: 6000, pricing: "fixed" },
     { id: 8, name: "Stebbi", price: 5000, pricing: "fixed" },
     { id: 9, name: "Mamma", price: 5000, pricing: "fixed" },
     { id: 11, name: "Dóri", price: 12000, pricing: "fixed" },
