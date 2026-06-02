@@ -1671,26 +1671,45 @@ const finishDayTimer = () => {
 };
 
   const startEditDayTimer = (dateKey) => {
-    const history = dayHistory[dateKey];
-    if (!history?.startTime) return;
+  const history = dayHistory[dateKey] || {};
 
-    setSelectedDay(dateKey);
-    setDayTimerEditForm({
-      start: timestampToTimeInput(history.startTime),
-      end: timestampToTimeInput(history.endTime),
-      pauseMinutes: String(Math.floor((history.breakMs || 0) / 60000)),
-    });
-    setEditingDayTimer(true);
-  };
+  setSelectedDay(dateKey);
+
+  setDayTimerEditForm({
+    start: history.startTime
+      ? timestampToTimeInput(history.startTime)
+      : "08:00",
+
+    end: history.endTime
+      ? timestampToTimeInput(history.endTime)
+      : "17:00",
+
+    pauseMinutes: String(
+      Math.floor((history.breakMs || 0) / 60000)
+    ),
+  });
+
+  setEditingDayTimer(true);
+};
 
   const saveDayTimerEdit = () => {
   const dateKey = selectedDay || getTodayLocal();
-  const history = dayHistory[dateKey];
-  if (!history?.startTime || !dayTimerEditForm.start) return;
 
-  const newStartedAt = setTimestampTime(history.startTime, dayTimerEditForm.start);
+  if (!dayTimerEditForm.start) return;
 
-  const endBase = history.endTime || history.startTime;
+  const history = dayHistory[dateKey] || {};
+
+  const baseDate = new Date(`${dateKey}T00:00:00`);
+
+const newStartedAt = setTimestampTime(
+  history.startTime || baseDate.getTime(),
+  dayTimerEditForm.start
+);
+
+ const endBase =
+  history.endTime ||
+  history.startTime ||
+  baseDate.getTime();
   const newEndedAt = dayTimerEditForm.end
     ? setTimestampTime(endBase, dayTimerEditForm.end)
     : null;
