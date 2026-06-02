@@ -13,16 +13,15 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 const baseCustomersByArea = {
   Brekkan: [
     { id: 1, name: "Haukur", price: 10000, pricing: "fixed" },
-    { id: 2, name: "Örn", price: 10000, pricing: "fixed" },
-    { id: 3, name: "Ottó", price: 12000, pricing: "fixed" },
-    { id: 4, name: "Jonni", price: 14000, pricing: "fixed" },
-    { id: 5, name: "Stekkjartún", price: 28000, pricing: "fixed" },
+    { id: 2, name: "Örn", price: 10000, pricing: 
+    { id: 3, name: "Jonni", price: 14000, pricing: "fixed" },
+    { id: 4, name: "Stekkjartún", price: 28000, pricing: "fixed" },
   ],
   Giljahverfi: [
-    { id: 6, name: "Halla", price: 6000, pricing: "fixed" },
-    { id: 7, name: "Frikki", price: 6000, pricing: "fixed" },
-    { id: 8, name: "Stebbi", price: 5000, pricing: "fixed" },
-    { id: 9, name: "Mamma", price: 5000, pricing: "fixed" },
+    { id: 5, name: "Halla", price: 6000, pricing: "fixed" },
+    { id: 6, name: "Frikki", price: 6000, pricing: "fixed" },
+    { id: 7, name: "Stebbi", price: 5000, pricing: "fixed" },
+    { id: 8, name: "Mamma", price: 5000, pricing: "fixed" },
     { id: 11, name: "Dóri", price: 12000, pricing: "fixed" },
   ],
   Miðbær: [
