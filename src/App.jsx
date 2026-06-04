@@ -26,7 +26,7 @@ const baseCustomersByArea = {
   ],
   Miðbær: [
     { id: 12, name: "Sólveig", price: 10000, pricing: "fixed" },
-    { id: 13, name: "Harpa", price: 8000, pricing: "fixed" },
+    { id: 13, name: "Harpa", price: 10000, pricing: "fixed" },
     { id: 14, name: "Kaldbakur", price: 40000, pricing: "fixed" },
   ],
   Glerárhverfi: [
