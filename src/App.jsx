@@ -47,6 +47,7 @@ const AREA_ORDER = [
   "Baldursnes",
   "Síðuhverfi",
   "Toyota",
+  "Önnur verkefni",
 ];
 
 const STORAGE_KEY = "gardslattur-bjarka-logs-v5";
@@ -1751,7 +1752,11 @@ const newStartedAt = setTimestampTime(
   const oneRoundTotal = useMemo(() => {
   return Object.values(customersByArea)
     .flat()
-    .filter((customer) => customer.pricing !== "hourly")
+    .filter(
+      (customer) =>
+        customer.pricing !== "hourly" &&
+        customer.area !== "Önnur verkefni"
+    )
     .reduce((sum, customer) => sum + customer.price, 0);
 }, [customersByArea]);
   const unpaidTotal = logs.filter((log) => !log.paid).reduce((sum, log) => sum + log.earned, 0);
@@ -2019,7 +2024,8 @@ const customersToMow = useMemo(() => {
   const today = new Date();
 
   return allCustomers
-    .map((customer) => {
+  .filter((customer) => customer.area !== "Önnur verkefni")
+  .map((customer) => {
       const customerLogs = logs
         .filter((log) => log.customer === customer.name)
         .sort((a, b) => new Date(b.date) - new Date(a.date));
