@@ -2019,6 +2019,14 @@ const statsMonths = useMemo(() => {
       .map((category) => ({ category, items: expensesSortedNewest.filter((expense) => expense.category === category) }))
       .filter((group) => group.items.length > 0);
   }, [expensesSortedNewest]);
+  
+  const regularCustomers = customCustomers.filter(
+  (c) => c.area !== "Önnur verkefni"
+);
+
+const otherProjects = customCustomers.filter(
+  (c) => c.area === "Önnur verkefni"
+);
 
 const customersToMow = useMemo(() => {
   const today = new Date();
