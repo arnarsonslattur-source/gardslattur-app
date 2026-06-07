@@ -2437,13 +2437,14 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                     </div>
                   </div>
 
-                  {dayHistory[selectedDay]?.startTime && (
-                    <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                      <button style={buttonStyle(false)} onClick={() => startEditDayTimer(selectedDay)}>
-                        Edita dagstíma
-                      </button>
-                    </div>
-                  )}
+                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
+  <button
+    style={buttonStyle(false)}
+    onClick={() => startEditDayTimer(selectedDay)}
+  >
+    Edita dagstíma
+  </button>
+</div>
 
                   {selectedDayLogs.length === 0 && <div style={{ color: "#64748b" }}>Engar færslur þennan dag.</div>}
 
