@@ -4512,14 +4512,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna custom kúnnum</div>
               <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.</div>
-             
-              const regularCustomers = customCustomers.filter(
-  (c) => c.area !== "Önnur verkefni"
-);
-
-const otherProjects = customCustomers.filter(
-  (c) => c.area === "Önnur verkefni"
-);
               
                <div style={{ display: "grid", gap: 10 }}>
                 {customCustomers.length === 0 && <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>}
