@@ -4512,32 +4512,113 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             <div style={cardStyle()}>
               <div style={{ fontSize: 26, fontWeight: 900, marginBottom: 12 }}>Stjórna custom kúnnum</div>
               <div style={{ color: "#64748b", marginBottom: 12 }}>Hér sérðu custom kúnna sem þú hefur sjálfur bætt við.</div>
-              <div style={{ display: "grid", gap: 10 }}>
+             
+              const regularCustomers = customCustomers.filter(
+  (c) => c.area !== "Önnur verkefni"
+);
+
+const otherProjects = customCustomers.filter(
+  (c) => c.area === "Önnur verkefni"
+);
+              
+               <div style={{ display: "grid", gap: 10 }}>
                 {customCustomers.length === 0 && <div style={{ color: "#64748b" }}>Þú ert ekki búinn að bæta við custom kúnna enn.</div>}
-                {customCustomers.map((c) => (
-                  <div
-                    key={c.id}
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr auto auto",
-                      gap: 10,
-                      alignItems: "center",
-                      background: "#fff",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: 18,
-                      padding: 12,
-                    }}
-                  >
-                    <div>
-                      <div style={{ fontWeight: 900 }}>{c.name}</div>
-                      <div style={{ color: "#64748b", fontSize: 13 }}>
-                        {c.area} • {c.pricing === "hourly" ? `Tímakaup ${kr(c.price)}/klst` : `Fast verð ${kr(c.price)}`}
-                      </div>
-                    </div>
-                    <button style={buttonStyle(false)} onClick={() => updateCustomCustomer(c.id)}>Edit</button>
-                    <button style={buttonStyle(false)} onClick={() => deleteCustomCustomer(c.id)}>Eyða</button>
-                  </div>
-                ))}
+                
+                <div style={{ fontWeight: 900, fontSize: 18 }}>
+  🌱 Reglulegur garðsláttur
+</div>
+
+{regularCustomers.map((c) => (
+  <div
+    key={c.id}
+    style={{
+      display: "grid",
+      gridTemplateColumns: "1fr auto auto",
+      gap: 10,
+      alignItems: "center",
+      background: "#fff",
+      border: "1px solid #e2e8f0",
+      borderRadius: 18,
+      padding: 12,
+    }}
+  >
+    <div>
+      <div style={{ fontWeight: 900 }}>{c.name}</div>
+      <div style={{ color: "#64748b", fontSize: 13 }}>
+        {c.area} • {c.pricing === "hourly"
+          ? `Tímakaup ${kr(c.price)}/klst`
+          : `Fast verð ${kr(c.price)}`}
+      </div>
+    </div>
+
+    <button
+      style={buttonStyle(false)}
+      onClick={() => updateCustomCustomer(c.id)}
+    >
+      Edit
+    </button>
+
+    <button
+      style={buttonStyle(false)}
+      onClick={() => deleteCustomCustomer(c.id)}
+    >
+      Eyða
+    </button>
+  </div>
+))}
+
+{otherProjects.length > 0 && (
+  <>
+    <div
+      style={{
+        fontWeight: 900,
+        fontSize: 18,
+        marginTop: 16,
+      }}
+    >
+      🛠️ Önnur verkefni
+    </div>
+
+    {otherProjects.map((c) => (
+      <div
+        key={c.id}
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr auto auto",
+          gap: 10,
+          alignItems: "center",
+          background: "#fff",
+          border: "1px solid #e2e8f0",
+          borderRadius: 18,
+          padding: 12,
+        }}
+      >
+        <div>
+          <div style={{ fontWeight: 900 }}>{c.name}</div>
+          <div style={{ color: "#64748b", fontSize: 13 }}>
+            {c.area} • {c.pricing === "hourly"
+              ? `Tímakaup ${kr(c.price)}/klst`
+              : `Fast verð ${kr(c.price)}`}
+          </div>
+        </div>
+
+        <button
+          style={buttonStyle(false)}
+          onClick={() => updateCustomCustomer(c.id)}
+        >
+          Edit
+        </button>
+
+        <button
+          style={buttonStyle(false)}
+          onClick={() => deleteCustomCustomer(c.id)}
+        >
+          Eyða
+        </button>
+      </div>
+    ))}
+  </>
+)}
               </div>
             </div>
           </div>
