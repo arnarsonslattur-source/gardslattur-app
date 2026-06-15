@@ -12,7 +12,7 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const baseCustomersByArea = {
   Brekkan: [
-    { id: 1, name: "Haukur", price: 10000, pricing: "fixed" },
+    { id: 1, name: "Haukur", price: 15000, pricing: "fixed" },
     { id: 2, name: "Örn", price: 10000, pricing: "fixed" },
     { id: 3, name: "Jonni", price: 14000, pricing: "fixed" },
     { id: 4, name: "Stekkjartún", price: 28000, pricing: "fixed" },
