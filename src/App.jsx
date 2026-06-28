@@ -3954,6 +3954,29 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   </div>
 )}
 
+{screen === "Klippikort" && (
+  <div style={cardStyle()}>
+    <div style={{ fontSize: 28, fontWeight: 900 }}>
+      ♻️ Klippikort
+    </div>
+
+    <div style={{ marginTop: 16, fontSize: 18 }}>
+      Notuð: {clipCards.length}
+    </div>
+
+    <button
+      style={{
+        ...buttonStyle(true),
+        marginTop: 20,
+        width: "100%",
+      }}
+      onClick={() => alert("Kemur í næsta skrefi")}
+    >
+      ➕ Nota klippikort
+    </button>
+  </div>
+)}
+        
         {screen === "Kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>
