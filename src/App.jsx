@@ -3976,80 +3976,164 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
 )}
 
 {screen === "Klippikort" && (
-  <div style={cardStyle()}>
-    <div style={{ fontSize: 28, fontWeight: 900 }}>
-      ♻️ Klippikort
-    </div>
-
-    <div style={{ marginTop: 14 }}>
-  <div style={{ fontWeight: 700, marginBottom: 6 }}>
-    Verð á einu klippikorti
-  </div>
-
-  <input
-    type="number"
-    value={clipCardPrice}
-    style={inputStyle()}
-    onChange={(e) => setClipCardPrice(Number(e.target.value))}
-  />
-
-  <button
-    style={{
-      ...buttonStyle(true),
-      marginTop: 10,
-    }}
-    onClick={async () => {
-      const { error } = await supabase
-        .from("clip_card_settings")
-        .update({ price: clipCardPrice })
-        .eq("id", 1);
-
-      if (error) {
-        alert(error.message);
-        return;
-      }
-
-      alert("Verð vistað!");
-    }}
-  >
-    💾 Vista verð
-  </button>
-</div>
-
-    <div style={{ marginTop: 16, fontSize: 18 }}>
-      Notuð: {clipCards.length}
-    </div>
+  <div style={{ display: "grid", gap: 16 }}>
 
     <button
-      style={{
-        ...buttonStyle(true),
-        marginTop: 20,
-        width: "100%",
-      }}
-      onClick={async () => {
-  const newCard = {
-    date: getTodayLocal(),
-    amount: 1,
-    price: clipCardPrice,
-    note: "",
-  };
-
-  const { data, error } = await supabase
-    .from("clip_cards")
-    .insert([newCard])
-    .select()
-    .single();
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  setClipCards((prev) => [data, ...prev]);
-}}
+      onClick={() => setScreen("Meira")}
+      style={buttonStyle(false)}
     >
-      ➕ Nota klippikort
+      ← Til baka
     </button>
+
+    <div style={cardStyle()}>
+      <div style={{ fontSize: 28, fontWeight: 900 }}>
+        ♻️ Klippikort
+      </div>
+
+      <div
+        style={{
+          marginTop: 16,
+          padding: 14,
+          borderRadius: 16,
+          background: "#f8fafc",
+          border: "1px solid #e2e8f0",
+        }}
+      >
+        <div style={{ fontWeight: 700 }}>
+          Verð á einu klippikorti
+        </div>
+
+        <input
+          type="number"
+          value={clipCardPrice}
+          style={{ ...inputStyle(), marginTop: 10 }}
+          onChange={(e) =>
+            setClipCardPrice(Number(e.target.value))
+          }
+        />
+
+        <button
+          style={{
+            ...buttonStyle(true),
+            marginTop: 10,
+          }}
+          onClick={async () => {
+            const { error } = await supabase
+              .from("clip_card_settings")
+              .update({ price: clipCardPrice })
+              .eq("id", 1);
+
+            if (error) {
+              alert(error.message);
+              return;
+            }
+
+            alert("Verð vistað!");
+          }}
+        >
+          💾 Vista verð
+        </button>
+      </div>
+
+      <div
+        style={{
+          marginTop: 22,
+          display: "grid",
+          gap: 8,
+        }}
+      >
+        <div>
+          <strong>Notuð:</strong> {clipCards.length}
+        </div>
+
+        <div>
+          <strong>Heildarkostnaður:</strong>{" "}
+          {kr(
+            clipCards.reduce(
+              (sum, c) => sum + Number(c.price || 0),
+              0
+            )
+          )}
+        </div>
+      </div>
+
+      <button
+        style={{
+          ...buttonStyle(true),
+          marginTop: 24,
+          width: "100%",
+        }}
+        onClick={async () => {
+          const newCard = {
+            date: getTodayLocal(),
+            amount: 1,
+            price: clipCardPrice,
+            note: "",
+          };
+
+          const { data, error } = await supabase
+            .from("clip_cards")
+            .insert([newCard])
+            .select()
+            .single();
+
+          if (error) {
+            alert(error.message);
+            return;
+          }
+
+          setClipCards((prev) => [data, ...prev]);
+        }}
+      >
+        ➕ Nota klippikort
+      </button>
+    </div>
+
+    <div style={cardStyle()}>
+      <div
+        style={{
+          fontSize: 22,
+          fontWeight: 900,
+          marginBottom: 12,
+        }}
+      >
+        Saga
+      </div>
+
+      {clipCards.length === 0 && (
+        <div style={{ color: "#64748b" }}>
+          Engin klippikort skráð.
+        </div>
+      )}
+
+      {clipCards.map((card) => (
+        <div
+          key={card.id}
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            padding: "12px 0",
+            borderBottom: "1px solid #e2e8f0",
+          }}
+        >
+          <div>
+            <div style={{ fontWeight: 700 }}>
+              {card.date}
+            </div>
+
+            <div
+              style={{
+                color: "#64748b",
+                fontSize: 14,
+              }}
+            >
+              {kr(card.price)}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
   </div>
 )}
         
