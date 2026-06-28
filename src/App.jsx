@@ -4083,6 +4083,14 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
           }
 
           setClipCards((prev) => [data, ...prev]);
+          await supabase.from("expenses").insert([
+  {
+    date: getTodayLocal(),
+    amount: clipCardPrice,
+    category: "Klippikort",
+    note: "Sjálfkrafa skráð úr Klippikort",
+  },
+]);
         }}
       >
         ➕ Nota klippikort
