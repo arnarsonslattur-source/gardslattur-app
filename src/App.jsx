@@ -709,6 +709,8 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     }
   });
 
+  const [clipCards, setClipCards] = useState([]);
+
   const [mapCustomerKey, setMapCustomerKey] = useState("");
   const [scanError, setScanError] = useState("");
   const [scanPreview, setScanPreview] = useState(null);
@@ -973,6 +975,24 @@ useEffect(() => {
   };
 
   loadExpenses();
+}, []);
+
+  useEffect(() => {
+  const loadClipCards = async () => {
+    const { data, error } = await supabase
+      .from("clip_cards")
+      .select("*")
+      .order("date", { ascending: false });
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setClipCards(data || []);
+  };
+
+  loadClipCards();
 }, []);
   
   useEffect(() => {
