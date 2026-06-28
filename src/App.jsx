@@ -4174,6 +4174,10 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
     </button>
   </div>
 ))}
+      
+      </div>
+  </div>
+)}
         
         {screen === "Kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
