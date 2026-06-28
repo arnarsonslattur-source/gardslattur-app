@@ -3981,6 +3981,41 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
       ♻️ Klippikort
     </div>
 
+    <div style={{ marginTop: 14 }}>
+  <div style={{ fontWeight: 700, marginBottom: 6 }}>
+    Verð á einu klippikorti
+  </div>
+
+  <input
+    type="number"
+    value={clipCardPrice}
+    style={inputStyle()}
+    onChange={(e) => setClipCardPrice(Number(e.target.value))}
+  />
+
+  <button
+    style={{
+      ...buttonStyle(true),
+      marginTop: 10,
+    }}
+    onClick={async () => {
+      const { error } = await supabase
+        .from("clip_card_settings")
+        .update({ price: clipCardPrice })
+        .eq("id", 1);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      alert("Verð vistað!");
+    }}
+  >
+    💾 Vista verð
+  </button>
+</div>
+
     <div style={{ marginTop: 16, fontSize: 18 }}>
       Notuð: {clipCards.length}
     </div>
