@@ -3970,7 +3970,27 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         marginTop: 20,
         width: "100%",
       }}
-      onClick={() => alert("Kemur í næsta skrefi")}
+      onClick={async () => {
+  const newCard = {
+    date: getTodayLocal(),
+    amount: 1,
+    price: 4000,
+    note: "",
+  };
+
+  const { data, error } = await supabase
+    .from("clip_cards")
+    .insert([newCard])
+    .select()
+    .single();
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  setClipCards((prev) => [data, ...prev]);
+}}
     >
       ➕ Nota klippikort
     </button>
