@@ -4385,6 +4385,24 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
 </button>
 
 <button
+  onClick={() => setScreen("Klippikort")}
+  style={{
+    ...cardStyle(),
+    cursor: "pointer",
+    textAlign: "left",
+    border: "1px solid #dbeafe",
+    background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
+  }}
+>
+  <div style={{ fontSize: 26, fontWeight: 900 }}>
+    ♻️ Klippikort
+  </div>
+  <div style={{ color: "#64748b", marginTop: 6 }}>
+    Skrá þegar þú notar klippikort
+  </div>
+</button>
+            
+<button
   onClick={() => setScreen("Kostnaður")}
   style={{
     ...cardStyle(),
