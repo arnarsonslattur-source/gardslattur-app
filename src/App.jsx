@@ -684,6 +684,8 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     }
   });
 
+  const [clipCardPrice, setClipCardPrice] = useState(4000);
+
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
   const [expandedArea, setExpandedArea] = useState(null);
@@ -880,6 +882,25 @@ useEffect(() => {
   };
 
   loadCustomers();
+}, []);
+
+  useEffect(() => {
+  const loadClipCardPrice = async () => {
+    const { data, error } = await supabase
+      .from("clip_card_settings")
+      .select("price")
+      .eq("id", 1)
+      .single();
+
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    setClipCardPrice(data.price);
+  };
+
+  loadClipCardPrice();
 }, []);
 
  useEffect(() => {
@@ -3974,7 +3995,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   const newCard = {
     date: getTodayLocal(),
     amount: 1,
-    price: 4000,
+    price: clipCardPrice,
     note: "",
   };
 
