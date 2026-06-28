@@ -1471,6 +1471,24 @@ saveCustomer();
   );
 };
 
+  const deleteClipCard = async (id) => {
+  if (!window.confirm("Ertu viss um að þú viljir eyða þessu klippikorti?")) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("clip_cards")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    alert(error.message);
+    return;
+  }
+
+  setClipCards((prev) => prev.filter((c) => c.id !== id));
+};
+
   const togglePaid = async (id) => {
   const currentLog = logs.find((log) => log.id === id);
   if (!currentLog) return;
@@ -4115,35 +4133,47 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
       )}
 
       {clipCards.map((card) => (
-        <div
-          key={card.id}
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            padding: "12px 0",
-            borderBottom: "1px solid #e2e8f0",
-          }}
-        >
-          <div>
-            <div style={{ fontWeight: 700 }}>
-              {card.date}
-            </div>
+  <div
+    key={card.id}
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      padding: "12px 0",
+      borderBottom: "1px solid #e2e8f0",
+    }}
+  >
+    <div>
+      <div style={{ fontWeight: 700 }}>
+        {card.date}
+      </div>
 
-            <div
-              style={{
-                color: "#64748b",
-                fontSize: 14,
-              }}
-            >
-              {kr(card.price)}
-            </div>
-          </div>
-        </div>
-      ))}
+      <div
+        style={{
+          color: "#64748b",
+          fontSize: 14,
+        }}
+      >
+        {kr(card.price)}
+      </div>
     </div>
+
+    <button
+      onClick={() => deleteClipCard(card.id)}
+      style={{
+        border: "none",
+        background: "#ef4444",
+        color: "#fff",
+        borderRadius: 12,
+        padding: "8px 12px",
+        cursor: "pointer",
+        fontWeight: 700,
+      }}
+    >
+      🗑️ Eyða
+    </button>
   </div>
-)}
+))}
         
         {screen === "Kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
