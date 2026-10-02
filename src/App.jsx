@@ -610,7 +610,7 @@ export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
 const [savingLog, setSavingLog] = useState(false);  
-const [selectedStatsYear, setSelectedStatsYear] = useState(String(new Date().getFullYear()));
+const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
 const [statsScreen, setStatsScreen] = useState("overview");
 const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
 const [selectedStatsWeekKey, setSelectedStatsWeekKey] = useState(null);
@@ -3293,20 +3293,21 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             </div>
 
             <select
-              style={{ ...inputStyle(), maxWidth: 140 }}
-              value={selectedStatsYear}
-              onChange={(e) => {
-                setSelectedStatsYear(e.target.value);
-                setStatsScreen("overview");
-                setSelectedStatsMonthKey(null);
-                setSelectedStatsWeekKey(null);
-                setSelectedStatsDayKey(null);
-              }}
-            >
-              <option value={String(new Date().getFullYear() - 1)}>{new Date().getFullYear() - 1}</option>
-              <option value={String(new Date().getFullYear())}>{new Date().getFullYear()}</option>
-              <option value={String(new Date().getFullYear() + 1)}>{new Date().getFullYear() + 1}</option>
-            </select>
+  value={selectedYear}
+  onChange={(e) => setSelectedYear(e.target.value)}
+  style={{
+    border: "none",
+    background: "transparent",
+    fontSize: 16,
+    fontWeight: 800,
+    cursor: "pointer",
+    color: "#0f172a",
+  }}
+>
+  <option value="2025">2025</option>
+  <option value="2026">2026</option>
+  <option value="2027">2027</option>
+</select>
           </div>
 
           <button
