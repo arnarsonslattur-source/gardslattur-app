@@ -1807,7 +1807,11 @@ const newStartedAt = setTimestampTime(
     setEditingDayTimer(false);
   };
 
-  const allTotal = logs.reduce((sum, log) => sum + log.earned, 0);
+  const yearLogs = logs.filter(
+  (log) => log.date?.startsWith(`${selectedYear}-`)
+);
+
+  const allTotal = yearLogs.reduce((sum, log) => sum + log.earned, 0);
   const oneRoundTotal = useMemo(() => {
   return Object.values(customersByArea)
     .flat()
@@ -1818,11 +1822,16 @@ const newStartedAt = setTimestampTime(
     )
     .reduce((sum, customer) => sum + customer.price, 0);
 }, [customersByArea]);
-  const unpaidTotal = logs.filter((log) => !log.paid).reduce((sum, log) => sum + log.earned, 0);
-  const paidTotal = logs.filter((log) => log.paid).reduce((sum, log) => sum + log.earned, 0);
-  const allMinutes = logs.reduce((sum, log) => sum + log.minutes, 0);
-  const totalExpenses = expenses.reduce((sum, expense) => sum + expense.amount, 0);
-  const fuelExpenses = expenses.filter((e) => e.category === "fuel").reduce((sum, e) => sum + e.amount, 0);
+  const unpaidTotal = yearLogs.filter((log) => !log.paid).reduce((sum, log) => sum + log.earned, 0);
+  const paidTotal = yearLogs.filter((log) => log.paid).reduce((sum, log) => sum + log.earned, 0);
+  const allMinutes = yearLogs.reduce((sum, log) => sum + log.minutes, 0);
+  const yearExpenses = expenses.filter(
+  (expense) => expense.date?.startsWith(`${selectedYear}-`)
+);
+  const totalExpenses = yearExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+ const fuelExpenses = yearExpenses
+  .filter((e) => e.category === "fuel")
+  .reduce((sum, e) => sum + e.amount, 0);
   const profitAfterExpenses = allTotal - totalExpenses;
 
   const clientCards = useMemo(() => {
