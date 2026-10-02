@@ -628,7 +628,7 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   const monthlyChartData = useMemo(() => {
   return Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
-    const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+    const monthKey = `${selectedYear}-${String(monthNumber).padStart(2, "0")}`;
 
     const total = logs
       .filter((log) => log.date.startsWith(monthKey))
@@ -639,12 +639,12 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
       tekjur: total,
     };
   });
-}, [logs, selectedStatsYear]);
+}, [logs, selectedYear]);
 
   const monthlyTimeChartData = useMemo(() => {
   return Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
-    const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+    const monthKey = `${selectedYear}-${String(monthNumber).padStart(2, "0")}`;
 
     const totalMinutes = logs
       .filter((log) => log.date.startsWith(monthKey))
@@ -655,7 +655,7 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
       minutes: totalMinutes,
     };
   });
-}, [logs, selectedStatsYear]);
+}, [logs, selectedYear]);
 
   const [customCustomers, setCustomCustomers] = useState(() => {
     try {
@@ -1949,7 +1949,7 @@ const worstCustomers = useMemo(() => {
 const statsMonths = useMemo(() => {
   const months = Array.from({ length: 12 }, (_, index) => {
     const monthNumber = index + 1;
-    const monthKey = `${selectedStatsYear}-${String(monthNumber).padStart(2, "0")}`;
+    const monthKey = `${selectedYear}-${String(monthNumber).padStart(2, "0")}`;
 
     const monthLogsLocal = logs.filter((log) => log.date.startsWith(monthKey));
     const monthEarnedLocal = monthLogsLocal.reduce((sum, log) => sum + log.earned, 0);
@@ -2021,7 +2021,7 @@ const statsMonths = useMemo(() => {
   });
 
   return months;
-}, [logs, selectedStatsYear]);
+}, [logs, selectedYear]);
 
   const allCustomers = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
