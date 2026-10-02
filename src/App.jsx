@@ -610,7 +610,12 @@ export default function App() {
   const [screen, setScreen] = useState("Í dag");
 
 const [savingLog, setSavingLog] = useState(false);  
-const [selectedYear, setSelectedYear] = useState(String(new Date().getFullYear()));
+const [selectedYear, setSelectedYear] = useState(() => {
+  return localStorage.getItem("selectedYear") || String(new Date().getFullYear());
+});
+  useEffect(() => {
+  localStorage.setItem("selectedYear", selectedYear);
+}, [selectedYear]);
 const [statsScreen, setStatsScreen] = useState("overview");
 const [selectedStatsMonthKey, setSelectedStatsMonthKey] = useState(null);
 const [selectedStatsWeekKey, setSelectedStatsWeekKey] = useState(null);
