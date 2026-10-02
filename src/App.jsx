@@ -759,17 +759,24 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   });
 
   const customersByArea = useMemo(() => {
-    const result = AREA_ORDER.reduce((acc, area) => {
-      acc[area] = [...(baseCustomersByArea[area] || [])];
-      return acc;
-    }, {});
-    for (const customer of customCustomers) {
-      if (!result[customer.area]) result[customer.area] = [];
-      result[customer.area].push(customer);
-    }
-    return result;
-  }, [customCustomers]);
+  const result = AREA_ORDER.reduce((acc, area) => {
+    acc[area] =
+      Number(selectedYear) === 2026
+        ? [...(baseCustomersByArea[area] || [])]
+        : [];
+    return acc;
+  }, {});
 
+  for (const customer of customCustomers) {
+    if (Number(customer.year) !== Number(selectedYear)) continue;
+
+    if (!result[customer.area]) result[customer.area] = [];
+    result[customer.area].push(customer);
+  }
+
+  return result;
+}, [customCustomers, selectedYear]);
+  
   const [jobNote, setJobNote] = useState("");
 
   const [entry, setEntry] = useState({
@@ -1246,11 +1253,12 @@ const addCustomer = async () => {
   if (!newCustomerForm.name || !newCustomerForm.price) return;
 
   const customerToInsert = {
-    name: newCustomerForm.name,
-    area: newCustomerForm.area,
-    pricing: newCustomerForm.pricing,
-    price: Number(newCustomerForm.price),
-  };
+  name: newCustomerForm.name,
+  area: newCustomerForm.area,
+  pricing: newCustomerForm.pricing,
+  price: Number(newCustomerForm.price),
+  year: Number(selectedYear),
+};
 
   const { data, error } = await supabase
     .from("custom_customers")
@@ -1837,7 +1845,12 @@ const newStartedAt = setTimestampTime(
   const clientCards = useMemo(() => {
     return Object.entries(customersByArea).flatMap(([area, list]) =>
       list.map((customer) => {
-        const customerLogs = logs.filter((log) => log.customer === customer.name && log.area === area);
+        const customerLogs = logs.filter(
+  (log) =>
+    log.customer === customer.name &&
+    log.area === area &&
+    log.date?.startsWith(`${selectedYear}-`)
+);
         const totalEarned = customerLogs.reduce((sum, log) => sum + log.earned, 0);
         const totalMinutes = customerLogs.reduce((sum, log) => sum + log.minutes, 0);
         const calculatedHourly = totalMinutes > 0 ? Math.round(totalEarned / (totalMinutes / 60)) : 0;
@@ -1854,7 +1867,7 @@ const newStartedAt = setTimestampTime(
         };
       })
     );
-  }, [logs, customersByArea]);
+  }, [logs, customersByArea, selectedYear]);
   
   const bestCustomers = useMemo(() => {
   return [...clientCards]
@@ -2103,8 +2116,12 @@ const customersToMow = useMemo(() => {
   .filter((customer) => customer.area !== "Önnur verkefni")
   .map((customer) => {
       const customerLogs = logs
-        .filter((log) => log.customer === customer.name)
-        .sort((a, b) => new Date(b.date) - new Date(a.date));
+  .filter(
+    (log) =>
+      log.customer === customer.name &&
+      log.date?.startsWith(`${selectedYear}-`)
+  )
+  .sort((a, b) => new Date(b.date) - new Date(a.date));
 
       const lastLog = customerLogs[0];
 
@@ -2133,11 +2150,11 @@ neverMowed: true,
   if (!a.neverMowed && b.neverMowed) return -1;
   return b.daysSince - a.daysSince;
 });
-}, [allCustomers, logs]);
+}, [allCustomers, logs, selectedYear]);
   
   const bestDay = useMemo(() => {
     const grouped = {};
-    logs.forEach((log) => {
+    yearLogs.forEach((log) => {
       if (!grouped[log.date]) grouped[log.date] = { date: log.date, earned: 0, minutes: 0, count: 0 };
       grouped[log.date].earned += log.earned;
       grouped[log.date].minutes += log.minutes;
@@ -2146,11 +2163,11 @@ neverMowed: true,
     const days = Object.values(grouped);
     if (days.length === 0) return null;
     return days.sort((a, b) => b.earned - a.earned)[0];
-  }, [logs]);
+  }, [yearLogs]);
 
   const longestDay = useMemo(() => {
     const grouped = {};
-    logs.forEach((log) => {
+    yearLogs.forEach((log) => {
       if (!grouped[log.date]) grouped[log.date] = { date: log.date, earned: 0, minutes: 0, count: 0 };
       grouped[log.date].earned += log.earned;
       grouped[log.date].minutes += log.minutes;
@@ -2159,7 +2176,7 @@ neverMowed: true,
     const days = Object.values(grouped);
     if (days.length === 0) return null;
     return days.sort((a, b) => b.minutes - a.minutes)[0];
-  }, [logs]);
+  }, [yearLogs]);
 
   const highestJob = logs.length > 0 ? [...logs].sort((a, b) => b.earned - a.earned)[0] : null;
   
