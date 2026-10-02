@@ -1939,6 +1939,10 @@ const worstCustomers = useMemo(() => {
     return map;
   }, [logs]);
 
+useEffect(() => {
+  setSelectedMonth(`${selectedYear}-01`);
+}, [selectedYear]);
+  
   const monthDateObj = useMemo(() => {
     const [year, month] = selectedMonth.split("-").map(Number);
     return new Date(year, month - 1, 1);
@@ -1953,10 +1957,13 @@ const worstCustomers = useMemo(() => {
   const selectedPlanText = selectedPlanDay ? planEntries[selectedPlanDay] || "" : "";
 
   const monthOptions = [];
-  for (let m = 0; m < 12; m += 1) {
-    const d = new Date(new Date().getFullYear(), m, 1);
-    monthOptions.push({ value: getMonthKey(d), label: `${MONTHS[m]} ${d.getFullYear()}` });
-  }
+for (let m = 0; m < 12; m += 1) {
+  const d = new Date(Number(selectedYear), m, 1);
+  monthOptions.push({
+    value: getMonthKey(d),
+    label: `${MONTHS[m]} ${d.getFullYear()}`,
+  });
+}
 
   const areaSummary = AREA_ORDER.map((area) => {
     return {
