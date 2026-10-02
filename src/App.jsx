@@ -1971,7 +1971,9 @@ for (let m = 0; m < 12; m += 1) {
       planned: (customersByArea[area] || [])
         .filter((c) => c.pricing !== "hourly")
         .reduce((sum, c) => sum + c.price, 0),
-      earned: logs.filter((l) => l.area === area).reduce((sum, l) => sum + l.earned, 0),
+      earned: yearLogs
+  .filter((l) => l.area === area)
+  .reduce((sum, l) => sum + l.earned, 0),
     };
   });
 
@@ -2109,11 +2111,15 @@ const statsMonths = useMemo(() => {
   }, [expensesSortedNewest]);
   
   const regularCustomers = customCustomers.filter(
-  (c) => c.area !== "Önnur verkefni"
+  (c) =>
+    Number(c.year) === Number(selectedYear) &&
+    c.area !== "Önnur verkefni"
 );
 
 const otherProjects = customCustomers.filter(
-  (c) => c.area === "Önnur verkefni"
+  (c) =>
+    Number(c.year) === Number(selectedYear) &&
+    c.area === "Önnur verkefni"
 );
 
 const customersToMow = useMemo(() => {
@@ -2185,7 +2191,10 @@ neverMowed: true,
     return days.sort((a, b) => b.minutes - a.minutes)[0];
   }, [yearLogs]);
 
-  const highestJob = logs.length > 0 ? [...logs].sort((a, b) => b.earned - a.earned)[0] : null;
+  const highestJob =
+  yearLogs.length > 0
+    ? [...yearLogs].sort((a, b) => b.earned - a.earned)[0]
+    : null;
   
   const selectedStatsMonthData = useMemo(() => {
   return statsMonths.find((month) => month.monthKey === selectedStatsMonthKey) || null;
