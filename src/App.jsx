@@ -1342,6 +1342,27 @@ const addExpense = async (source = "manual") => {
   setReceiptImage(null);
 };
   
+const deleteAllClipCardExpenses = async () => {
+  const items = expenses.filter((expense) => expense.category === "Klippikort");
+  if (items.length === 0) return;
+  const sum = items.reduce((total, expense) => total + Number(expense.amount || 0), 0);
+  if (!window.confirm(`Eyða ${items.length} klippikortafærslum (samtals ${kr(sum)}) úr kostnaði?`)) {
+    return;
+  }
+
+  const { error } = await supabase
+    .from("expenses")
+    .delete()
+    .eq("category", "Klippikort");
+
+  if (error) {
+    alert("Villa: " + error.message);
+    return;
+  }
+
+  setExpenses((prev) => prev.filter((expense) => expense.category !== "Klippikort"));
+};
+
 const deleteExpense = async (id) => {
   const { error } = await supabase
     .from("expenses")
@@ -4002,6 +4023,27 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             <button style={{ ...buttonStyle(false), width: "fit-content" }} onClick={() => setScreen("Meira")}>
               ← Til baka
             </button>
+
+            {expenses.some((expense) => expense.category === "Klippikort") && (
+              <div style={{ ...cardStyle(), border: "1px solid #fecaca", background: "#fef2f2" }}>
+                <div style={{ fontSize: 20, fontWeight: 900 }}>Gamlar klippikortafærslur</div>
+                <div style={{ color: "#64748b", marginTop: 6 }}>
+                  {expenses.filter((expense) => expense.category === "Klippikort").length} færslur, samtals{" "}
+                  {kr(
+                    expenses
+                      .filter((expense) => expense.category === "Klippikort")
+                      .reduce((total, expense) => total + Number(expense.amount || 0), 0)
+                  )}
+                  . Þær voru skráðar sjálfkrafa þegar klippikort var notað.
+                </div>
+                <button
+                  style={{ ...buttonStyle(true), marginTop: 12, background: "#ef4444" }}
+                  onClick={deleteAllClipCardExpenses}
+                >
+                  🗑️ Eyða öllum klippikortafærslum
+                </button>
+              </div>
+            )}
 
             <button
               onClick={() => setScreen("Skrifa kostnað")}
