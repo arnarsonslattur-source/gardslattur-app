@@ -324,6 +324,8 @@ function expenseCategoryLabel(category) {
       return "Vinnuvörur";
     case "maintenance":
       return "Viðhald";
+    case "Klippikort":
+      return "Klippikort";
     default:
       return "Annað";
   }
@@ -1500,6 +1502,29 @@ saveCustomer();
   }
 
   setClipCards((prev) => prev.filter((c) => c.id !== id));
+
+  // Eyða líka kostnaðinum sem var skráður sjálfkrafa þegar klippikortið var notað
+  const card = clipCards.find((c) => c.id === id);
+  if (!card) return;
+  const linkedExpense = expenses.find(
+    (expense) =>
+      expense.category === "Klippikort" &&
+      expense.date === card.date &&
+      Number(expense.amount) === Number(card.price)
+  );
+  if (!linkedExpense) return;
+
+  const { error: expenseError } = await supabase
+    .from("expenses")
+    .delete()
+    .eq("id", linkedExpense.id);
+
+  if (expenseError) {
+    alert("Villa: " + expenseError.message);
+    return;
+  }
+
+  setExpenses((prev) => prev.filter((expense) => expense.id !== linkedExpense.id));
 };
 
   const togglePaid = async (id) => {
@@ -1841,10 +1866,10 @@ const newStartedAt = setTimestampTime(
   const yearExpenses = expenses.filter(
   (expense) => expense.date?.startsWith(`${selectedYear}-`)
 );
-  const totalExpenses = yearExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalExpenses = yearExpenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
  const fuelExpenses = yearExpenses
   .filter((e) => e.category === "fuel")
-  .reduce((sum, e) => sum + e.amount, 0);
+  .reduce((sum, e) => sum + Number(e.amount || 0), 0);
   const profitAfterExpenses = allTotal - totalExpenses;
 
   const clientCards = useMemo(() => {
@@ -2109,9 +2134,15 @@ const statsMonths = useMemo(() => {
   }, [expenses]);
 
   const groupedExpenses = useMemo(() => {
-    const order = ["fuel", "clothes", "tools", "maintenance", "other"];
+    const order = ["fuel", "clothes", "tools", "maintenance", "Klippikort", "other"];
+    const known = order.filter((category) => category !== "other");
     return order
-      .map((category) => ({ category, items: expensesSortedNewest.filter((expense) => expense.category === category) }))
+      .map((category) => ({
+        category,
+        items: expensesSortedNewest.filter((expense) =>
+          category === "other" ? !known.includes(expense.category) : expense.category === category
+        ),
+      }))
       .filter((group) => group.items.length > 0);
   }, [expensesSortedNewest]);
   
@@ -4150,14 +4181,25 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
           }
 
           setClipCards((prev) => [data, ...prev]);
-          await supabase.from("expenses").insert([
-  {
-    date: getTodayLocal(),
-    amount: clipCardPrice,
-    category: "Klippikort",
-    note: "Sjálfkrafa skráð úr Klippikort",
-  },
-]);
+          const { data: expenseData, error: expenseError } = await supabase
+            .from("expenses")
+            .insert([
+              {
+                date: data.date,
+                amount: Number(data.price || clipCardPrice),
+                category: "Klippikort",
+                note: "Sjálfkrafa skráð úr Klippikort",
+              },
+            ])
+            .select()
+            .single();
+
+          if (expenseError) {
+            alert("Villa: " + expenseError.message);
+            return;
+          }
+
+          setExpenses((prev) => [expenseData, ...prev]);
         }}
       >
         ➕ Nota klippikort
@@ -4600,13 +4642,13 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                         {expense.category === "fuel" && (
                           <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
                             <div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div>
-                            <div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuelType)}</div>
+                            <div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuel_type || expense.fuelType)}</div>
                           </div>
                         )}
 
                         <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
                           <div style={{ color: "#64748b", fontSize: 13 }}>Skráð með</div>
-                          <div style={{ fontWeight: 900 }}>{expense.source === "qr" ? "QR" : "Handvirkt"}</div>
+                          <div style={{ fontWeight: 900 }}>{expense.category === "Klippikort" ? "Sjálfkrafa (klippikort)" : expense.source === "qr" ? "QR" : "Handvirkt"}</div>
                         </div>
                       </div>
 
