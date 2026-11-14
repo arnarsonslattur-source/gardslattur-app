@@ -324,6 +324,8 @@ function expenseCategoryLabel(category) {
       return "Vinnuvörur";
     case "maintenance":
       return "Viðhald";
+    case "Klippikort":
+      return "Klippikort";
     default:
       return "Annað";
   }
@@ -689,7 +691,6 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     }
   });
 
-  const [clipCardPrice, setClipCardPrice] = useState(4000);
 
   const [selectedDay, setSelectedDay] = useState(null);
   const [selectedClient, setSelectedClient] = useState(null);
@@ -716,7 +717,6 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
     }
   });
 
-  const [clipCards, setClipCards] = useState([]);
 
   const [mapCustomerKey, setMapCustomerKey] = useState("");
   const [scanError, setScanError] = useState("");
@@ -896,24 +896,6 @@ useEffect(() => {
   loadCustomers();
 }, []);
 
-  useEffect(() => {
-  const loadClipCardPrice = async () => {
-    const { data, error } = await supabase
-      .from("clip_card_settings")
-      .select("price")
-      .eq("id", 1)
-      .single();
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setClipCardPrice(data.price);
-  };
-
-  loadClipCardPrice();
-}, []);
 
  useEffect(() => {
   const loadCustomerLocations = async () => {
@@ -1010,23 +992,6 @@ useEffect(() => {
   loadExpenses();
 }, []);
 
-  useEffect(() => {
-  const loadClipCards = async () => {
-    const { data, error } = await supabase
-      .from("clip_cards")
-      .select("*")
-      .order("date", { ascending: false });
-
-    if (error) {
-      console.error(error);
-      return;
-    }
-
-    setClipCards(data || []);
-  };
-
-  loadClipCards();
-}, []);
   
   useEffect(() => {
     try {
@@ -1484,23 +1449,6 @@ saveCustomer();
   );
 };
 
-  const deleteClipCard = async (id) => {
-  if (!window.confirm("Ertu viss um að þú viljir eyða þessu klippikorti?")) {
-    return;
-  }
-
-  const { error } = await supabase
-    .from("clip_cards")
-    .delete()
-    .eq("id", id);
-
-  if (error) {
-    alert(error.message);
-    return;
-  }
-
-  setClipCards((prev) => prev.filter((c) => c.id !== id));
-};
 
   const togglePaid = async (id) => {
   const currentLog = logs.find((log) => log.id === id);
@@ -1841,10 +1789,10 @@ const newStartedAt = setTimestampTime(
   const yearExpenses = expenses.filter(
   (expense) => expense.date?.startsWith(`${selectedYear}-`)
 );
-  const totalExpenses = yearExpenses.reduce((sum, expense) => sum + expense.amount, 0);
+  const totalExpenses = yearExpenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
  const fuelExpenses = yearExpenses
   .filter((e) => e.category === "fuel")
-  .reduce((sum, e) => sum + e.amount, 0);
+  .reduce((sum, e) => sum + Number(e.amount || 0), 0);
   const profitAfterExpenses = allTotal - totalExpenses;
 
   const clientCards = useMemo(() => {
@@ -2109,9 +2057,15 @@ const statsMonths = useMemo(() => {
   }, [expenses]);
 
   const groupedExpenses = useMemo(() => {
-    const order = ["fuel", "clothes", "tools", "maintenance", "other"];
+    const order = ["fuel", "clothes", "tools", "maintenance", "Klippikort", "other"];
+    const known = order.filter((category) => category !== "other");
     return order
-      .map((category) => ({ category, items: expensesSortedNewest.filter((expense) => expense.category === category) }))
+      .map((category) => ({
+        category,
+        items: expensesSortedNewest.filter((expense) =>
+          category === "other" ? !known.includes(expense.category) : expense.category === category
+        ),
+      }))
       .filter((group) => group.items.length > 0);
   }, [expensesSortedNewest]);
   
@@ -4042,191 +3996,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   </div>
 )}
 
-{screen === "Klippikort" && (
-  <div style={{ display: "grid", gap: 16 }}>
-
-    <button
-      onClick={() => setScreen("Meira")}
-      style={buttonStyle(false)}
-    >
-      ← Til baka
-    </button>
-
-    <div style={cardStyle()}>
-      <div style={{ fontSize: 28, fontWeight: 900 }}>
-        ♻️ Klippikort
-      </div>
-
-      <div
-        style={{
-          marginTop: 16,
-          padding: 14,
-          borderRadius: 16,
-          background: "#f8fafc",
-          border: "1px solid #e2e8f0",
-        }}
-      >
-        <div style={{ fontWeight: 700 }}>
-          Verð á einu klippikorti
-        </div>
-
-        <input
-          type="number"
-          value={clipCardPrice}
-          style={{ ...inputStyle(), marginTop: 10 }}
-          onChange={(e) =>
-            setClipCardPrice(Number(e.target.value))
-          }
-        />
-
-        <button
-          style={{
-            ...buttonStyle(true),
-            marginTop: 10,
-          }}
-          onClick={async () => {
-            const { error } = await supabase
-              .from("clip_card_settings")
-              .update({ price: clipCardPrice })
-              .eq("id", 1);
-
-            if (error) {
-              alert(error.message);
-              return;
-            }
-
-            alert("Verð vistað!");
-          }}
-        >
-          💾 Vista verð
-        </button>
-      </div>
-
-      <div
-        style={{
-          marginTop: 22,
-          display: "grid",
-          gap: 8,
-        }}
-      >
-        <div>
-          <strong>Notuð:</strong> {clipCards.length}
-        </div>
-
-        <div>
-          <strong>Heildarkostnaður:</strong>{" "}
-          {kr(
-            clipCards.reduce(
-              (sum, c) => sum + Number(c.price || 0),
-              0
-            )
-          )}
-        </div>
-      </div>
-
-      <button
-        style={{
-          ...buttonStyle(true),
-          marginTop: 24,
-          width: "100%",
-        }}
-        onClick={async () => {
-          const newCard = {
-            date: getTodayLocal(),
-            amount: 1,
-            price: clipCardPrice,
-            note: "",
-          };
-
-          const { data, error } = await supabase
-            .from("clip_cards")
-            .insert([newCard])
-            .select()
-            .single();
-
-          if (error) {
-            alert(error.message);
-            return;
-          }
-
-          setClipCards((prev) => [data, ...prev]);
-          await supabase.from("expenses").insert([
-  {
-    date: getTodayLocal(),
-    amount: clipCardPrice,
-    category: "Klippikort",
-    note: "Sjálfkrafa skráð úr Klippikort",
-  },
-]);
-        }}
-      >
-        ➕ Nota klippikort
-      </button>
-    </div>
-
-    <div style={cardStyle()}>
-      <div
-        style={{
-          fontSize: 22,
-          fontWeight: 900,
-          marginBottom: 12,
-        }}
-      >
-        Saga
-      </div>
-
-      {clipCards.length === 0 && (
-        <div style={{ color: "#64748b" }}>
-          Engin klippikort skráð.
-        </div>
-      )}
-
-      {clipCards.map((card) => (
-  <div
-    key={card.id}
-    style={{
-      display: "flex",
-      justifyContent: "space-between",
-      alignItems: "center",
-      padding: "12px 0",
-      borderBottom: "1px solid #e2e8f0",
-    }}
-  >
-    <div>
-      <div style={{ fontWeight: 700 }}>
-        {card.date}
-      </div>
-
-      <div
-        style={{
-          color: "#64748b",
-          fontSize: 14,
-        }}
-      >
-        {kr(card.price)}
-      </div>
-    </div>
-
-    <button
-      onClick={() => deleteClipCard(card.id)}
-      style={{
-        border: "none",
-        background: "#ef4444",
-        color: "#fff",
-        borderRadius: 12,
-        padding: "8px 12px",
-        cursor: "pointer",
-        fontWeight: 700,
-      }}
-    >
-      🗑️ Eyða
-    </button>
-  </div>
-))}
-      
-      </div>
-  </div>
-)}
         
         {screen === "Kostnaður" && (
           <div style={{ display: "grid", gap: 16 }}>
@@ -4600,13 +4369,13 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                         {expense.category === "fuel" && (
                           <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
                             <div style={{ color: "#64748b", fontSize: 13 }}>Eldsneyti</div>
-                            <div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuelType)}</div>
+                            <div style={{ fontWeight: 900 }}>{fuelTypeLabel(expense.fuel_type || expense.fuelType)}</div>
                           </div>
                         )}
 
                         <div style={{ background: "#f8fafc", borderRadius: 18, padding: 12 }}>
                           <div style={{ color: "#64748b", fontSize: 13 }}>Skráð með</div>
-                          <div style={{ fontWeight: 900 }}>{expense.source === "qr" ? "QR" : "Handvirkt"}</div>
+                          <div style={{ fontWeight: 900 }}>{expense.category === "Klippikort" ? "Sjálfkrafa (klippikort)" : expense.source === "qr" ? "QR" : "Handvirkt"}</div>
                         </div>
                       </div>
 
@@ -4658,23 +4427,6 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
   </div>
 </button>
 
-<button
-  onClick={() => setScreen("Klippikort")}
-  style={{
-    ...cardStyle(),
-    cursor: "pointer",
-    textAlign: "left",
-    border: "1px solid #dbeafe",
-    background: "linear-gradient(180deg, rgba(255,255,255,0.98), rgba(239,246,255,0.96))",
-  }}
->
-  <div style={{ fontSize: 26, fontWeight: 900 }}>
-    ♻️ Klippikort
-  </div>
-  <div style={{ color: "#64748b", marginTop: 6 }}>
-    Skrá þegar þú notar klippikort
-  </div>
-</button>
             
 <button
   onClick={() => setScreen("Kostnaður")}
