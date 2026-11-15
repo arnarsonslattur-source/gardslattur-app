@@ -228,6 +228,15 @@ function getTodayLocal() {
   return new Date(now - offset).toISOString().slice(0, 10);
 }
 
+// Sama dagsetning en á öðru ári (29. feb verður 28. feb ef árið er ekki hlaupár)
+function moveDateToYear(dateStr, year) {
+  if (!dateStr) return dateStr;
+  const [, month, day] = dateStr.split("-");
+  const lastDay = new Date(Number(year), Number(month), 0).getDate();
+  const safeDay = String(Math.min(Number(day), lastDay)).padStart(2, "0");
+  return `${year}-${month}-${safeDay}`;
+}
+
 function getMonthKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
 }
@@ -613,7 +622,8 @@ export default function App() {
 
 const [savingLog, setSavingLog] = useState(false);  
 const [selectedYear, setSelectedYear] = useState(() => {
-  return localStorage.getItem("selectedYear") || String(new Date().getFullYear());
+  // Opnast alltaf á árinu í ár
+  return String(new Date().getFullYear());
 });
   useEffect(() => {
   localStorage.setItem("selectedYear", selectedYear);
@@ -692,12 +702,12 @@ const [selectedStatsDayKey, setSelectedStatsDayKey] = useState(null);
   });
 
 
-  const [selectedDay, setSelectedDay] = useState(null);
+  const [selectedDay, setSelectedDay] = useState(() => getTodayLocal());
   const [selectedClient, setSelectedClient] = useState(null);
   const [expandedArea, setExpandedArea] = useState(null);
   const [selectedMonth, setSelectedMonth] = useState(getMonthKey(new Date()));
   const [editingLogId, setEditingLogId] = useState(null);
-  const [selectedPlanDay, setSelectedPlanDay] = useState(null);
+  const [selectedPlanDay, setSelectedPlanDay] = useState(() => getTodayLocal());
 
   const [planEntries, setPlanEntries] = useState(() => {
     try {
@@ -1914,7 +1924,10 @@ const worstCustomers = useMemo(() => {
   }, [logs]);
 
 useEffect(() => {
-  setSelectedMonth(`${selectedYear}-01`);
+  // Þegar skipt er um ár: halda sama mánuði og degi, bara á nýja árinu
+  setSelectedMonth((prev) => `${selectedYear}-${(prev || getMonthKey(new Date())).slice(5, 7)}`);
+  setSelectedDay((prev) => moveDateToYear(prev || getTodayLocal(), selectedYear));
+  setSelectedPlanDay((prev) => moveDateToYear(prev || getTodayLocal(), selectedYear));
 }, [selectedYear]);
   
   const monthDateObj = useMemo(() => {
