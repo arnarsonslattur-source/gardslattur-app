@@ -73,7 +73,7 @@ const MONTHS = [
   "Desember",
 ];
 
-const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WEEK_DAYS = ["Sun", "Mán", "Þri", "Mið", "Fim", "Fös", "Lau"];
 const NAV_ITEMS = ["Dagatal", "Í dag", "Skrá", "Viðskiptavinir", "Tölur", "Meira"];
 
 const starterLogs = [
@@ -2230,7 +2230,7 @@ const selectedStatsDayEarned = useMemo(() => {
             <div style={{ fontSize: 34, fontWeight: 900, letterSpacing: "-0.05em", lineHeight: 1 }}>
               Garðsláttur Bjarka
             </div>
-            <div style={{ color: "#64748b", marginTop: 6 }}>Snirtilegt mobile app fyrir slætti</div>
+            <div style={{ color: "#64748b", marginTop: 6 }}>Tímar, kúnnar og tekjur</div>
           </div>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#1d4ed8" }}>{new Date().getFullYear()}</div>
         </div>
@@ -2256,7 +2256,7 @@ const selectedStatsDayEarned = useMemo(() => {
               </div>
 
               <div style={{ background: "#0f172a", color: "#fff", borderRadius: 24, padding: 18, marginTop: 14 }}>
-                <div style={{ fontSize: 14, opacity: 0.8 }}>Dagstimer</div>
+                <div style={{ fontSize: 14, opacity: 0.8 }}>Dagsklukka</div>
                 <div style={{ fontSize: 34, fontWeight: 900, marginTop: 6 }}>{minsToText(dayTimerMinutes)}</div>
 
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
@@ -2283,7 +2283,7 @@ const selectedStatsDayEarned = useMemo(() => {
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
                 {!editingDayTimer ? (
                   <button style={buttonStyle(false)} onClick={() => startEditDayTimer(todayDate)}>
-                    Edita dagstimer
+                    Breyta tíma
                   </button>
                 ) : null}
               </div>
@@ -2291,7 +2291,7 @@ const selectedStatsDayEarned = useMemo(() => {
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+                  gridTemplateColumns: "repeat(2, minmax(0,1fr))",
                   gap: 12,
                   marginTop: 16,
                 }}
@@ -2320,7 +2320,7 @@ const selectedStatsDayEarned = useMemo(() => {
 
               {editingDayTimer && (
                 <div style={cardStyle({ marginTop: 12 })}>
-                  <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 12 }}>Edita dagstimer</div>
+                  <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 12 }}>Breyta tíma</div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
                     <input
@@ -2368,7 +2368,7 @@ const selectedStatsDayEarned = useMemo(() => {
                     <option key={opt.value} value={opt.value}>{opt.label}</option>
                   ))}
                 </select>
-                <div style={{ color: "#64748b", fontWeight: 700 }}>Ýttu á dag til að sjá detail</div>
+                <div style={{ color: "#64748b", fontWeight: 700 }}>Ýttu á dag til að sjá meira</div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 6, marginBottom: 6 }}>
@@ -2498,7 +2498,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                   <div
                     style={{
                       display: "grid",
-                      gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+                      gridTemplateColumns: "repeat(2, minmax(0,1fr))",
                       gap: 10,
                     }}
                   >
@@ -2564,7 +2564,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
 
                       {editingLogId === log.id ? (
                         <div style={{ display: "grid", gap: 10 }}>
-                          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))", gap: 10 }}>
+                          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 10 }}>
                             <input style={inputStyle()} value={editForm.customer} onChange={(e) => setEditForm({ ...editForm, customer: e.target.value })} />
                             <input style={inputStyle()} type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} />
                             <input style={inputStyle()} type="time" value={editForm.startTime} onChange={(e) => setEditForm({ ...editForm, startTime: e.target.value })} />
@@ -2671,7 +2671,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               </div>
 
               <div style={{ background: "#0f172a", color: "#fff", borderRadius: 24, padding: 18, marginTop: 14 }}>
-                <div style={{ fontSize: 14, opacity: 0.8 }}>Dagstimer</div>
+                <div style={{ fontSize: 14, opacity: 0.8 }}>Dagsklukka</div>
                 <div style={{ fontSize: 34, fontWeight: 900, marginTop: 6 }}>{minsToText(dayTimerMinutes)}</div>
                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
                   {dayTimerState.accumulatedMs === 0 && !dayTimerState.running && !dayTimerState.dayStartedAt ? (
@@ -2697,14 +2697,14 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
                 {!editingDayTimer ? (
                   <button style={buttonStyle(false)} onClick={() => startEditDayTimer(todayDate)}>
-                    Edita dagstimer
+                    Breyta tíma
                   </button>
                 ) : null}
               </div>
 
               {editingDayTimer && selectedDay === todayDate && (
                 <div style={cardStyle({ marginTop: 12 })}>
-                  <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 12 }}>Edita dagstimer</div>
+                  <div style={{ fontSize: 20, fontWeight: 900, marginBottom: 12 }}>Breyta tíma</div>
 
                   <div style={{ display: "grid", gridTemplateColumns: "repeat(3, minmax(0,1fr))", gap: 12 }}>
                     <input
@@ -2738,7 +2738,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))",
+                  gridTemplateColumns: "repeat(2, minmax(0,1fr))",
                   gap: 12,
                   marginTop: 16,
                 }}
@@ -2797,7 +2797,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                 )}
               </div>
 
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(150px,1fr))", gap: 12, marginTop: 16 }}>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12, marginTop: 16 }}>
                 <div style={{ background: "#dbeafe", borderRadius: 22, padding: 14 }}>
                   <div style={{ color: "#475569", fontSize: 13 }}>Tekjur í dag</div>
                   <div style={{ fontWeight: 900, fontSize: 24 }}>
@@ -2954,11 +2954,11 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                 <div>
                   <div style={{ fontSize: 30, fontWeight: 900, letterSpacing: "-0.04em", lineHeight: 1 }}>Skrá færslu</div>
                   <div style={{ color: "#64748b", marginTop: 6 }}>
-                    Settu inn dag, frá og til tíma og upphæð á snyrtilegan hátt.
+                    Settu inn dag, tíma og upphæð.
                   </div>
                 </div>
                 <div style={{ padding: "8px 12px", borderRadius: 999, background: "rgba(29,78,216,0.08)", color: "#1d4ed8", fontWeight: 800 }}>
-                  Quick add
+                  Fljótleg skráning
                 </div>
               </div>
 
@@ -3306,7 +3306,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         )}
 
         {screen === "Tölur" && (
-  <div style={{ display: "grid", gap: 16 }}>
+  <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr)", gap: 16 }}>
     {statsScreen === "overview" && (
       <>
         <div style={cardStyle()}>
@@ -3368,19 +3368,19 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0,1fr))", gap: 12 }}>
           <div style={cardStyle({ background: "linear-gradient(135deg,#f5f5f4 0%, #e7e5e4 100%)" })}>
             <div style={{ color: "#57534e", fontSize: 13 }}>Heildartekjur</div>
-            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>{kr(allTotal)}</div>
           </div>
           <div style={cardStyle({ background: "linear-gradient(135deg,#f5f5f4 0%, #e7e5e4 100%)" })}>
             <div style={{ color: "#57534e", fontSize: 13 }}>Heildartími</div>
-            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>{minsToText(allMinutes)}</div>
           </div>
           <div style={cardStyle({ background: "linear-gradient(135deg,#ecfdf5 0%, #d1fae5 100%)" })}>
             <div style={{ color: "#065f46", fontSize: 13 }}>Greitt</div>
-            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>{kr(paidTotal)}</div>
           </div>
           <div style={cardStyle({ background: "linear-gradient(135deg,#fef2f2 0%, #fecaca 100%)" })}>
             <div style={{ color: "#991b1b", fontSize: 13 }}>Ógreitt</div>
-            <div style={{ fontSize: 28, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
+            <div style={{ fontSize: 22, fontWeight: 900, marginTop: 6 }}>{kr(unpaidTotal)}</div>
           </div>
         </div>
 
@@ -4760,7 +4760,7 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
             backdropFilter: "blur(12px)",
           }}
         >
-          <div style={{ display: "grid", gridTemplateColumns: `repeat(${NAV_ITEMS.length},1fr)`, gap: 6 }}>
+          <div style={{ display: "grid", gridTemplateColumns: `repeat(${NAV_ITEMS.length}, minmax(0,1fr))`, gap: 2 }}>
             {NAV_ITEMS.map((item) => {
               const active = screen === item;
               return (
@@ -4771,14 +4771,15 @@ fontSize: window.innerWidth < 768 ? 12 : 15, }}>
                     border: "none",
                     background: active ? "rgba(99,102,241,0.12)" : "transparent",
                     borderRadius: 24,
-                    padding: "10px 6px",
+                    padding: "10px 2px",
                     cursor: "pointer",
-                    color: active ? "#ef4444" : "#111827",
+                    minWidth: 0,
+                    color: active ? "#1d4ed8" : "#111827",
                   }}
                 >
                   <div style={{ fontSize: 24, lineHeight: 1 }}>{iconForNav(item)}</div>
-                  <div style={{ fontSize: 13, fontWeight: active ? 800 : 600, marginTop: 6 }}>
-                    {item}
+                  <div style={{ fontSize: 12, fontWeight: active ? 800 : 600, marginTop: 6, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                    {item === "Viðskiptavinir" ? "Kúnnar" : item}
                   </div>
                 </button>
               );
